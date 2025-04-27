@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MERCHANDISER
+  ADMIN
+}
+
+enum Outlet {
+  WALMART
+  TARGET
+  COSTCO
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String?
+  email        String    @unique
+  passwordHash String
+  role         Role
+  sosForms     SOSForm[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model SOSForm {
+  id             String   @id @default(uuid())
+  merchandiser   User     @relation(fields: [merchandiserId], references: [id])
+  merchandiserId String
+  outlet         Outlet
+  wine           Int
+  beer           Int
+  juice          Int
+  createdAt      DateTime @default(now())
+
+  @@index([outlet, createdAt])
+}
