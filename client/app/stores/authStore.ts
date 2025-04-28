@@ -1,0 +1,238 @@
+import { create } from "zustand";
+
+
+interface FormStore {
+  loading: boolean;
+  submitted: boolean;
+  setLoading: (loading: boolean) => void;
+  setSubmitted: (submitted: boolean) => void;
+  resetForm: () => void;
+}
+
+
+interface PasswordVisibilityStore {
+    showPassword: boolean;
+    toggleShowPassword: () => void;
+    showConfirmPassword: boolean;
+    toggleShowConfirmPassword: () => void;
+    showCurrent: boolean;
+    toggleShowCurrent: () => void;
+    showNew: boolean;
+    toggleShowNew: () => void;
+  }
+
+
+interface LoginStore extends FormStore, PasswordVisibilityStore {
+  email: string;
+  password: string;
+  setEmail: (email: string) => void;
+  setPassword: (password: string) => void;
+}
+
+interface ForgotPasswordStore extends FormStore {
+  email: string;
+  setEmail: (email: string) => void;
+}
+
+interface RegisterStore extends FormStore, PasswordVisibilityStore {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  setField: (field: string, value: string) => void;
+}
+
+interface PasswordState extends PasswordVisibilityStore {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+    showConfirm: boolean; 
+    toggleShowConfirm: () => void; 
+    setCurrentPassword: (password: string) => void;
+    setNewPassword: (password: string) => void;
+    setConfirmPassword: (password: string) => void;
+    resetPasswordForm: () => void;
+  }
+  
+interface AuthStore {
+  login: LoginStore;
+  forgotPassword: ForgotPasswordStore;
+  register: RegisterStore;
+  changePassword: PasswordState;
+}
+
+
+export const useAuthStore = create<AuthStore>((set) => ({
+  
+  login: {
+    email: "",
+    password: "",
+    loading: false,
+    submitted: false,
+    showPassword: false,
+    showConfirmPassword: false,
+    showCurrent: false, 
+    showNew: false, 
+    setEmail: (email) => set((state) => ({ login: { ...state.login, email } })),
+    setPassword: (password) => set((state) => ({ login: { ...state.login, password } })),
+    setLoading: (loading) => set((state) => ({ login: { ...state.login, loading } })),
+    setSubmitted: (submitted) => set((state) => ({ login: { ...state.login, submitted } })),
+    toggleShowPassword: () =>
+      set((state) => ({ login: { ...state.login, showPassword: !state.login.showPassword } })),
+    toggleShowConfirmPassword: () =>
+      set((state) => ({ login: { ...state.login, showConfirmPassword: !state.login.showConfirmPassword } })),
+    toggleShowCurrent: () =>
+      set((state) => ({ login: { ...state.login, showCurrent: !state.login.showCurrent } })), 
+    toggleShowNew: () =>
+      set((state) => ({ login: { ...state.login, showNew: !state.login.showNew } })), 
+    resetForm: () =>
+      set((state) => ({
+        login: {
+          ...state.login,
+          email: "",
+          password: "",
+          loading: false,
+          submitted: false,
+          showPassword: false,
+          showConfirmPassword: false,
+          showCurrent: false, 
+          showNew: false, 
+        },
+      })),
+  },
+  
+  forgotPassword: {
+    email: "",
+    loading: false,
+    submitted: false, 
+    setEmail: (email) => set((state) => ({ forgotPassword: { ...state.forgotPassword, email } })),
+    setLoading: (loading) => set((state) => ({ forgotPassword: { ...state.forgotPassword, loading } })),
+    setSubmitted: (submitted) => set((state) => ({ forgotPassword: { ...state.forgotPassword, submitted } })),
+    resetForm: () => set((state) => ({ forgotPassword: { ...state.forgotPassword, email: "", loading: false, submitted: false } })),
+  },
+
+  register: {
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    loading: false,
+    submitted: false,
+    showPassword: false,
+    showConfirmPassword: false,
+    showCurrent: false, 
+    showNew: false, 
+    setField: (field, value) =>
+      set((state) => ({ register: { ...state.register, [field]: value } })),
+    setLoading: (loading) => set((state) => ({ register: { ...state.register, loading } })),
+    setSubmitted: (submitted) => set((state) => ({ register: { ...state.register, submitted } })),
+    toggleShowPassword: () =>
+      set((state) => ({ register: { ...state.register, showPassword: !state.register.showPassword } })),
+    toggleShowConfirmPassword: () =>
+      set((state) => ({ register: { ...state.register, showConfirmPassword: !state.register.showConfirmPassword } })),
+    toggleShowCurrent: () =>
+      set((state) => ({ register: { ...state.register, showCurrent: !state.register.showCurrent } })), 
+    toggleShowNew: () =>
+      set((state) => ({ register: { ...state.register, showNew: !state.register.showNew } })), 
+    resetForm: () =>
+      set((state) => ({
+        register: {
+          ...state.register,
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          loading: false,
+          submitted: false,
+          showPassword: false,
+          showConfirmPassword: false,
+          showCurrent: false, 
+          showNew: false, 
+        },
+      })),
+  },
+
+  changePassword: {
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    showCurrent: false,
+    showNew: false,
+    showConfirm: false,
+    showPassword: false, 
+    toggleShowPassword: () =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          showPassword: !state.changePassword.showPassword,
+        },
+      })),
+    showConfirmPassword: false,
+    toggleShowConfirmPassword: () =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          showConfirmPassword: !state.changePassword.showConfirmPassword,
+        },
+      })),
+    toggleShowCurrent: () =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          showCurrent: !state.changePassword.showCurrent,
+        },
+      })),
+    toggleShowNew: () =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          showNew: !state.changePassword.showNew,
+        },
+      })),
+    toggleShowConfirm: () =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          showConfirm: !state.changePassword.showConfirm,
+        },
+      })),
+    setCurrentPassword: (password) =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          currentPassword: password,
+        },
+      })),
+    setNewPassword: (password) =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          newPassword: password,
+        },
+      })),
+    setConfirmPassword: (password) =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          confirmPassword: password,
+        },
+      })),
+    resetPasswordForm: () =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+          showCurrent: false,
+          showNew: false,
+          showConfirm: false,
+          showPassword: false, 
+          showConfirmPassword: false, 
+        },
+      })),
+  },
+}));
