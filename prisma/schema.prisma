@@ -21,9 +21,10 @@ enum Outlet {
 
 model User {
   id            String   @id @default(uuid())
-  name          String?
   email         String   @unique
-  passwordHash  String
+  password      String
+  firstName     String
+  lastName      String
   role          Role
   sosForms      SOSForm[]
   createdAt     DateTime @default(now())

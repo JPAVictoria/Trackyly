@@ -2,7 +2,6 @@
 
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { SmoothCursor } from "@/components/ui/smooth-cursor";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -18,9 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased min-h-screen`}>
-        {children}
-              <SmoothCursor />
-  
+        {children}  
       </body>
     </html>
   );
