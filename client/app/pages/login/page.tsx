@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { useAuthStore } from "@/app/stores/authStore";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 
 export default function Login() {
   const { showPassword, toggleShowPassword } = useAuthStore((state) => state.login);
