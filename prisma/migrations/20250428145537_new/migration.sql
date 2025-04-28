@@ -2,15 +2,16 @@
 CREATE TYPE "Role" AS ENUM ('MERCHANDISER', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "Outlet" AS ENUM ('WALMART', 'TARGET', 'COSTCO');
+CREATE TYPE "Outlet" AS ENUM ('PARANAQUE_CITY', 'MUNTINLUPA_CITY', 'QUEZON_CITY');
 
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
-    "name" TEXT,
     "email" TEXT NOT NULL,
-    "passwordHash" TEXT NOT NULL,
-    "role" "Role" NOT NULL,
+    "password" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'MERCHANDISER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

@@ -1,65 +1,101 @@
 "use client";
-
-import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { useSnackbar } from "@/app/context/SnackbarContext";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
+import { useLoading } from "@/app/context/loaderContext";
 
 export default function Register() {
+  const router = useRouter();
+  const { openSnackbar } = useSnackbar();
+  const { setLoading: setGlobalLoading } = useLoading(); 
+
   const {
+    firstName,
+    lastName,
+    email,
+    password,
+    confirmPassword,
+    loading,
+    submitted,
     showPassword,
-    toggleShowPassword,
     showConfirmPassword,
+    setField,
+    setLoading,
+    setSubmitted,
+    toggleShowPassword,
     toggleShowConfirmPassword,
+    resetForm,
   } = useAuthStore((state) => state.register);
 
-  const firstName = "";
-  const lastName = "";
-  const email = "";
-  const password = "";
-  const confirmPassword = "";
+  const isDisabled = loading || submitted;
 
-  const fields = [
-    { id: "firstName", label: "First Name", value: firstName, type: "text" },
-    { id: "lastName", label: "Last Name", value: lastName, type: "text" },
-    { id: "email", label: "Email", value: email, type: "email" },
-    {
-      id: "password",
-      label: "Password",
-      value: password,
-      type: showPassword ? "text" : "password",
-      isPassword: true,
-      toggle: toggleShowPassword,
-      show: showPassword,
-    },
-    {
-      id: "confirmPassword",
-      label: "Confirm Password",
-      value: confirmPassword,
-      type: showConfirmPassword ? "text" : "password",
-      isPassword: true,
-      toggle: toggleShowConfirmPassword,
-      show: showConfirmPassword,
-    },
-  ];
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setField(e.target.id, e.target.value);
+  };
+
+  const handleSubmit = async () => {
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+      openSnackbar("Please fill in all fields", "error");
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      openSnackbar("Please enter a valid email address", "error");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      openSnackbar("Passwords do not match", "error");
+      return;
+    }
+
+    if (password.length < 8) {
+      openSnackbar("Password must be at least 8 characters long", "error");
+      return;
+    }
+
+    setLoading(true);
+    setGlobalLoading(true);
+
+    try {
+      const res = await axios.post("http://localhost:5000/user/register/register", {
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword,
+      });
+
+      if (res.status === 201) {
+        openSnackbar("Registration successful!", "success");
+        setSubmitted(true);
+
+        setTimeout(() => {
+          router.push("/pages/login");
+          resetForm();
+        }, 2000);
+      } else {
+        openSnackbar(res.data.message || "Something went wrong", "error");
+      }
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message: string } } };
+      const errorMessage = error?.response?.data?.message || "Something went wrong";
+      openSnackbar(errorMessage, "error");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setGlobalLoading(false), 2500); 
+    }
+  };
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
-      <AnimatedGridPattern
-        numSquares={30}
-        maxOpacity={0.3}
-        duration={5}
-        repeatDelay={1}
-        className={cn(
-          "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
-          "absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
-        )}
-      />
-
       <h1 className="text-[18px] mb-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
         Trackyly
       </h1>
@@ -70,7 +106,29 @@ export default function Register() {
         </h1>
 
         <form className="pt-5 space-y-5">
-          {fields.map((field) => (
+          {[ 
+            { id: "firstName", label: "First Name", value: firstName, type: "text" },
+            { id: "lastName", label: "Last Name", value: lastName, type: "text" },
+            { id: "email", label: "Email", value: email, type: "email" },
+            {
+              id: "password",
+              label: "Password",
+              value: password,
+              type: showPassword ? "text" : "password",
+              isPassword: true,
+              toggle: toggleShowPassword,
+              show: showPassword,
+            },
+            {
+              id: "confirmPassword",
+              label: "Confirm Password",
+              value: confirmPassword,
+              type: showConfirmPassword ? "text" : "password",
+              isPassword: true,
+              toggle: toggleShowConfirmPassword,
+              show: showConfirmPassword,
+            },
+          ].map((field) => (
             <div key={field.id} className="relative">
               <Label htmlFor={field.id} className="pb-2 text-[#2d2d2d]">
                 {field.label}
@@ -78,7 +136,10 @@ export default function Register() {
               <Input
                 type={field.type}
                 id={field.id}
-                placeholder={field.label}
+                value={field.value}
+                onChange={handleChange}
+                disabled={isDisabled}
+                placeholder={field.id === "email" ? "email@example.com" : "********"}
                 className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
               />
               {field.isPassword && (
@@ -93,19 +154,22 @@ export default function Register() {
           ))}
 
           <Button
-            type="submit"
-            className="w-full text-white py-5 px-4 rounded-md transition duration-200 bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
+            type="button"
+            onClick={handleSubmit}
+            disabled={isDisabled}
+            className={`w-full text-white py-5 px-4 rounded-md transition duration-200 ${
+              isDisabled ? "bg-[#A5D6A7] cursor-not-allowed" : "bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
+            }`}
           >
-            Register
+            {loading ? "Registering..." : submitted ? "Registered" : "Register"}
           </Button>
 
           <div className="pt-8">
-            <p className="font-light text-sm text-[#2d2d2d]">
-              Already have an account?
-            </p>
-            <Link href="/pages/login">
+            <p className="font-light text-sm text-[#2d2d2d]">Already have an account?</p>
+            <Link href="/login">
               <Button
                 variant="link"
+                disabled={isDisabled}
                 className="cursor-pointer pt-3 text-[#2d2d2d]"
               >
                 Back to Login

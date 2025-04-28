@@ -153,9 +153,9 @@ exports.Role = exports.$Enums.Role = {
 };
 
 exports.Outlet = exports.$Enums.Outlet = {
-  WALMART: 'WALMART',
-  TARGET: 'TARGET',
-  COSTCO: 'COSTCO'
+  PARANAQUE_CITY: 'PARANAQUE_CITY',
+  MUNTINLUPA_CITY: 'MUNTINLUPA_CITY',
+  QUEZON_CITY: 'QUEZON_CITY'
 };
 
 exports.Prisma.ModelName = {

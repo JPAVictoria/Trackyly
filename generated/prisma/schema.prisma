@@ -14,9 +14,9 @@ enum Role {
 }
 
 enum Outlet {
-  WALMART
-  TARGET
-  COSTCO
+  PARANAQUE_CITY
+  MUNTINLUPA_CITY
+  QUEZON_CITY
 }
 
 model User {
@@ -25,7 +25,7 @@ model User {
   password  String
   firstName String
   lastName  String
-  role      Role
+  role      Role      @default(MERCHANDISER)
   sosForms  SOSForm[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

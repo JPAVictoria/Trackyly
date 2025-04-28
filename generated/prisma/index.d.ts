@@ -37,9 +37,9 @@ export type Role = (typeof Role)[keyof typeof Role]
 
 
 export const Outlet: {
-  WALMART: 'WALMART',
-  TARGET: 'TARGET',
-  COSTCO: 'COSTCO'
+  PARANAQUE_CITY: 'PARANAQUE_CITY',
+  MUNTINLUPA_CITY: 'MUNTINLUPA_CITY',
+  QUEZON_CITY: 'QUEZON_CITY'
 };
 
 export type Outlet = (typeof Outlet)[keyof typeof Outlet]
@@ -3547,7 +3547,7 @@ export namespace Prisma {
     password: string
     firstName: string
     lastName: string
-    role: $Enums.Role
+    role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
     sosForms?: SOSFormCreateNestedManyWithoutMerchandiserInput
@@ -3559,7 +3559,7 @@ export namespace Prisma {
     password: string
     firstName: string
     lastName: string
-    role: $Enums.Role
+    role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
     sosForms?: SOSFormUncheckedCreateNestedManyWithoutMerchandiserInput
@@ -3595,7 +3595,7 @@ export namespace Prisma {
     password: string
     firstName: string
     lastName: string
-    role: $Enums.Role
+    role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -4171,7 +4171,7 @@ export namespace Prisma {
     password: string
     firstName: string
     lastName: string
-    role: $Enums.Role
+    role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -4182,7 +4182,7 @@ export namespace Prisma {
     password: string
     firstName: string
     lastName: string
-    role: $Enums.Role
+    role?: $Enums.Role
     createdAt?: Date | string
     updatedAt?: Date | string
   }
