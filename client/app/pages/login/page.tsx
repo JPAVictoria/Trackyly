@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/app/stores/authStore";
 
-export default function Home() {
+export default function Login() {
   const { showPassword, toggleShowPassword } = useAuthStore((state) => state.login);
 
   return (
@@ -64,7 +64,7 @@ export default function Home() {
             </div>
 
             <div className="flex justify-end pt-1">
-              <Link href="/viewer/forgot-password">
+              <Link href="/pages/forgot-password">
                 <Button
                   variant="link"
                   className="text-[#2d2d2d] text-xs p-0 h-auto cursor-pointer font-medium"
@@ -86,9 +86,9 @@ export default function Home() {
 
           <div className="pt-8">
             <p className="font-light text-sm text-[#2d2d2d]">
-              Don't have an account yet?
+              Don&apos;t have an account yet?
             </p>
-            <Link href="/auth/register">
+            <Link href="/pages/register">
               <Button
                 variant="link"
                 className="cursor-pointer pt-3 text-[#2d2d2d]"
