@@ -2,7 +2,7 @@
 
 import { Button } from "@mui/material";
 
-export default function StatsOverviewCard() {
+export default function StatsOverViewBlock() {
   const buttonStyles = {
     backgroundColor: "#fff",
     color: "#000",

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { Button } from "@mui/material";
 
-export default function Analytics() {
+export default function AnalyticsBlock() {
   const [selectedFilter, setSelectedFilter] = useState("Custom");
 
   const pieChartData = [
@@ -46,8 +46,12 @@ export default function Analytics() {
               onClick={() => setSelectedFilter(label)}
               sx={{
                 ...buttonStyles,
-                borderColor: selectedFilter === label ? "#433BFF" : buttonStyles.borderColor,
-                color: selectedFilter === label ? "#433BFF" : buttonStyles.color,
+                borderColor:
+                  selectedFilter === label
+                    ? "#433BFF"
+                    : buttonStyles.borderColor,
+                color:
+                  selectedFilter === label ? "#433BFF" : buttonStyles.color,
               }}
             >
               {label}
@@ -57,12 +61,18 @@ export default function Analytics() {
 
         <div className="flex-1 flex justify-center items-center">
           <PieChart
-            series={[{
-              data: pieChartData,
-              highlightScope: { fade: "global", highlight: "item" },
-              faded: { innerRadius: 30, additionalRadius: -30, color: "gray" },
-              valueFormatter,
-            }]}
+            series={[
+              {
+                data: pieChartData,
+                highlightScope: { fade: "global", highlight: "item" },
+                faded: {
+                  innerRadius: 30,
+                  additionalRadius: -30,
+                  color: "gray",
+                },
+                valueFormatter,
+              },
+            ]}
             height={250}
           />
         </div>
