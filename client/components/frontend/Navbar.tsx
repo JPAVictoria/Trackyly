@@ -32,20 +32,20 @@ export default function Navbar() {
     },
     {
       icon: <LayoutDashboard size={18} />,
-      label: "Dashboard",
-      onClick: () => router.push("/pages/collection"),
+      label: "Forms",
+      onClick: () => router.push("/pages/forms"),
       yOffset: -150,
     },
     {
       icon: <BarChart size={18} />,
-      label: "Analytics",
-      onClick: () => router.push("/pages/dashboard"),
+      label: "Dashboard",
+      onClick: () => router.push("/pages/adminDashboard"),
       yOffset: -200,
     },
   ];
 
   return (
-    <div>
+    <div className="absolute bottom-15 right-20 z-50">
       <div className="relative w-14 h-14">
         {iconButtons.map((button, index) => {
           return (

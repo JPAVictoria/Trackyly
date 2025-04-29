@@ -23,8 +23,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Floating Navbar */}
-      <div className="absolute bottom-15 right-20 z-50">
+
+      <div>
         <Navbar />
       </div>
     </div>
