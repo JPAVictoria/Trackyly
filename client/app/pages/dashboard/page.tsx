@@ -3,10 +3,11 @@
 import NameBlock from "@/components/frontend/NameBlock";
 import AnalyticsBlock from "@/components/frontend/AnalyticsBlock";
 import StatsOverViewBlock from "@/components/frontend/StatsOverViewBlock";
+import Navbar from "@/components/frontend/Navbar";  // Importing Navbar
 
 export default function Dashboard() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 relative">
       <div className="flex flex-col items-center -mt-20">
         <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-20">
           Share of Shelf Dashboard
@@ -20,6 +21,11 @@ export default function Dashboard() {
             <StatsOverViewBlock />
           </div>
         </div>
+      </div>
+
+      {/* Floating Navbar */}
+      <div className="absolute bottom-15 right-20 z-50">
+        <Navbar />
       </div>
     </div>
   );
