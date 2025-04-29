@@ -23,25 +23,25 @@ export default function Navbar() {
       onClick: () => {
         console.log("Logging out...");
       },
-      yOffset: -50, 
+      yOffset: -50,
     },
     {
       icon: <Shield size={18} />,
       label: "RBAC",
       onClick: () => router.push("/rbac"),
-      yOffset: -100, 
+      yOffset: -100,
     },
     {
       icon: <LayoutDashboard size={18} />,
       label: "Dashboard",
       onClick: () => router.push("/dashboard"),
-      yOffset: -150, 
+      yOffset: -150,
     },
     {
       icon: <BarChart size={18} />,
       label: "Analytics",
       onClick: () => router.push("/analytics"),
-      yOffset: -200, 
+      yOffset: -200,
     },
   ];
 
@@ -59,7 +59,10 @@ export default function Navbar() {
                 opacity: isOpen ? 1 : 0,
               }}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              className="absolute w-10 h-10 rounded-full bg-[#2F27CE] text-white flex items-center justify-center shadow-lg cursor-pointer"
+              className={clsx(
+                "absolute w-10 h-10 rounded-full bg-[#2F27CE] text-white flex items-center justify-center shadow-lg cursor-pointer",
+                "hover:bg-[#1A1A99]" // Hover effects
+              )}
               onClick={button.onClick}
               aria-label={button.label}
             >
@@ -73,7 +76,8 @@ export default function Navbar() {
           aria-label="Menu"
           className={clsx(
             "absolute w-10 h-10 rounded-full bg-[#2F27CE] text-white flex items-center justify-center shadow-lg transition-transform duration-300 cursor-pointer",
-            { "rotate-45": isOpen }
+            { "rotate-45": isOpen },
+            "hover:bg-[#1A1A99] hover:scale-110 hover:shadow-xl" // Hover effects for the menu button
           )}
         >
           <Menu size={20} />
