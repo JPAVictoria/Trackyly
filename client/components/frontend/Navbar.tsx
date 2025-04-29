@@ -21,27 +21,25 @@ export default function Navbar() {
     {
       icon: <LogOut size={18} />,
       label: "Logout",
-      onClick: () => {
-        console.log("Logging out...");
-      },
+      onClick: ()=> router.push("/pages/login"),
       yOffset: -50,
     },
     {
       icon: <Shield size={18} />,
       label: "RBAC",
-      onClick: () => router.push("/rbac"),
+      onClick: () => router.push("/pages/roles"),
       yOffset: -100,
     },
     {
       icon: <LayoutDashboard size={18} />,
       label: "Dashboard",
-      onClick: () => router.push("/dashboard"),
+      onClick: () => router.push("/pages/collection"),
       yOffset: -150,
     },
     {
       icon: <BarChart size={18} />,
       label: "Analytics",
-      onClick: () => router.push("/analytics"),
+      onClick: () => router.push("/pages/dashboard"),
       yOffset: -200,
     },
   ];
