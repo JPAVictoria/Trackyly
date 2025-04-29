@@ -31,7 +31,7 @@ export default function Analytics() {
   };
 
   return (
-    <div className="bg-white shadow-md rounded-xl p-6 md:col-span-2">
+    <div className="bg-white shadow-md rounded-sm p-6 max-w-md w-full">
       <div className="flex flex-col">
         <h2 className="text-lg font-bold text-[#433BFF] text-center mb-6">
           Product Distribution
@@ -57,14 +57,12 @@ export default function Analytics() {
 
         <div className="flex-1 flex justify-center items-center">
           <PieChart
-            series={[
-              {
-                data: pieChartData,
-                highlightScope: { fade: "global", highlight: "item" },
-                faded: { innerRadius: 30, additionalRadius: -30, color: "gray" },
-                valueFormatter,
-              },
-            ]}
+            series={[{
+              data: pieChartData,
+              highlightScope: { fade: "global", highlight: "item" },
+              faded: { innerRadius: 30, additionalRadius: -30, color: "gray" },
+              valueFormatter,
+            }]}
             height={250}
           />
         </div>

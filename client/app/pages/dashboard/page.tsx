@@ -6,13 +6,19 @@ import StatsOverViewBlock from "@/components/frontend/StatsOverViewBlock";
 
 export default function Dashboard() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl">
-        <AnalyticsBlock />
-
-        <div className="flex flex-col gap-6">
-          <NameBlock />
-          <StatsOverViewBlock />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="flex flex-col items-center -mt-20">
+        <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-20">
+          Share of Shelf Dashboard
+        </h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 max-w-4xl w-full">
+          <div className="md:col-span-2 flex justify-center">
+            <AnalyticsBlock />
+          </div>
+          <div className="flex flex-col gap-4">
+            <NameBlock />
+            <StatsOverViewBlock />
+          </div>
         </div>
       </div>
     </div>
