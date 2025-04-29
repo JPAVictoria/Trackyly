@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
+import Tooltip from "@mui/material/Tooltip"; 
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,38 +51,46 @@ export default function Navbar() {
       <div className="relative w-14 h-14">
         {iconButtons.map((button, index) => {
           return (
-            <motion.button
+            <Tooltip
               key={index}
-              initial={{ x: 0, y: 0, opacity: 0 }}
-              animate={{
-                x: 0, // Fixed x for vertical alignment
-                y: isOpen ? button.yOffset : 0, // Adjust yOffset for vertical distance
-                opacity: isOpen ? 1 : 0,
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              className={clsx(
-                "absolute w-10 h-10 rounded-full bg-[#2F27CE] text-white flex items-center justify-center shadow-lg cursor-pointer",
-                "hover:bg-[#1A1A99]" // Hover effects
-              )}
-              onClick={button.onClick}
-              aria-label={button.label}
+              title={button.label} 
+              placement="left" 
+              arrow 
             >
-              {button.icon}
-            </motion.button>
+              <motion.button
+                initial={{ x: 0, y: 0, opacity: 0 }}
+                animate={{
+                  x: 0,
+                  y: isOpen ? button.yOffset : 0,
+                  opacity: isOpen ? 1 : 0,
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className={clsx(
+                  "absolute w-10 h-10 rounded-full bg-[#2F27CE] text-white flex items-center justify-center shadow-lg cursor-pointer",
+                  "hover:bg-[#1A1A99]"
+                )}
+                onClick={button.onClick}
+                aria-label={button.label}
+              >
+                {button.icon}
+              </motion.button>
+            </Tooltip>
           );
         })}
 
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Menu"
-          className={clsx(
-            "absolute w-10 h-10 rounded-full bg-[#2F27CE] text-white flex items-center justify-center shadow-lg transition-transform duration-300 cursor-pointer",
-            { "rotate-45": isOpen },
-            "hover:bg-[#1A1A99] hover:scale-110 hover:shadow-xl" // Hover effects for the menu button
-          )}
-        >
-          <Menu size={20} />
-        </button>
+        <Tooltip title="Menu" placement="left" arrow> 
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Menu"
+            className={clsx(
+              "absolute w-10 h-10 rounded-full bg-[#2F27CE] text-white flex items-center justify-center shadow-lg transition-transform duration-300 cursor-pointer",
+              { "rotate-45": isOpen },
+              "hover:bg-[#1A1A99] hover:scale-110 hover:shadow-xl"
+            )}
+          >
+            <Menu size={20} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );
