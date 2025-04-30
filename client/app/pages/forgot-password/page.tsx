@@ -1,13 +1,57 @@
 "use client";
 
+import { useSnackbar } from "@/app/context/SnackbarContext";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import axios from "axios";
 
 export default function ForgotPassword() {
+  const { openSnackbar } = useSnackbar();
+  const { email, loading, setEmail, setLoading } = useAuthStore((state) => state.forgotPassword);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email) {
+      openSnackbar("Please enter an email address", "error");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await axios.post("http://localhost:5000/user/forgot/forgot", { email });
+
+      if (res.status === 200 || res.status === 201) {
+        openSnackbar(res.data.message, "success");
+      } else {
+        openSnackbar(res.data.message || "Something went wrong", "error");
+      }
+    } catch (error) {
+      console.error(error);
+
+      let message = "Something went wrong. Please try again.";
+
+      if (axios.isAxiosError(error)) {
+        message =
+          error.response?.data?.message ||
+          error.message ||
+          "Server responded with an unknown error.";
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+
+      openSnackbar(message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
       <AnimatedGridPattern
@@ -30,7 +74,7 @@ export default function ForgotPassword() {
           Forgot your password?
         </h1>
 
-        <form className="pt-5">
+        <form onSubmit={handleSubmit} className="pt-5">
           <div>
             <Label htmlFor="email" className="pb-2 text-[#2d2d2d]">
               Email
@@ -39,6 +83,8 @@ export default function ForgotPassword() {
               type="email"
               id="email"
               placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
             />
           </div>
@@ -46,9 +92,10 @@ export default function ForgotPassword() {
           <div className="pt-5">
             <Button
               type="submit"
+              disabled={loading}
               className="w-full text-white py-5 px-4 rounded-md transition duration-200 bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
             >
-              Submit
+              {loading ? "Sending..." : "Submit"}
             </Button>
           </div>
         </form>

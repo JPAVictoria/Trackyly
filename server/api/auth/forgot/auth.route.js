@@ -15,7 +15,6 @@ router.post("/forgot", async (req, res) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(404).json({ message: "No account found with that email" });
 
-    // Generate a token for password reset
     const token = jwt.sign(
       { email: user.email },
       process.env.JWT_SECRET,
