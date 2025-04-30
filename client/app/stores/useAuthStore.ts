@@ -11,15 +11,14 @@ interface FormStore {
 
 
 interface PasswordVisibilityStore {
-    showPassword: boolean;
-    toggleShowPassword: () => void;
-    showConfirmPassword: boolean;
-    toggleShowConfirmPassword: () => void;
-    showCurrent: boolean;
-    toggleShowCurrent: () => void;
-    showNew: boolean;
-    toggleShowNew: () => void;
-  }
+  showPassword: boolean;
+  toggleShowPassword: () => void;
+  showConfirmPassword: boolean;
+  toggleShowConfirmPassword: () => void;
+  showNew: boolean;
+  toggleShowNew: () => void;
+}
+
 
 
 interface LoginStore extends FormStore, PasswordVisibilityStore {
@@ -43,17 +42,16 @@ interface RegisterStore extends FormStore, PasswordVisibilityStore {
   setField: (field: string, value: string) => void;
 }
 
-interface PasswordState extends PasswordVisibilityStore {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-    showConfirm: boolean; 
-    toggleShowConfirm: () => void; 
-    setCurrentPassword: (password: string) => void;
-    setNewPassword: (password: string) => void;
-    setConfirmPassword: (password: string) => void;
-    resetPasswordForm: () => void;
-  }
+interface PasswordState extends FormStore, PasswordVisibilityStore {
+  newPassword: string;
+  confirmPassword: string;
+  showConfirm: boolean; 
+  toggleShowConfirm: () => void; 
+  setNewPassword: (password: string) => void;
+  setConfirmPassword: (password: string) => void;
+  resetPasswordForm: () => void;
+}
+
   
 interface AuthStore {
   login: LoginStore;
@@ -82,8 +80,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set((state) => ({ login: { ...state.login, showPassword: !state.login.showPassword } })),
     toggleShowConfirmPassword: () =>
       set((state) => ({ login: { ...state.login, showConfirmPassword: !state.login.showConfirmPassword } })),
-    toggleShowCurrent: () =>
-      set((state) => ({ login: { ...state.login, showCurrent: !state.login.showCurrent } })), 
     toggleShowNew: () =>
       set((state) => ({ login: { ...state.login, showNew: !state.login.showNew } })), 
     resetForm: () =>
@@ -132,8 +128,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set((state) => ({ register: { ...state.register, showPassword: !state.register.showPassword } })),
     toggleShowConfirmPassword: () =>
       set((state) => ({ register: { ...state.register, showConfirmPassword: !state.register.showConfirmPassword } })),
-    toggleShowCurrent: () =>
-      set((state) => ({ register: { ...state.register, showCurrent: !state.register.showCurrent } })), 
     toggleShowNew: () =>
       set((state) => ({ register: { ...state.register, showNew: !state.register.showNew } })), 
     resetForm: () =>
@@ -156,13 +150,15 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   changePassword: {
-    currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-    showCurrent: false,
     showNew: false,
     showConfirm: false,
-    showPassword: false, 
+    showConfirmPassword: false,
+    showPassword: false,
+    loading: false,
+    submitted: false,
+  
     toggleShowPassword: () =>
       set((state) => ({
         changePassword: {
@@ -170,19 +166,11 @@ export const useAuthStore = create<AuthStore>((set) => ({
           showPassword: !state.changePassword.showPassword,
         },
       })),
-    showConfirmPassword: false,
     toggleShowConfirmPassword: () =>
       set((state) => ({
         changePassword: {
           ...state.changePassword,
           showConfirmPassword: !state.changePassword.showConfirmPassword,
-        },
-      })),
-    toggleShowCurrent: () =>
-      set((state) => ({
-        changePassword: {
-          ...state.changePassword,
-          showCurrent: !state.changePassword.showCurrent,
         },
       })),
     toggleShowNew: () =>
@@ -197,13 +185,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
         changePassword: {
           ...state.changePassword,
           showConfirm: !state.changePassword.showConfirm,
-        },
-      })),
-    setCurrentPassword: (password) =>
-      set((state) => ({
-        changePassword: {
-          ...state.changePassword,
-          currentPassword: password,
         },
       })),
     setNewPassword: (password) =>
@@ -224,15 +205,34 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set((state) => ({
         changePassword: {
           ...state.changePassword,
-          currentPassword: "",
           newPassword: "",
           confirmPassword: "",
-          showCurrent: false,
           showNew: false,
           showConfirm: false,
-          showPassword: false, 
-          showConfirmPassword: false, 
+          loading: false,
+          submitted: false,
         },
       })),
-  },
+    setLoading: (loading) =>
+      set((state) => ({
+        changePassword: { ...state.changePassword, loading },
+      })),
+    setSubmitted: (submitted) =>
+      set((state) => ({
+        changePassword: { ...state.changePassword, submitted },
+      })),
+    resetForm: () =>
+      set((state) => ({
+        changePassword: {
+          ...state.changePassword,
+          newPassword: "",
+          confirmPassword: "",
+          showNew: false,
+          showConfirm: false,
+          loading: false,
+          submitted: false,
+        },
+      })),
+  }
+  
 }));

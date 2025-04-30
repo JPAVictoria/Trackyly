@@ -9,6 +9,8 @@ import { useSnackbar } from "@/app/context/SnackbarContext";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useLoading } from "@/app/context/loaderContext";
+import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
+import { cn } from "@/lib/utils";
 
 export default function Register() {
   const router = useRouter();
@@ -95,7 +97,18 @@ export default function Register() {
   };
 
   return (
+    
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
+          <AnimatedGridPattern
+      numSquares={30}
+      maxOpacity={0.3}
+      duration={5}
+      repeatDelay={1}
+      className={cn(
+        "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
+        "absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
+      )}
+    />
       <h1 className="text-[18px] mb-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
         Trackyly
       </h1>

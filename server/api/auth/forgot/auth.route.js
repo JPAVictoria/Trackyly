@@ -21,7 +21,7 @@ router.post("/forgot", async (req, res) => {
       { expiresIn: "15m" }
     );
 
-    const resetUrl = `http://localhost:3000/user/change-password?token=${token}`; 
+    const resetUrl = `http://localhost:3000/pages/reset-password?token=${token}`; 
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -32,7 +32,7 @@ router.post("/forgot", async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: `"Foodopedia Bot" <${process.env.EMAIL_USER}>`,
+      from: `"Trackyly Bot" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Password Reset",
       html: `<p>You requested a password reset</p>
