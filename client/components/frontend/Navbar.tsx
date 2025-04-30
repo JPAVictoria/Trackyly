@@ -1,20 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  Menu,
-  LogOut,
-  Shield,
-  LayoutDashboard,
-  BarChart,
-} from "lucide-react";
+import { Menu, LogOut, Shield, LayoutDashboard, BarChart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
-import Tooltip from "@mui/material/Tooltip"; 
-import { useSnackbar } from "@/app/context/SnackbarContext"; 
-import { useLoading } from "@/app/context/loaderContext"; 
-import Cookies from "js-cookie"; 
+import Tooltip from "@mui/material/Tooltip";
+import { useSnackbar } from "@/app/context/SnackbarContext";
+import { useLoading } from "@/app/context/loaderContext";
+import Cookies from "js-cookie";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,12 +16,22 @@ export default function Navbar() {
   const { setLoading } = useLoading();
   const router = useRouter();
 
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setUserRole(parsedUser.role); 
+    }
+  }, []);
+
   const iconButtons = [
     {
       icon: <LogOut size={18} />,
       label: "Logout",
       onClick: async () => await handleLogout(),
-      yOffset: -50,
+      yOffset: -50, 
     },
     {
       icon: <Shield size={18} />,
@@ -49,39 +53,53 @@ export default function Navbar() {
     },
   ];
 
-  
   const handleLogout = async () => {
-    setLoading(true); 
+    setLoading(true);
 
     try {
-      
       Cookies.remove("token");
       localStorage.removeItem("user");
 
-      
       openSnackbar("Logged out successfully!", "success");
-      
-      
+
       router.push("/pages/login");
     } catch (error) {
-      console.log(error)
+      console.log(error);
       openSnackbar("Logout failed. Please try again.", "error");
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
+
+  
+  const filteredIconButtons =
+    userRole === "ADMIN"
+      ? iconButtons 
+      : userRole === "MERCHANDISER"
+      ? iconButtons
+          .filter((button) => ["Logout", "Dashboard"].includes(button.label))
+          .map((button, index) => ({
+            ...button,
+            yOffset: index === 0 ? -50 : -100, 
+          }))
+      : [];
+
+  useEffect(() => {
+    if (userRole) {
+      if (userRole === "ADMIN") {
+        router.push("/pages/adminDashboard");
+      } else if (userRole === "MERCHANDISER") {
+        router.push("/pages/merchandiserDashboard");
+      }
+    }
+  }, [userRole, router]);
 
   return (
     <div className="absolute bottom-15 right-20 z-50">
       <div className="relative w-14 h-14">
-        {iconButtons.map((button, index) => {
+        {filteredIconButtons.map((button, index) => {
           return (
-            <Tooltip
-              key={index}
-              title={button.label} 
-              placement="left" 
-              arrow 
-            >
+            <Tooltip key={index} title={button.label} placement="left" arrow>
               <motion.button
                 initial={{ x: 0, y: 0, opacity: 0 }}
                 animate={{
@@ -103,7 +121,7 @@ export default function Navbar() {
           );
         })}
 
-        <Tooltip title="Menu" placement="left" arrow> 
+        <Tooltip title="Menu" placement="left" arrow>
           <button
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Menu"

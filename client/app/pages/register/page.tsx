@@ -166,7 +166,7 @@ export default function Register() {
 
           <div className="pt-8">
             <p className="font-light text-sm text-[#2d2d2d]">Already have an account?</p>
-            <Link href="/login">
+            <Link href="/pages/login">
               <Button
                 variant="link"
                 disabled={isDisabled}
