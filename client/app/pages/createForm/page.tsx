@@ -1,20 +1,35 @@
-'use client'
+"use client";
 
-import { Input } from '@/components/ui/input'
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import Navbar from "@/components/frontend/Navbar"
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import Navbar from "@/components/frontend/Navbar";
+import { Button } from "@mui/material";
+
+const buttonStyles = {
+  backgroundColor: "#fff",
+  color: "#000",
+  borderColor: "rgba(45, 45, 45, 0.1)",
+  textTransform: "none",
+  fontSize: "0.75rem",
+  padding: "4px 10px",
+  cursor: "pointer",
+  "&:hover": {
+    backgroundColor: "#f5f5f5",
+    borderColor: "rgba(45, 45, 45, 0.2)",
+  },
+};
 
 export default function CreateForm() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f9f9fc] px-4 py-10">
-        <Navbar/>
+      <Navbar />
       <h2 className="text-xl font-bold text-[#2F27CE] mb-10">
         Create/Update SOS Form
       </h2>
@@ -22,7 +37,10 @@ export default function CreateForm() {
       <div className="w-full max-w-xl rounded-sm border border-gray-200 shadow-sm bg-white p-8">
         <div className="space-y-6">
           <div>
-            <Label htmlFor="time-in" className="text-[#2d2d2d] mb-2 font-medium">
+            <Label
+              htmlFor="time-in"
+              className="text-[#2d2d2d] mb-2 font-medium"
+            >
               Actual Time-in
             </Label>
             <Input
@@ -46,9 +64,15 @@ export default function CreateForm() {
                 <SelectValue placeholder="Choose an outlet" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="outlet-a" className="cursor-pointer">Outlet A</SelectItem>
-                <SelectItem value="outlet-b" className="cursor-pointer">Outlet B</SelectItem>
-                <SelectItem value="outlet-c" className="cursor-pointer">Outlet C</SelectItem>
+                <SelectItem value="outlet-a" className="cursor-pointer">
+                  Outlet A
+                </SelectItem>
+                <SelectItem value="outlet-b" className="cursor-pointer">
+                  Outlet B
+                </SelectItem>
+                <SelectItem value="outlet-c" className="cursor-pointer">
+                  Outlet C
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -59,7 +83,9 @@ export default function CreateForm() {
             </p>
 
             <div className="col-span-3 flex items-center justify-center gap-4">
-              <Label className="w-32 text-[#2d2d2d] font-semibold">Total Beverages</Label>
+              <Label className="w-32 text-[#2d2d2d] font-semibold">
+                Total Beverages
+              </Label>
               <Input
                 type="number"
                 readOnly
@@ -67,9 +93,14 @@ export default function CreateForm() {
               />
             </div>
 
-            {['Wine', 'Beer', 'Juice'].map((label) => (
-              <div key={label} className="col-span-3 flex items-center justify-center gap-4">
-                <Label className="w-32 text-[#2d2d2d] font-normal">{label}</Label>
+            {["Wine", "Beer", "Juice"].map((label) => (
+              <div
+                key={label}
+                className="col-span-3 flex items-center justify-center gap-4"
+              >
+                <Label className="w-32 text-[#2d2d2d] font-normal">
+                  {label}
+                </Label>
                 <Input
                   type="number"
                   className="flex-1 max-w-sm transition-all duration-300 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30"
@@ -79,15 +110,12 @@ export default function CreateForm() {
           </div>
 
           <div className="flex justify-end pt-4">
-            <button
-              type="button"
-              className="text-[#2d2d2d] text-sm font-normal hover:underline transition cursor-pointer"
-            >
+            <Button sx={buttonStyles} variant="outlined">
               Move to confirmation →
-            </button>
+            </Button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
