@@ -12,16 +12,21 @@ import {
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import Tooltip from "@mui/material/Tooltip"; 
+import { useSnackbar } from "@/app/context/SnackbarContext"; 
+import { useLoading } from "@/app/context/loaderContext"; 
+import Cookies from "js-cookie"; 
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { openSnackbar } = useSnackbar();
+  const { setLoading } = useLoading();
   const router = useRouter();
 
   const iconButtons = [
     {
       icon: <LogOut size={18} />,
       label: "Logout",
-      onClick: ()=> router.push("/pages/login"),
+      onClick: async () => await handleLogout(),
       yOffset: -50,
     },
     {
@@ -43,6 +48,28 @@ export default function Navbar() {
       yOffset: -200,
     },
   ];
+
+  
+  const handleLogout = async () => {
+    setLoading(true); 
+
+    try {
+      
+      Cookies.remove("token");
+      localStorage.removeItem("user");
+
+      
+      openSnackbar("Logged out successfully!", "success");
+      
+      
+      router.push("/pages/login");
+    } catch (error) {
+      console.log(error)
+      openSnackbar("Logout failed. Please try again.", "error");
+    } finally {
+      setLoading(false); 
+    }
+  };
 
   return (
     <div className="absolute bottom-15 right-20 z-50">

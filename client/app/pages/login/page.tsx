@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -7,9 +8,101 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/app/stores/useAuthStore";
+import { useSnackbar } from "@/app/context/SnackbarContext";
+import { useLoading } from "@/app/context/loaderContext";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import Cookies from "js-cookie";
+
 
 export default function Login() {
-  const { showPassword, toggleShowPassword } = useAuthStore((state) => state.login);
+  const router = useRouter();
+  const { openSnackbar } = useSnackbar();
+  const { setLoading } = useLoading();
+
+  const {
+    login: {
+      email,
+      password,
+      loading,
+      submitted,
+      showPassword,
+      setEmail,
+      setPassword,
+      toggleShowPassword,
+      resetForm,
+      setSubmitted,
+      setLoading: setLoginLoading,
+    },
+  } = useAuthStore();
+
+  useEffect(() => {
+    return () => {
+      resetForm();
+    };
+  }, [resetForm]);
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      openSnackbar("Email and password are required.", "error");
+      return;
+    }
+
+    setLoading(true);
+    setLoginLoading(true);
+
+    try {
+      const response = await axios.post("http://localhost:5000/user/login/login", {
+        email,
+        password,
+      });
+
+      const { token, user } = response.data;
+
+      if (!token || !user) {
+        throw new Error("Login failed, invalid response.");
+      }
+
+      Cookies.set("token", token, { expires: 1 });
+      localStorage.setItem("user", JSON.stringify(user));
+      openSnackbar("Login successful!", "success");
+
+      setSubmitted(true);
+
+      setTimeout(() => {
+        if (user.role === "ADMIN") {
+          router.push("/pages/adminDashboard");
+        } else if (user.role === "MERCHANDISER") {
+          router.push("/pages/merchandiserDashboard");
+        } else {
+          openSnackbar("Unknown role. Contact support.", "error");
+          Cookies.remove("token");
+          localStorage.removeItem("user");
+        }
+      }, 1000);
+    } catch (error) {
+      let errorMessage = "An unexpected error occurred.";
+    
+      if (axios.isAxiosError(error)) {
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+    
+      openSnackbar(errorMessage, "error");
+    } finally {
+      setLoading(false);
+      setLoginLoading(false);
+    }
+  };
+
+  const isDisabled = loading || submitted;
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
@@ -33,7 +126,7 @@ export default function Login() {
           Welcome back
         </h1>
 
-        <form className="pt-5">
+        <form onSubmit={handleLogin} className="pt-5">
           <div>
             <Label htmlFor="email" className="pb-2 text-[#2d2d2d]">
               Email
@@ -42,6 +135,9 @@ export default function Login() {
               type="email"
               id="email"
               placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isDisabled}
               className="focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
             />
           </div>
@@ -51,9 +147,12 @@ export default function Login() {
               Password
             </Label>
             <Input
-              type={showPassword ? "text" : "password"} 
+              type={showPassword ? "text" : "password"}
               id="password"
               placeholder="********"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isDisabled}
               className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
             />
             <div
@@ -68,6 +167,7 @@ export default function Login() {
                 <Button
                   variant="link"
                   className="text-[#2d2d2d] text-xs p-0 h-auto cursor-pointer font-medium"
+                  disabled={isDisabled}
                 >
                   Forgot Password?
                 </Button>
@@ -78,9 +178,14 @@ export default function Login() {
           <div className="pt-5">
             <Button
               type="submit"
-              className="w-full text-white py-5 px-4 rounded-md transition duration-200 bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
+              disabled={isDisabled}
+              className={`w-full text-white py-5 px-4 rounded-md transition duration-200 ${
+                isDisabled
+                  ? "bg-[#A5A8F0] cursor-not-allowed"
+                  : "bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
+              }`}
             >
-              Login
+              {loading ? "Logging in..." : submitted ? "Logged in" : "Login"}
             </Button>
           </div>
 
@@ -92,6 +197,7 @@ export default function Login() {
               <Button
                 variant="link"
                 className="cursor-pointer pt-3 text-[#2d2d2d]"
+                disabled={isDisabled}
               >
                 Get Started here
               </Button>
