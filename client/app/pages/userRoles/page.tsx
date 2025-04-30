@@ -3,7 +3,7 @@
 import Navbar from "@/components/frontend/Navbar";
 import { Box } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Eye } from "lucide-react";
+import { Shield, Trash2 } from "lucide-react";
 import { Button, Stack, Typography } from "@mui/material";
 
 const ActionButtons = () => (
@@ -14,48 +14,69 @@ const ActionButtons = () => (
     alignItems="center"
     sx={{ height: "100%" }}
   >
-    <Button
-      size="medium"
-      variant="text"
-      sx={{
-        minWidth: "auto",
-        padding: "8px 16px",
-        color: "#2F27CE",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 80,
-        height: "100%",
-        opacity: 0.6,
-      }}
-    >
-      <Eye className="w-4 h-4" />
-      <Typography
-        variant="caption"
-        sx={{ fontSize: "0.7rem", marginTop: "4px" }}
-      >
-        Read
+    <Button size="medium" variant="text" sx={buttonStyle}>
+      <Shield className="w-4 h-4" />
+      <Typography variant="caption" sx={captionStyle}>
+        Role
+      </Typography>
+    </Button>
+
+    <Button size="medium" variant="text" sx={buttonStyle}>
+      <Trash2 className="w-4 h-4" />
+      <Typography variant="caption" sx={captionStyle}>
+        Delete
       </Typography>
     </Button>
   </Stack>
 );
 
+const buttonStyle = {
+  minWidth: "auto",
+  padding: "8px 16px",
+  color: "#2F27CE",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 80,
+  height: "100%",
+  opacity: 0.6,
+};
+
+const captionStyle = {
+  fontSize: "0.7rem",
+  marginTop: "4px",
+};
+
+// Dummy rows
 const rows = [
   {
     id: 1,
-    outlet: "PARANAQUE CITY",
-    createdAt: "March 20, 2025 7:50 PM",
-    wine: "20",
-    beer: "40",
-    juice: "50",
+    email: "user1@example.com",
+    role: "Admin",
+    createdAt: "April 29, 2025 10:15 AM",
+  },
+  {
+    id: 2,
+    email: "user2@example.com",
+    role: "Merchandiser",
+    createdAt: "April 28, 2025 9:00 AM",
   },
 ];
 
+// Define only 4 columns
 const columns: GridColDef[] = [
   {
-    field: "outlet",
-    headerName: "Outlet",
+    field: "email",
+    headerName: "Email",
+    flex: 1.5,
+    headerAlign: "center",
+    align: "center",
+    headerClassName: "bold-header",
+  },
+  {
+    field: "role",
+    headerName: "Role",
     flex: 1,
     headerAlign: "center",
     align: "center",
@@ -63,40 +84,16 @@ const columns: GridColDef[] = [
   },
   {
     field: "createdAt",
-    headerName: "Created Date",
+    headerName: "Created At",
     flex: 1.2,
     headerAlign: "center",
     align: "center",
     headerClassName: "bold-header",
   },
   {
-    field: "wine",
-    headerName: "Wine",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "beer",
-    headerName: "Beer",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "juice",
-    headerName: "Juice",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
     field: "actions",
-    headerName: "Action",
-    width: 150,
+    headerName: "Actions",
+    width: 200,
     sortable: false,
     filterable: false,
     disableColumnMenu: true,
@@ -107,13 +104,13 @@ const columns: GridColDef[] = [
   },
 ];
 
-export default function Forms() {
+export default function UserRoles() {
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center">
       <Navbar />
       <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-10">
-        Overall Share of Shelf Forms
-      </h1>
+         User Roles and Permissions
+        </h1>
       <div className="flex flex-col items-center justify-center p-10 w-full text-center">
         <Box
           sx={{

@@ -3,7 +3,8 @@
 import { useEffect } from "react";
 import { Button } from "@mui/material";
 import axios from "axios";
-import { useStatisticStore } from "@/app/stores/useStatisticStore"; 
+import { useStatisticStore } from "@/app/stores/useStatisticStore";
+import Link from "next/link";
 
 export default function StatsOverViewBlock() {
   const {
@@ -23,14 +24,17 @@ export default function StatsOverViewBlock() {
       setError(null);
 
       try {
-        const response = await axios.get("http://localhost:5000/user/statistics", {
-          withCredentials: true, 
-        });
+        const response = await axios.get(
+          "http://localhost:5000/user/statistics",
+          {
+            withCredentials: true,
+          }
+        );
 
         setSosCount(response.data.sosCount);
         setMerchCount(response.data.merchCount);
       } catch (error) {
-        console.log(error)
+        console.log(error);
         setError("Failed to load statistics.");
       } finally {
         setLoading(false);
@@ -77,9 +81,11 @@ export default function StatsOverViewBlock() {
         </p>
         <p className="text-lg font-bold text-gray-800 mt-4">{sosCount}</p>
         <div className="mt-4">
-          <Button sx={buttonStyles} variant="outlined">
-            View All
-          </Button>
+          <Link href="/pages/forms">
+            <Button sx={buttonStyles} variant="outlined">
+              View All
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -91,9 +97,11 @@ export default function StatsOverViewBlock() {
         </p>
         <p className="text-lg font-bold text-gray-800 mt-4">{merchCount}</p>
         <div className="mt-4">
-          <Button sx={buttonStyles} variant="outlined">
-            View All
-          </Button>
+          <Link href="/pages/userRoles">
+            <Button sx={buttonStyles} variant="outlined">
+              View All
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

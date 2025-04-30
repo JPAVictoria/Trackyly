@@ -39,7 +39,7 @@ export default function Navbar() {
         "/pages/adminDashboard",
         "/pages/merchandiserDashboard",
         "/pages/forms",
-        "/pages/roles"
+        "/pages/userRoles"
       ];
       
       if (!validPages.includes(pathname)) {
@@ -62,7 +62,7 @@ export default function Navbar() {
     {
       icon: <Shield size={18} />,
       label: "RBAC",
-      onClick: () => router.push("/pages/roles"),
+      onClick: () => router.push("/pages/userRoles"),
       yOffset: -100,
     },
     {

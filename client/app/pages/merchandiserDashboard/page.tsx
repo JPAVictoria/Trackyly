@@ -3,7 +3,7 @@
 import Navbar from "@/components/frontend/Navbar";
 import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Eye } from "lucide-react";
+import { Pencil, Eye, Trash2,} from "lucide-react";
 import { Box, Button, Stack, Typography} from "@mui/material";
 
 const rows = [
@@ -21,8 +21,7 @@ const columns: GridColDef[] = [
   {
     field: "outlet",
     headerName: "Outlet",
-    flex: 1.5,  
-    minWidth: 180,  
+    flex: 1,
     headerAlign: "center",
     align: "center",
     headerClassName: "bold-header",
@@ -30,8 +29,7 @@ const columns: GridColDef[] = [
   {
     field: "createdAt",
     headerName: "Created Date",
-    flex: 1.5,  
-    minWidth: 200,  
+    flex: 1.2,
     headerAlign: "center",
     align: "center",
     headerClassName: "bold-header",
@@ -39,8 +37,7 @@ const columns: GridColDef[] = [
   {
     field: "wine",
     headerName: "Wine",
-    flex: 0.8,  
-    minWidth: 100,
+    flex: 1,
     headerAlign: "center",
     align: "center",
     headerClassName: "bold-header",
@@ -48,8 +45,7 @@ const columns: GridColDef[] = [
   {
     field: "beer",
     headerName: "Beer",
-    flex: 0.8,  
-    minWidth: 100,
+    flex: 1,
     headerAlign: "center",
     align: "center",
     headerClassName: "bold-header",
@@ -57,8 +53,7 @@ const columns: GridColDef[] = [
   {
     field: "juice",
     headerName: "Juice",
-    flex: 0.8,  
-    minWidth: 100,
+    flex: 1,
     headerAlign: "center",
     align: "center",
     headerClassName: "bold-header",
@@ -66,7 +61,7 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Action",
-    width: 200,  
+    width: 350,
     sortable: false,
     filterable: false,
     disableColumnMenu: true,
@@ -97,12 +92,62 @@ const columns: GridColDef[] = [
             opacity: 0.6,
           }}
         >
+          <Pencil className="w-4 h-4" />
+          <Typography
+            variant="caption"
+            sx={{ fontSize: "0.7rem", marginTop: "4px" }}
+          >
+            Edit
+          </Typography>
+        </Button>
+
+        <Button
+          size="medium"
+          variant="text"
+          sx={{
+            minWidth: "auto",
+            padding: "8px 16px",
+            color: "#2F27CE",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 80,
+            height: "100%",
+            opacity: 0.6,
+          }}
+        >
           <Eye className="w-4 h-4" />
           <Typography
             variant="caption"
             sx={{ fontSize: "0.7rem", marginTop: "4px" }}
           >
             Read
+          </Typography>
+        </Button>
+
+        <Button
+          size="medium"
+          variant="text"
+          sx={{
+            minWidth: "auto",
+            padding: "8px 16px",
+            color: "#2F27CE",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 80,
+            height: "100%",
+            opacity: 0.6,
+          }}
+        >
+          <Trash2 className="w-4 h-4" />
+          <Typography
+            variant="caption"
+            sx={{ fontSize: "0.7rem", marginTop: "4px" }}
+          >
+            Delete
           </Typography>
         </Button>
       </Stack>
