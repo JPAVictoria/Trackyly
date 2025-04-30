@@ -32,7 +32,7 @@ export default function Conforme() {
         Summary & Conformé
       </h1>
 
-      <div className="bg-white shadow-md border rounded-md w-full max-w-2xl p-10 space-y-4">
+      <div className="rounded-sm border border-gray-200 shadow-sm bg-white w-full max-w-2xl p-10 space-y-4">
         <div className="flex justify-between items-center text-sm font-medium mb-7">
           <div className="text-center">
             <p className="text-[#2d2d2d] font-semibold mb-2">Actual Time-in</p>
