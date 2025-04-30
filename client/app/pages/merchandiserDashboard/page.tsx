@@ -68,7 +68,7 @@ const columns: GridColDef[] = [
     headerAlign: "center",
     align: "center",
     headerClassName: "bold-header",
-    renderCell: (params) => (
+    renderCell: () => (
       <Stack
         direction="row"
         spacing={2}
@@ -76,7 +76,6 @@ const columns: GridColDef[] = [
         alignItems="center"
         sx={{ height: "100%" }}
       >
-        {/* Edit Button */}
         <Button
           size="medium"
           variant="text"
@@ -102,7 +101,6 @@ const columns: GridColDef[] = [
           </Typography>
         </Button>
 
-        {/* Read Button */}
         <Button
           size="medium"
           variant="text"
@@ -128,7 +126,6 @@ const columns: GridColDef[] = [
           </Typography>
         </Button>
 
-        {/* Delete Button */}
         <Button
           size="medium"
           variant="text"
@@ -187,6 +184,7 @@ export default function MerchandiserDashboard() {
             columns={columns}
             pageSizeOptions={[5, 10]}
             pagination
+            rowHeight={75} 
             disableRowSelectionOnClick
             getRowId={(row) => row.id}
             sx={{

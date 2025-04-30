@@ -41,10 +41,10 @@ export default function NameBlock() {
 
   return (
     <div className="bg-white shadow-md rounded-sm p-4 w-72 mx-auto"> 
-      <h3 className="font-semibold text-indigo-700">
+      <h3 className="font-bold text-[#433BFF]">
         {user ? `${user.firstName} ${user.lastName}` : "Loading..."}
       </h3>
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-[#433BFF] pt-1">
         {user ? capitalizeFirstLetter(user.role) : "Loading..."}
       </p>
     </div>
