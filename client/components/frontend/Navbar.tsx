@@ -39,7 +39,8 @@ export default function Navbar() {
         "/pages/adminDashboard",
         "/pages/merchandiserDashboard",
         "/pages/forms",
-        "/pages/userRoles"
+        "/pages/userRoles",
+        "/pages/createForm"
       ];
       
       if (!validPages.includes(pathname)) {
@@ -101,22 +102,23 @@ export default function Navbar() {
   };
 
   const filteredIconButtons =
-    userRole === "ADMIN"
-      ? iconButtons 
-      : userRole === "MERCHANDISER"
-      ? [
-          ...iconButtons.filter((button) => ["Logout", "Dashboard"].includes(button.label)),
-          {
-            icon: <Plus size={18} />,
-            label: "Create",
-            onClick: () => console.log("Create button clicked"),
-            yOffset: -150
-          }
-        ].map((button, index) => ({
-          ...button,
-          yOffset: index === 0 ? -50 : index === 1 ? -100 : -150,
-        }))
-      : [];
+  userRole === "ADMIN"
+    ? iconButtons 
+    : userRole === "MERCHANDISER"
+    ? [
+        ...iconButtons.filter((button) => ["Logout", "Dashboard"].includes(button.label)),
+        {
+          icon: <Plus size={18} />,
+          label: "Create",
+          onClick: () => router.push("/pages/createForm"),
+          yOffset: -150
+        }
+      ].map((button, index) => ({
+        ...button,
+        yOffset: index === 0 ? -50 : index === 1 ? -100 : -150,
+      }))
+    : [];
+
 
   return (
     <div className="absolute bottom-15 right-20 z-50">
