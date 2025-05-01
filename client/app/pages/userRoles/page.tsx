@@ -1,116 +1,225 @@
 "use client";
 
+import React from "react";
 import Navbar from "@/components/frontend/Navbar";
-import { Box } from "@mui/material";
+import { Box, Button, Stack, Typography, Chip } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Shield, Trash2 } from "lucide-react";
-import { Button, Stack, Typography } from "@mui/material";
+import { useQuery, useMutation} from "@tanstack/react-query";
+import axios from "axios";
+import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 
-const ActionButtons = () => (
-  <Stack
-    direction="row"
-    spacing={2}
-    justifyContent="center"
-    alignItems="center"
-    sx={{ height: "100%" }}
-  >
-    <Button size="medium" variant="text" sx={buttonStyle}>
-      <Shield className="w-4 h-4" />
-      <Typography variant="caption" sx={captionStyle}>
-        Role
-      </Typography>
-    </Button>
+interface User {
+  id: string;
+  email: string;
+  role: string;
+  createdAt: string;
+}
 
-    <Button size="medium" variant="text" sx={buttonStyle}>
-      <Trash2 className="w-4 h-4" />
-      <Typography variant="caption" sx={captionStyle}>
-        Delete
-      </Typography>
-    </Button>
-  </Stack>
-);
+interface ToggleRoleParams {
+  id: string;
+  role: string;
+}
 
-const buttonStyle = {
-  minWidth: "auto",
-  padding: "8px 16px",
-  color: "#2F27CE",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 80,
-  height: "100%",
-  opacity: 0.6,
+interface ToggleRoleResponse {
+  success: boolean;
+  newRole: string;
+}
+
+const useUsers = () => {
+  return useQuery<User[]>({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const res = await axios.get("http://localhost:5000/user/configureUser");
+      return res.data;
+    },
+  });
 };
 
-const captionStyle = {
-  fontSize: "0.7rem",
-  marginTop: "4px",
+const useToggleRole = () => {
+  const { queryClient, openSnackbar, setLoading } = useCommonUtils();
+
+  return useMutation<
+    ToggleRoleResponse,
+    Error,
+    ToggleRoleParams
+  >({
+    mutationFn: async ({ id, role }) => {
+      setLoading(true);
+      const res = await axios.patch<ToggleRoleResponse>(`http://localhost:5000/user/configureUser/${id}/role`, {
+        role,
+      });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      const newRole = data.newRole === "ADMIN" ? "Admin" : "Merchandiser";
+      openSnackbar(`Role changed to ${newRole} successfully`, "success");
+      
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error updating role:", error);
+      setLoading(false);
+      openSnackbar("Error updating role", "error");
+    },
+  });
 };
 
-// Dummy rows
-const rows = [
-  {
-    id: 1,
-    email: "user1@example.com",
-    role: "Admin",
-    createdAt: "April 29, 2025 10:15 AM",
-  },
-  {
-    id: 2,
-    email: "user2@example.com",
-    role: "Merchandiser",
-    createdAt: "April 28, 2025 9:00 AM",
-  },
-];
+const useDeleteUser = () => {
 
-// Define only 4 columns
-const columns: GridColDef[] = [
-  {
-    field: "email",
-    headerName: "Email",
-    flex: 1.5,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "role",
-    headerName: "Role",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "createdAt",
-    headerName: "Created At",
-    flex: 1.2,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "actions",
-    headerName: "Actions",
-    width: 200,
-    sortable: false,
-    filterable: false,
-    disableColumnMenu: true,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-    renderCell: () => <ActionButtons />,
-  },
-];
+  const { queryClient, openSnackbar, setLoading } = useCommonUtils();
+
+
+  return useMutation<{ success: boolean }, Error, string>({
+    mutationFn: async (id) => {
+      setLoading(true);
+      const res = await axios.delete(`http://localhost:5000/user/configureUser/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      openSnackbar("User deleted successfully", "success");
+      setLoading(false);
+    },
+    onError: (error) => {
+      console.error("Error deleting user:", error);
+      openSnackbar("Error deleting user", "error");
+      setLoading(false);
+    },
+  });
+};
+
+
 
 export default function UserRoles() {
+  const { data: users = [], isLoading } = useUsers();
+  const toggleRole = useToggleRole();
+  const deleteUser = useDeleteUser();
+  
+  const [paginationModel, setPaginationModel] = React.useState({
+    pageSize: 5,
+    page: 0,
+  });
+
+  
+
+  const columns: GridColDef[] = [
+    {
+      field: "email",
+      headerName: "Email",
+      flex: 1.5,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "role",
+      headerName: "Role",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color={params.value === "ADMIN" ? "success" : "warning"}
+          variant="outlined"
+          size="small"
+          sx={{
+            fontWeight: "bold",
+            borderWidth: "2px",
+          }}
+        />
+      ),
+    },
+    {
+      field: "createdAt",
+      headerName: "Created At",
+      flex: 1.2,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+      valueFormatter: ({ value }) => {
+        const date = new Date(value);
+        if (isNaN(date.getTime())) {
+          return "Invalid Date";
+        }
+        return date.toLocaleString();
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 200,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+      renderCell: (params) => {
+        const row = params.row as User;
+        
+        return (
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="center"
+            alignItems="center"
+            sx={{ height: "100%" }}
+          >
+            <Button
+              size="medium"
+              variant="text"
+              sx={buttonStyle}
+              onClick={async () => {
+                try {
+                  const newRole = row.role === "ADMIN" ? "MERCHANDISER" : "ADMIN";
+                  await toggleRole.mutateAsync({
+                    id: row.id,
+                    role: newRole,
+                  });
+                } catch (err) {
+                  console.error("Error toggling role:", err);
+                }
+              }}
+            >
+              <Shield className="w-4 h-4" />
+              <Typography variant="caption" sx={captionStyle}>
+                {row.role === "ADMIN" ? "Merchandiser" : "Admin"}
+              </Typography>
+            </Button>
+
+            <Button
+              size="medium"
+              variant="text"
+              sx={buttonStyle}
+              onClick={async () => {
+                try {
+                  await deleteUser.mutateAsync(row.id);
+                } catch (err) {
+                  console.error("Error deleting user:", err);
+                }
+              }}
+            >
+              <Trash2 className="w-4 h-4" />
+              <Typography variant="caption" sx={captionStyle}>
+                Delete
+              </Typography>
+            </Button>
+          </Stack>
+        );
+      },
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center">
       <Navbar />
       <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-10">
-         User Roles and Permissions
-        </h1>
+        User Roles and Permissions
+      </h1>
       <div className="flex flex-col items-center justify-center p-10 w-full text-center">
         <Box
           sx={{
@@ -129,13 +238,16 @@ export default function UserRoles() {
           }}
         >
           <DataGrid
-            rows={rows}
+            rows={users}
             columns={columns}
-            pageSizeOptions={[5, 10]}
+            pageSizeOptions={[5, 10, 25]}
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
             pagination
             rowHeight={75}
             disableRowSelectionOnClick
             getRowId={(row) => row.id}
+            loading={isLoading}
             sx={{
               "& .bold-header": {
                 fontWeight: "bold",
@@ -151,3 +263,26 @@ export default function UserRoles() {
     </div>
   );
 }
+
+const buttonStyle = {
+  minWidth: "auto",
+  padding: "8px 16px",
+  color: "#2F27CE",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 80,
+  height: "100%",
+  opacity: 0.6,
+  "&:hover": {
+    opacity: 1,
+    backgroundColor: "rgba(47, 39, 206, 0.04)",
+  },
+};
+
+const captionStyle = {
+  fontSize: "0.7rem",
+  marginTop: "4px",
+  color: "#2F27CE",
+};

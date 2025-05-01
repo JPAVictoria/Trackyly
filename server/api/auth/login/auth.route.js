@@ -26,8 +26,8 @@ router.post("/login", async (req, res) => {
       where: { email },
     });
 
-    if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
+    if (!user || user.deleted) {
+      return res.status(400).json({ message: "Account is deleted or invalid email" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -44,7 +44,7 @@ router.post("/login", async (req, res) => {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role, 
+        role: user.role,
       },
     });
     
@@ -53,5 +53,6 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 module.exports = router;

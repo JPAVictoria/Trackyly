@@ -8,7 +8,7 @@ const loginRouter = require("./api/auth/login/auth.route");
 const forgotRouter = require("./api/auth/forgot/auth.route");
 const resetRouter = require("./api/auth/reset/auth.route");
 const statisticsRouter = require("./api/statistics/route");
-
+const usersRoute = require("./api/configureUser/route");
 
 
 
@@ -28,6 +28,7 @@ app.use("/user/login", loginRouter);
 app.use("/user/forgot", forgotRouter);
 app.use("/user/reset", resetRouter);
 app.use("/user/statistics", statisticsRouter);
+app.use("/user/configureUser", usersRoute);
 
 
 
