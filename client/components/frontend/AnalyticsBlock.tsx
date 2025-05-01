@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { Button } from "@mui/material";
+import DateModal from "@/components/frontend/DateModal"; 
 
 export default function AnalyticsBlock() {
   const [selectedFilter, setSelectedFilter] = useState("Custom");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const pieChartData = [
     { id: 0, value: 30, color: "#06b6d4" },
@@ -13,7 +15,7 @@ export default function AnalyticsBlock() {
     { id: 2, value: 30, color: "#14b8a6" },
   ];
 
-  const filterButtons = ["Custom", "Monthly", "All time"];
+  const filterButtons = ["Custom", "Outlet", "Default"];
 
   const buttonStyles = {
     backgroundColor: "#fff",
@@ -30,6 +32,20 @@ export default function AnalyticsBlock() {
     return `${value.value}%`;
   };
 
+  const handleFilterClick = (label: string) => {
+    if (label === "Custom") {
+      setIsModalOpen(true);
+    } else {
+      setSelectedFilter(label);
+    }
+  };
+
+  const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
+    
+    console.log("Applying custom filter with dates:", { fromDate, toDate });
+    setSelectedFilter("Custom");
+  };
+
   return (
     <div className="bg-white shadow-md rounded-sm p-6 max-w-md w-full">
       <div className="flex flex-col">
@@ -43,7 +59,7 @@ export default function AnalyticsBlock() {
               key={label}
               variant="outlined"
               size="small"
-              onClick={() => setSelectedFilter(label)}
+              onClick={() => handleFilterClick(label)}
               sx={{
                 ...buttonStyles,
                 borderColor:
@@ -77,6 +93,12 @@ export default function AnalyticsBlock() {
           />
         </div>
       </div>
+
+      <DateModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onApply={handleApplyCustomFilter}
+      />
     </div>
   );
 }
