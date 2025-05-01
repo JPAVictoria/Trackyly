@@ -92,6 +92,7 @@ export default function Navbar() {
       Cookies.remove("token");
       localStorage.removeItem("user");
       openSnackbar("Logged out successfully!", "success");
+
       router.push("/pages/login");
     } catch (error) {
       console.log(error);

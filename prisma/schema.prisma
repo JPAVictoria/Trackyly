@@ -29,6 +29,7 @@ model User {
   sosForms      SOSForm[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  deleted       Boolean  @default(false)
 }
 
 model SOSForm {
@@ -40,6 +41,7 @@ model SOSForm {
   beer           Int
   juice          Int
   createdAt      DateTime @default(now())
+  deleted        Boolean  @default(false)
 
   @@index([outlet, createdAt])
 }
