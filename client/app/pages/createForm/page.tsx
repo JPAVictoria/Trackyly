@@ -59,18 +59,27 @@ export default function CreateForm() {
             <Select>
               <SelectTrigger
                 id="outlet"
-                className="mt-1 w-full cursor-pointer transition-all duration-300 focus:ring-1 focus:ring-[#2F27CE] focus:outline-none"
+                className="mt-1 w-full cursor-pointer focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 data-[state=open]:ring-1 data-[state=open]:ring-[#2F27CE]"
               >
                 <SelectValue placeholder="Choose an outlet" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="outlet-a" className="cursor-pointer">
+              <SelectContent className="bg-white border border-[#2d2d2d]/50 shadow-md">
+                <SelectItem 
+                  value="outlet-a" 
+                  className="cursor-pointer hover:bg-[#2F27CE]/10"
+                >
                   Outlet A
                 </SelectItem>
-                <SelectItem value="outlet-b" className="cursor-pointer">
+                <SelectItem 
+                  value="outlet-b" 
+                  className="cursor-pointer hover:bg-[#2F27CE]/10"
+                >
                   Outlet B
                 </SelectItem>
-                <SelectItem value="outlet-c" className="cursor-pointer">
+                <SelectItem 
+                  value="outlet-c" 
+                  className="cursor-pointer hover:bg-[#2F27CE]/10"
+                >
                   Outlet C
                 </SelectItem>
               </SelectContent>
