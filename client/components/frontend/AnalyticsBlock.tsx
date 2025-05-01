@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { PieChart } from "@mui/x-charts/PieChart";
 import { Button } from "@mui/material";
-import DateModal from "@/components/frontend/DateModal"; 
+import DateModal from "@/components/frontend/DateModal";
+import OutletModal from "@/components/frontend/OutletModal";
+import { useModalStore } from "@/app/stores/useModalStore";
 
 export default function AnalyticsBlock() {
-  const [selectedFilter, setSelectedFilter] = useState("Custom");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const {
+    selectedFilter,
+    isDateModalOpen,
+    isOutletModalOpen,
+    setSelectedFilter,
+    setIsDateModalOpen,
+    setIsOutletModalOpen,
+    handleFilterClick
+  } = useModalStore();
 
   const pieChartData = [
     { id: 0, value: 30, color: "#06b6d4" },
@@ -32,18 +40,18 @@ export default function AnalyticsBlock() {
     return `${value.value}%`;
   };
 
-  const handleFilterClick = (label: string) => {
-    if (label === "Custom") {
-      setIsModalOpen(true);
-    } else {
-      setSelectedFilter(label);
-    }
-  };
-
   const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
-    
     console.log("Applying custom filter with dates:", { fromDate, toDate });
     setSelectedFilter("Custom");
+    setIsDateModalOpen(false);
+  };
+
+  const handleApplyOutletFilter = (outlet: string | null) => {
+    if (outlet) {
+      console.log("Selected outlet:", outlet);
+      setSelectedFilter(`Outlet: ${outlet}`);
+    }
+    setIsOutletModalOpen(false);
   };
 
   return (
@@ -59,15 +67,15 @@ export default function AnalyticsBlock() {
               key={label}
               variant="outlined"
               size="small"
-              onClick={() => handleFilterClick(label)}
+              onClick={() => handleFilterClick(label as 'Custom' | 'Outlet' | 'Default')}
               sx={{
                 ...buttonStyles,
                 borderColor:
-                  selectedFilter === label
+                  selectedFilter.startsWith(label)
                     ? "#433BFF"
                     : buttonStyles.borderColor,
                 color:
-                  selectedFilter === label ? "#433BFF" : buttonStyles.color,
+                  selectedFilter.startsWith(label) ? "#433BFF" : buttonStyles.color,
               }}
             >
               {label}
@@ -95,9 +103,15 @@ export default function AnalyticsBlock() {
       </div>
 
       <DateModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        open={isDateModalOpen}
+        onClose={() => setIsDateModalOpen(false)}
         onApply={handleApplyCustomFilter}
+      />
+
+      <OutletModal
+        open={isOutletModalOpen}
+        onClose={() => setIsOutletModalOpen(false)}
+        onSelectOutlet={handleApplyOutletFilter}
       />
     </div>
   );

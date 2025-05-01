@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,10 +7,10 @@ import {
   DialogActions,
   Button,
   Box,
-  TextFieldProps,
 } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { useDateStore } from "@/app/stores/useDateStore";
 
 interface CustomFilterModalProps {
   open: boolean;
@@ -24,12 +23,7 @@ export default function CustomFilterModal({
   onClose,
   onApply,
 }: CustomFilterModalProps) {
-  const [fromDate, setFromDate] = useState<Date | null>(() => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - 1);
-    return date;
-  });
-  const [toDate, setToDate] = useState<Date | null>(new Date());
+  const { fromDate, toDate, setFromDate, setToDate, resetDates } = useDateStore();
 
   const handleApply = () => {
     onApply(fromDate, toDate);
@@ -37,8 +31,7 @@ export default function CustomFilterModal({
   };
 
   const handleClear = () => {
-    setFromDate(null);
-    setToDate(null);
+    resetDates();
   };
 
   const buttonStyles = {
@@ -46,8 +39,8 @@ export default function CustomFilterModal({
     sx: {
       borderColor: "#2d2d2d",
       color: "#2d2d2d",
-      padding: "4px 6px",
-      fontSize: "0.8125rem", 
+      padding: "8px 16px",
+      fontSize: "0.8125rem",
       textTransform: "none",
       "&:hover": {
         borderColor: "#433BFF",
@@ -56,7 +49,7 @@ export default function CustomFilterModal({
       },
     },
   };
-  
+
   const applyButtonStyles = {
     ...buttonStyles,
     sx: {
@@ -77,28 +70,64 @@ export default function CustomFilterModal({
       </DialogTitle>
       <DialogContent className="p-6">
         <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <Box className="flex flex-col gap-6">
+          <Box className="flex flex-col gap-6 mt-4">
             <DatePicker
               label="From Date"
               value={fromDate}
-              onChange={(newValue: Date | null) => setFromDate(newValue)}
+              onChange={setFromDate}
               slotProps={{
                 textField: {
                   fullWidth: true,
                   variant: "outlined",
-                } as TextFieldProps,
+                  sx: {
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: 'rgba(0, 0, 0, 0.23)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(0, 0, 0, 0.87)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#433BFF',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      '&.Mui-focused': {
+                        color: '#433BFF',
+                      },
+                    },
+                  },
+                } 
               }}
             />
             <DatePicker
               label="To Date"
               value={toDate}
-              onChange={(newValue: Date | null) => setToDate(newValue)}
+              onChange={setToDate}
               minDate={fromDate ?? undefined}
               slotProps={{
                 textField: {
                   fullWidth: true,
                   variant: "outlined",
-                } as TextFieldProps,
+                  sx: {
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: 'rgba(0, 0, 0, 0.23)',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: 'rgba(0, 0, 0, 0.87)',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#433BFF',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      '&.Mui-focused': {
+                        color: '#433BFF',
+                      },
+                    },
+                  },
+                }
               }}
             />
           </Box>
