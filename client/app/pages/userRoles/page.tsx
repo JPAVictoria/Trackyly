@@ -2,10 +2,19 @@
 
 import React from "react";
 import Navbar from "@/components/frontend/Navbar";
-import { Box, Button, Stack, Typography, Chip } from "@mui/material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import {
+  Box,
+  Button,
+  Stack,
+  Typography,
+  Chip,
+} from "@mui/material";
+import {
+  DataGrid,
+  GridColDef,
+} from "@mui/x-data-grid";
 import { Shield, Trash2 } from "lucide-react";
-import { useQuery, useMutation} from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 
@@ -39,29 +48,25 @@ const useUsers = () => {
 const useToggleRole = () => {
   const { queryClient, openSnackbar, setLoading } = useCommonUtils();
 
-  return useMutation<
-    ToggleRoleResponse,
-    Error,
-    ToggleRoleParams
-  >({
+  return useMutation<ToggleRoleResponse, Error, ToggleRoleParams>({
     mutationFn: async ({ id, role }) => {
       setLoading(true);
-      const res = await axios.patch<ToggleRoleResponse>(`http://localhost:5000/user/configureUser/${id}/role`, {
-        role,
-      });
+      const res = await axios.patch<ToggleRoleResponse>(
+        `http://localhost:5000/user/configureUser/${id}/role`,
+        { role }
+      );
       return res.data;
     },
     onSuccess: (data) => {
       const newRole = data.newRole === "ADMIN" ? "Admin" : "Merchandiser";
       openSnackbar(`Role changed to ${newRole} successfully`, "success");
-      
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setLoading(false);
     },
     onError: (error) => {
       console.error("Error updating role:", error);
-      setLoading(false);
       openSnackbar("Error updating role", "error");
+      setLoading(false);
     },
   });
 };
@@ -88,20 +93,15 @@ const useSoftDeleteUser = () => {
   });
 };
 
-
-
-
 export default function UserRoles() {
   const { data: users = [], isLoading } = useUsers();
   const toggleRole = useToggleRole();
   const softDeleteUser = useSoftDeleteUser();
-  
+
   const [paginationModel, setPaginationModel] = React.useState({
     pageSize: 5,
     page: 0,
   });
-
-  
 
   const columns: GridColDef[] = [
     {
@@ -119,18 +119,40 @@ export default function UserRoles() {
       headerAlign: "center",
       align: "center",
       headerClassName: "bold-header",
-      renderCell: (params) => (
-        <Chip
-          label={params.value}
-          color={params.value === "ADMIN" ? "success" : "warning"}
-          variant="outlined"
-          size="small"
-          sx={{
-            fontWeight: "bold",
-            borderWidth: "2px",
-          }}
-        />
-      ),
+      renderCell: (params) => {
+        const role = params.value;
+        let chipProps;
+
+        switch (role) {
+          case "ADMIN":
+            chipProps = {
+              label: "Admin",
+              sx: {
+                backgroundColor: "#E8F5E9",
+                color: "#4CAF50",
+                fontWeight: 500,
+                fontSize: "0.75rem",
+                textTransform: "capitalize",
+              },
+            };
+            break;
+          case "MERCHANDISER":
+          default:
+            chipProps = {
+              label: "Merchandiser",
+              sx: {
+                backgroundColor: "#FFF8E1",
+                color: "#FBC02D",
+                fontWeight: 500,
+                fontSize: "0.75rem",
+                textTransform: "capitalize",
+              },
+            };
+            break;
+        }
+
+        return <Chip size="medium" {...chipProps} />;
+      },
     },
     {
       field: "createdAt",
@@ -139,7 +161,7 @@ export default function UserRoles() {
       headerAlign: "center",
       align: "center",
       headerClassName: "bold-header",
-    },    
+    },
     {
       field: "actions",
       headerName: "Actions",
@@ -152,7 +174,7 @@ export default function UserRoles() {
       headerClassName: "bold-header",
       renderCell: (params) => {
         const row = params.row as User;
-        
+
         return (
           <Stack
             direction="row"
@@ -179,7 +201,7 @@ export default function UserRoles() {
             >
               <Shield className="w-4 h-4" />
               <Typography variant="caption" sx={captionStyle}>
-                {row.role === "ADMIN" ? "Merchandiser" : "Admin"}
+                {row.role === "ADMIN" ? "Merch" : "Admin"}
               </Typography>
             </Button>
 
