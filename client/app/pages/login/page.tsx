@@ -14,24 +14,21 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-
 export default function Login() {
   const router = useRouter();
   const { openSnackbar } = useSnackbar();
-  const { setLoading } = useLoading();
+  const { loading: globalLoading, setLoading } = useLoading();
 
   const {
     login: {
       email,
       password,
-      loading,
-      submitted,
+      loading: formLoading,
       showPassword,
       setEmail,
       setPassword,
       toggleShowPassword,
       resetForm,
-      setSubmitted,
       setLoading: setLoginLoading,
     },
   } = useAuthStore();
@@ -69,19 +66,16 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
       openSnackbar("Login successful!", "success");
 
-      setSubmitted(true);
-
-      setTimeout(() => {
-        if (user.role === "ADMIN") {
-          router.push("/pages/adminDashboard");
-        } else if (user.role === "MERCHANDISER") {
-          router.push("/pages/merchandiserDashboard");
-        } else {
-          openSnackbar("Unknown role. Contact support.", "error");
-          Cookies.remove("token");
-          localStorage.removeItem("user");
-        }
-      }, 1000);
+      // Keep loader active during redirect
+      if (user.role === "ADMIN") {
+        router.push("/pages/adminDashboard");
+      } else if (user.role === "MERCHANDISER") {
+        router.push("/pages/merchandiserDashboard");
+      } else {
+        openSnackbar("Unknown role. Contact support.", "error");
+        Cookies.remove("token");
+        localStorage.removeItem("user");
+      }
     } catch (error) {
       let errorMessage = "An unexpected error occurred.";
     
@@ -97,12 +91,12 @@ export default function Login() {
     
       openSnackbar(errorMessage, "error");
     } finally {
-      setLoading(false);
+      // Don't turn off loader here - Next.js navigation will handle page transition
       setLoginLoading(false);
     }
   };
 
-  const isDisabled = loading || submitted;
+  const isLoading = globalLoading || formLoading;
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
@@ -137,7 +131,7 @@ export default function Login() {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={isDisabled}
+              disabled={isLoading}
               className="focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
             />
           </div>
@@ -152,7 +146,7 @@ export default function Login() {
               placeholder="********"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              disabled={isDisabled}
+              disabled={isLoading}
               className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
             />
             <div
@@ -167,7 +161,7 @@ export default function Login() {
                 <Button
                   variant="link"
                   className="text-[#2d2d2d] text-xs p-0 h-auto cursor-pointer font-medium"
-                  disabled={isDisabled}
+                  disabled={isLoading}
                 >
                   Forgot Password?
                 </Button>
@@ -178,14 +172,14 @@ export default function Login() {
           <div className="pt-5">
             <Button
               type="submit"
-              disabled={isDisabled}
+              disabled={isLoading}
               className={`w-full text-white py-5 px-4 rounded-md transition duration-200 ${
-                isDisabled
+                isLoading
                   ? "bg-[#A5A8F0] cursor-not-allowed"
                   : "bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
               }`}
             >
-              {loading ? "Logging in..." : submitted ? "Logged in" : "Login"}
+              {isLoading ? "Processing..." : "Login"}
             </Button>
           </div>
 
@@ -197,7 +191,7 @@ export default function Login() {
               <Button
                 variant="link"
                 className="cursor-pointer pt-3 text-[#2d2d2d]"
-                disabled={isDisabled}
+                disabled={isLoading}
               >
                 Get Started here
               </Button>
