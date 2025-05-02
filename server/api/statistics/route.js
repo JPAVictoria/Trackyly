@@ -1,4 +1,4 @@
-// server/api/statistics/route.js
+
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 
@@ -9,7 +9,12 @@ router.get("/", async (req, res) => {
   try {
     const [sosCount, merchCount] = await Promise.all([
       prisma.sOSForm.count(),
-      prisma.user.count({ where: { role: "MERCHANDISER" } }),
+      prisma.user.count({
+        where: {
+          role: "MERCHANDISER",
+          deleted: false, 
+        },
+      }),
     ]);
 
     res.json({ sosCount, merchCount });

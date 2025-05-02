@@ -66,24 +66,22 @@ const useToggleRole = () => {
   });
 };
 
-const useDeleteUser = () => {
-
+const useSoftDeleteUser = () => {
   const { queryClient, openSnackbar, setLoading } = useCommonUtils();
-
 
   return useMutation<{ success: boolean }, Error, string>({
     mutationFn: async (id) => {
       setLoading(true);
-      const res = await axios.delete(`http://localhost:5000/user/configureUser/${id}`);
+      const res = await axios.put(`http://localhost:5000/user/configureUser/${id}/soft-delete`);
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      openSnackbar("User deleted successfully", "success");
+      openSnackbar("User soft deleted successfully", "success");
       setLoading(false);
     },
     onError: (error) => {
-      console.error("Error deleting user:", error);
+      console.error("Error soft deleting user:", error);
       openSnackbar("Error deleting user", "error");
       setLoading(false);
     },
@@ -92,10 +90,11 @@ const useDeleteUser = () => {
 
 
 
+
 export default function UserRoles() {
   const { data: users = [], isLoading } = useUsers();
   const toggleRole = useToggleRole();
-  const deleteUser = useDeleteUser();
+  const softDeleteUser = useSoftDeleteUser();
   
   const [paginationModel, setPaginationModel] = React.useState({
     pageSize: 5,
@@ -197,7 +196,7 @@ export default function UserRoles() {
               sx={buttonStyle}
               onClick={async () => {
                 try {
-                  await deleteUser.mutateAsync(row.id);
+                  await softDeleteUser.mutateAsync(row.id);
                 } catch (err) {
                   console.error("Error deleting user:", err);
                 }
