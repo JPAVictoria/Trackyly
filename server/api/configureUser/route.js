@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
+const { format } = require("date-fns"); // Import format from date-fns
 
 const prisma = new PrismaClient();
 
@@ -15,7 +16,14 @@ router.get("/", async (req, res) => {
         createdAt: true,
       },
     });
-    res.status(200).json(users);
+
+    // Format createdAt to a human-readable date
+    const formattedUsers = users.map(user => ({
+      ...user,
+      createdAt: user.createdAt ? format(user.createdAt, 'MMMM dd, yyyy HH:mm:ss') : null, // Applying date-fns formatting
+    }));
+
+    res.status(200).json(formattedUsers);
   } catch (err) {
     console.error("Error fetching users:", err);
     res.status(500).json({ error: "Failed to fetch users" });

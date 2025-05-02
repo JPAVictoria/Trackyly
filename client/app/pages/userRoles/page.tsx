@@ -139,14 +139,7 @@ export default function UserRoles() {
       headerAlign: "center",
       align: "center",
       headerClassName: "bold-header",
-      valueFormatter: ({ value }) => {
-        const date = new Date(value);
-        if (isNaN(date.getTime())) {
-          return "Invalid Date";
-        }
-        return date.toLocaleString();
-      },
-    },
+    },    
     {
       field: "actions",
       headerName: "Actions",
