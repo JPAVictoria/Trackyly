@@ -17,7 +17,6 @@ router.get("/", async (req, res) => {
       },
     });
 
-    // Format createdAt to a human-readable date
     const formattedUsers = users.map(user => ({
       ...user,
       createdAt: user.createdAt ? format(user.createdAt, 'MMMM dd, yyyy HH:mm:ss') : null, // Applying date-fns formatting

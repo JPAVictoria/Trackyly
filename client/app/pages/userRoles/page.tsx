@@ -2,22 +2,12 @@
 
 import React from "react";
 import Navbar from "@/components/frontend/Navbar";
-import {
-  Box,
-  Button,
-  Stack,
-  Typography,
-  Chip,
-} from "@mui/material";
-import {
-  DataGrid,
-  GridColDef,
-} from "@mui/x-data-grid";
-import { Shield, Trash2 } from "lucide-react";
+import { Box, Chip } from "@mui/material";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
-import Cookies from "js-cookie";
+import { UserActions } from "@/components/frontend/UserActions"; 
 
 interface User {
   id: string;
@@ -102,7 +92,6 @@ export default function UserRoles() {
   const softDeleteUser = useSoftDeleteUser();
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}") as { email?: string };
-  const { setLoading, openSnackbar } = useCommonUtils();
 
   const [paginationModel, setPaginationModel] = React.useState({
     pageSize: 5,
@@ -180,72 +169,17 @@ export default function UserRoles() {
       headerClassName: "bold-header",
       renderCell: (params) => {
         const row = params.row as User;
-
         return (
-          <Stack
-            direction="row"
-            spacing={2}
-            justifyContent="center"
-            alignItems="center"
-            sx={{ height: "100%" }}
-          >
-            <Button
-              size="medium"
-              variant="text"
-              sx={buttonStyle}
-              onClick={async () => {
-                try {
-                  const newRole = row.role === "ADMIN" ? "MERCHANDISER" : "ADMIN";
-                  await toggleRole.mutateAsync({ id: row.id, role: newRole });
-
-                  if (row.email === currentUser.email) {
-                    openSnackbar("Role changed successfully, logging out...", "success");
-                    setLoading(true); // Show loading spinner before logout
-                    Cookies.remove("token");
-                    localStorage.removeItem("user");
-                    setTimeout(() => {
-                      window.location.href = "/pages/login"; // Force redirect with delay
-                    }, 1000);
-                  }
-                } catch (err) {
-                  console.error("Error toggling role:", err);
-                }
-              }}
-            >
-              <Shield className="w-4 h-4" />
-              <Typography variant="caption" sx={captionStyle}>
-                {row.role === "ADMIN" ? "Merch" : "Admin"}
-              </Typography>
-            </Button>
-
-            <Button
-              size="medium"
-              variant="text"
-              sx={buttonStyle}
-              onClick={async () => {
-                try {
-                  await softDeleteUser.mutateAsync(row.id);
-
-                  if (row.email === currentUser.email) {
-                    openSnackbar("Account deleted successfully, logging out...", "success");
-                    setLoading(true); // Show loading spinner before logout
-                    Cookies.remove("token");
-                    localStorage.removeItem("user");
-                    setTimeout(() => {
-                      window.location.href = "/pages/login"; // Force redirect with delay
-                    }, 1000);
-                  }
-                } catch (err) {
-                  console.error("Error deleting user:", err);
-                }
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-              <Typography variant="caption" sx={captionStyle}>
-                Delete
-              </Typography>
-            </Button>
-          </Stack>
+          <UserActions
+            user={row}
+            currentUserEmail={currentUser.email}
+            onRoleToggle={async (id, newRole) => {
+              await toggleRole.mutateAsync({ id, role: newRole });
+            }}
+            onDelete={async (id) => {
+              await softDeleteUser.mutateAsync(id);
+            }}
+          />
         );
       },
     },
@@ -300,26 +234,3 @@ export default function UserRoles() {
     </div>
   );
 }
-
-const buttonStyle = {
-  minWidth: "auto",
-  padding: "8px 16px",
-  color: "#2F27CE",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 80,
-  height: "100%",
-  opacity: 0.6,
-  "&:hover": {
-    opacity: 1,
-    backgroundColor: "rgba(47, 39, 206, 0.04)",
-  },
-};
-
-const captionStyle = {
-  fontSize: "0.7rem",
-  marginTop: "4px",
-  color: "#2F27CE",
-};
