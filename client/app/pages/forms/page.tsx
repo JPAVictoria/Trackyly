@@ -1,9 +1,12 @@
 "use client";
 
-import Navbar from "@/components/frontend/Navbar";
-import { Box, Button, Stack, Typography } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Eye, Filter } from "lucide-react";
+import { Button, Box, Stack, Typography } from "@mui/material";
+import { Eye, Filter, MapPin } from "lucide-react";
+import { useModalStore } from "@/app/stores/useModalStore";
+import DateModal from "@/components/frontend/DateModal";
+import OutletModal from "@/components/frontend/OutletModal";
+import Navbar from "@/components/frontend/Navbar";
 
 const buttonStyle = {
   minWidth: "auto",
@@ -37,11 +40,7 @@ const ActionButtons = () => (
     alignItems="center"
     sx={{ height: "100%" }}
   >
-    <Button
-      size="medium"
-      variant="text"
-      sx={buttonStyle}
-    >
+    <Button size="medium" variant="text" sx={buttonStyle}>
       <Eye className="w-4 h-4" />
       <Typography variant="caption" sx={captionStyle}>
         Read
@@ -117,10 +116,55 @@ const columns: GridColDef[] = [
 ];
 
 export default function Forms() {
+  const {
+    selectedFilter,
+    isDateModalOpen,
+    isOutletModalOpen,
+    setSelectedFilter,
+    setIsDateModalOpen,
+    setIsOutletModalOpen,
+    handleFilterClick,
+  } = useModalStore();
+
+  const filterButtons = ["Custom", "Outlet"];
+
+  const buttonStyles = {
+    color: "#2d2d2d",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 80,
+    height: "100%",
+    opacity: 0.6,
+    border: "1px solid rgba(45, 45, 45, 0.1)",
+    transition: "opacity 0.3s, background-color 0.3s",
+    "&:hover": {
+      opacity: 1,
+      backgroundColor: "rgba(47, 39, 206, 0.04)",
+    },
+  };
+
+  const handleApplyCustomFilter = (
+    fromDate: Date | null,
+    toDate: Date | null
+  ) => {
+    console.log("Applying custom filter with dates:", { fromDate, toDate });
+    setSelectedFilter("Custom");
+    setIsDateModalOpen(false);
+  };
+
+  const handleApplyOutletFilter = (outlet: string | null) => {
+    if (outlet) {
+      setSelectedFilter(`Outlet: ${outlet}`);
+    }
+    setIsOutletModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center">
-      <Navbar />
-      <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-10">
+      <Navbar/>
+      <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-5">
         Overall Share of Shelf Forms
       </h1>
 
@@ -135,31 +179,44 @@ export default function Forms() {
             marginBottom: "8px",
           }}
         >
-          <Stack
-            direction="column"
-            spacing={0.5}
-            alignItems="center"
-            sx={{
-              color: "#2d2d2d",
-              cursor: "pointer",
-              opacity: 0.8,
-              marginRight: "5px",
-              transition: "opacity 0.3s",
-              "&:hover": {
-                opacity: 0.6,
-              },
-            }}
-          >
-            <Filter size={20} />
-            <Typography
-              variant="caption"
-              sx={{
-                fontSize: "0.75rem",
-                fontWeight: 600,
-              }}
-            >
-              Filter
-            </Typography>
+          <Stack direction="row" spacing={2} alignItems="center">
+            {filterButtons.map((label) => (
+              <Button
+                key={label}
+                variant="outlined"
+                size="small"
+                onClick={() => handleFilterClick(label as "Custom" | "Outlet")}
+                sx={{
+                  ...buttonStyles,
+                  borderColor: selectedFilter.startsWith(label)
+                    ? "#433BFF"
+                    : "rgba(45, 45, 45, 0.1)",
+                  color: selectedFilter.startsWith(label)
+                    ? "#433BFF"
+                    : "#2d2d2d",
+                  opacity: selectedFilter.startsWith(label) ? 1 : 0.6,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "8px", 
+                  textTransform: "none",
+                  padding: "10px 16px",
+                }}
+              >
+                {label === "Custom" && <Filter size={20} />}
+                {label === "Outlet" && <MapPin size={20} />}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    textTransform: "none",
+                  }}
+                >
+                  {label}
+                </Typography>
+              </Button>
+            ))}
           </Stack>
         </Box>
 
@@ -193,6 +250,18 @@ export default function Forms() {
           />
         </Box>
       </div>
+
+      <DateModal
+        open={isDateModalOpen}
+        onClose={() => setIsDateModalOpen(false)}
+        onApply={handleApplyCustomFilter}
+      />
+
+      <OutletModal
+        open={isOutletModalOpen}
+        onClose={() => setIsOutletModalOpen(false)}
+        onSelectOutlet={handleApplyOutletFilter}
+      />
     </div>
   );
 }

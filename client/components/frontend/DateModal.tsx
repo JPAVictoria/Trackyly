@@ -54,8 +54,6 @@ export default function CustomFilterModal({
     ...buttonStyles,
     sx: {
       ...buttonStyles.sx,
-      borderColor: "#433BFF",
-      color: "#433BFF",
       "&:hover": {
         borderColor: "#433BFF",
         backgroundColor: "#433BFF10",
