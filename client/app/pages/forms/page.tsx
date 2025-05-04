@@ -2,9 +2,9 @@
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Button, Box, Stack, Typography } from "@mui/material";
-import { Eye} from "lucide-react";
+import { Eye } from "lucide-react";
 import { useModalStore } from "@/app/stores/useModalStore";
-import { useDateStore } from "@/app/stores/useDateStore"; 
+import { useDateStore } from "@/app/stores/useDateStore";
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Navbar from "@/components/frontend/Navbar";
@@ -136,9 +136,12 @@ export default function Forms() {
     handleFilterClick,
   } = useModalStore();
 
-  const { fromDate, toDate, setFromDate, setToDate } = useDateStore(); 
+  const { fromDate, toDate, setFromDate, setToDate } = useDateStore();
 
-  const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
+  const handleApplyCustomFilter = (
+    fromDate: Date | null,
+    toDate: Date | null
+  ) => {
     console.log("Applying custom filter with dates:", { fromDate, toDate });
     setFromDate(fromDate);
     setToDate(toDate);
@@ -179,7 +182,7 @@ export default function Forms() {
             marginBottom: "8px",
           }}
         >
-          <Filters 
+          <Filters
             selectedFilter={selectedFilter}
             handleFilterClick={handleFilterClick}
           />
@@ -195,22 +198,36 @@ export default function Forms() {
           }}
         >
           <DataGrid
+            getRowId={(row) => row.id}
             rows={filteredRows}
             columns={columns}
-            pageSizeOptions={[5, 10]}
+            loading={false}
             pagination
-            rowHeight={75}
+            pageSizeOptions={[5, 10, 20]}
+            disableColumnMenu
+            disableColumnResize
             disableRowSelectionOnClick
-            getRowId={(row) => row.id}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 5, page: 0 },
+              },
+            }}
+            rowHeight={80}
             sx={{
-              "& .bold-header": {
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#fff",
+                color: "#3E2723",
                 fontWeight: "bold",
-                fontSize: "0.9rem",
               },
-              "& .MuiDataGrid-row:hover": {
-                backgroundColor: "inherit",
+              "& .MuiDataGrid-columnSeparator": {
+                display: "none !important",
               },
-              border: "1px solid #ddd",
+              "& .MuiDataGrid-virtualScroller": {
+                overflowX: "hidden !important",
+              },
+              "& .MuiDataGrid-row": {
+                ":hover": { backgroundColor: "transparent" },
+              },
             }}
           />
         </Box>
