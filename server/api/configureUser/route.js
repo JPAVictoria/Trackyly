@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
-const { format } = require("date-fns"); // Import format from date-fns
+const { format } = require("date-fns"); 
 
 const prisma = new PrismaClient();
 
@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
 
     const formattedUsers = users.map(user => ({
       ...user,
-      createdAt: user.createdAt ? format(user.createdAt, 'MMMM dd, yyyy HH:mm:ss') : null, // Applying date-fns formatting
+      createdAt: user.createdAt ? format(user.createdAt, 'MMMM dd, yyyy HH:mm:ss') : null, 
     }));
 
     res.status(200).json(formattedUsers);

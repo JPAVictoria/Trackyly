@@ -1,10 +1,33 @@
 "use client";
 
 import Navbar from "@/components/frontend/Navbar";
-import { Box } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Eye } from "lucide-react";
-import { Button, Stack, Typography } from "@mui/material";
+import { Eye, Filter } from "lucide-react";
+
+const buttonStyle = {
+  minWidth: "auto",
+  padding: "8px 16px",
+  color: "#2F27CE",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 80,
+  height: "100%",
+  opacity: 0.6,
+  transition: "opacity 0.3s, background-color 0.3s",
+  "&:hover": {
+    opacity: 1,
+    backgroundColor: "rgba(47, 39, 206, 0.04)",
+  },
+};
+
+const captionStyle = {
+  fontSize: "0.7rem",
+  marginTop: "4px",
+  color: "#2F27CE",
+};
 
 const ActionButtons = () => (
   <Stack
@@ -17,24 +40,10 @@ const ActionButtons = () => (
     <Button
       size="medium"
       variant="text"
-      sx={{
-        minWidth: "auto",
-        padding: "8px 16px",
-        color: "#2F27CE",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 80,
-        height: "100%",
-        opacity: 0.6,
-      }}
+      sx={buttonStyle}
     >
       <Eye className="w-4 h-4" />
-      <Typography
-        variant="caption"
-        sx={{ fontSize: "0.7rem", marginTop: "4px" }}
-      >
+      <Typography variant="caption" sx={captionStyle}>
         Read
       </Typography>
     </Button>
@@ -114,7 +123,46 @@ export default function Forms() {
       <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-10">
         Overall Share of Shelf Forms
       </h1>
+
       <div className="flex flex-col items-center justify-center p-10 w-full text-center">
+        <Box
+          sx={{
+            width: "80%",
+            maxWidth: "90vw",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            marginBottom: "8px",
+          }}
+        >
+          <Stack
+            direction="column"
+            spacing={0.5}
+            alignItems="center"
+            sx={{
+              color: "#2d2d2d",
+              cursor: "pointer",
+              opacity: 0.8,
+              marginRight: "5px",
+              transition: "opacity 0.3s",
+              "&:hover": {
+                opacity: 0.6,
+              },
+            }}
+          >
+            <Filter size={20} />
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: "0.75rem",
+                fontWeight: 600,
+              }}
+            >
+              Filter
+            </Typography>
+          </Stack>
+        </Box>
+
         <Box
           sx={{
             height: 500,
@@ -122,13 +170,6 @@ export default function Forms() {
             maxWidth: "90vw",
             backgroundColor: "white",
             borderRadius: "8px",
-            boxShadow: 1,
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f3f3f3",
-            },
-            "& .MuiDataGrid-footerContainer": {
-              borderTop: "1px solid #eee",
-            },
           }}
         >
           <DataGrid
@@ -147,6 +188,7 @@ export default function Forms() {
               "& .MuiDataGrid-row:hover": {
                 backgroundColor: "inherit",
               },
+              border: "1px solid #ddd",
             }}
           />
         </Box>

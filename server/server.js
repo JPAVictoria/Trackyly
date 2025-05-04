@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const cookieParser = require("cookie-parser");
 const app = express();
 
 const registerRouter = require("./api/auth/register/auth.route");
@@ -10,9 +9,6 @@ const resetRouter = require("./api/auth/reset/auth.route");
 const statisticsRouter = require("./api/statistics/route");
 const usersRoute = require("./api/configureUser/route");
 
-
-
-
 const corsOptions = {
   origin: 'http://localhost:3000',
   credentials: true,
@@ -20,7 +16,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cookieParser());
 
 
 app.use("/user/register", registerRouter);
