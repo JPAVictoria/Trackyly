@@ -17,6 +17,7 @@ import { Shield, Trash2 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
+import Cookies from "js-cookie";
 
 interface User {
   id: string;
@@ -77,12 +78,14 @@ const useSoftDeleteUser = () => {
   return useMutation<{ success: boolean }, Error, string>({
     mutationFn: async (id) => {
       setLoading(true);
-      const res = await axios.put(`http://localhost:5000/user/configureUser/${id}/soft-delete`);
+      const res = await axios.put(
+        `http://localhost:5000/user/configureUser/${id}/soft-delete`
+      );
       return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      openSnackbar("User soft deleted successfully", "success");
+      openSnackbar("User deleted successfully", "success");
       setLoading(false);
     },
     onError: (error) => {
@@ -97,6 +100,9 @@ export default function UserRoles() {
   const { data: users = [], isLoading } = useUsers();
   const toggleRole = useToggleRole();
   const softDeleteUser = useSoftDeleteUser();
+
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}") as { email?: string };
+  const { setLoading, openSnackbar } = useCommonUtils();
 
   const [paginationModel, setPaginationModel] = React.useState({
     pageSize: 5,
@@ -190,10 +196,17 @@ export default function UserRoles() {
               onClick={async () => {
                 try {
                   const newRole = row.role === "ADMIN" ? "MERCHANDISER" : "ADMIN";
-                  await toggleRole.mutateAsync({
-                    id: row.id,
-                    role: newRole,
-                  });
+                  await toggleRole.mutateAsync({ id: row.id, role: newRole });
+
+                  if (row.email === currentUser.email) {
+                    openSnackbar("Role changed successfully, logging out...", "success");
+                    setLoading(true); // Show loading spinner before logout
+                    Cookies.remove("token");
+                    localStorage.removeItem("user");
+                    setTimeout(() => {
+                      window.location.href = "/pages/login"; // Force redirect with delay
+                    }, 1000);
+                  }
                 } catch (err) {
                   console.error("Error toggling role:", err);
                 }
@@ -212,6 +225,16 @@ export default function UserRoles() {
               onClick={async () => {
                 try {
                   await softDeleteUser.mutateAsync(row.id);
+
+                  if (row.email === currentUser.email) {
+                    openSnackbar("Account deleted successfully, logging out...", "success");
+                    setLoading(true); // Show loading spinner before logout
+                    Cookies.remove("token");
+                    localStorage.removeItem("user");
+                    setTimeout(() => {
+                      window.location.href = "/pages/login"; // Force redirect with delay
+                    }, 1000);
+                  }
                 } catch (err) {
                   console.error("Error deleting user:", err);
                 }
