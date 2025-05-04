@@ -47,8 +47,6 @@ export default function Login() {
       return;
     }
 
-    setLoading(true);
-    setLoginLoading(true);
 
     try {
       const response = await axios.post("http://localhost:5000/user/login/login", {
@@ -66,7 +64,6 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
       openSnackbar("Login successful!", "success");
 
-      // Keep loader active during redirect
       if (user.role === "ADMIN") {
         router.push("/pages/adminDashboard");
       } else if (user.role === "MERCHANDISER") {
@@ -76,6 +73,10 @@ export default function Login() {
         Cookies.remove("token");
         localStorage.removeItem("user");
       }
+
+      setLoading(true);
+      setLoginLoading(true);
+      
     } catch (error) {
       let errorMessage = "An unexpected error occurred.";
     
@@ -91,7 +92,6 @@ export default function Login() {
     
       openSnackbar(errorMessage, "error");
     } finally {
-      // Don't turn off loader here - Next.js navigation will handle page transition
       setLoginLoading(false);
     }
   };

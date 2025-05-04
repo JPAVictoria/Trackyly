@@ -1,10 +1,12 @@
 "use client";
 
+import React, { useEffect } from "react"; 
 import Navbar from "@/components/frontend/Navbar";
 import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Pencil, Eye, Trash2,} from "lucide-react";
-import { Box, Button, Stack, Typography} from "@mui/material";
+import { Pencil, Eye, Trash2 } from "lucide-react";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import { useCommonUtils } from "@/app/hooks/useCommonUtils"; // Assuming useCommonUtils hook provides setLoading
 
 const rows = [
   {
@@ -79,24 +81,10 @@ const columns: GridColDef[] = [
         <Button
           size="medium"
           variant="text"
-          sx={{
-            minWidth: "auto",
-            padding: "8px 16px",
-            color: "#2F27CE",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 80,
-            height: "100%",
-            opacity: 0.6,
-          }}
+          sx={buttonStyle}
         >
           <Pencil className="w-4 h-4" />
-          <Typography
-            variant="caption"
-            sx={{ fontSize: "0.7rem", marginTop: "4px" }}
-          >
+          <Typography variant="caption" sx={captionStyle}>
             Edit
           </Typography>
         </Button>
@@ -104,24 +92,10 @@ const columns: GridColDef[] = [
         <Button
           size="medium"
           variant="text"
-          sx={{
-            minWidth: "auto",
-            padding: "8px 16px",
-            color: "#2F27CE",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 80,
-            height: "100%",
-            opacity: 0.6,
-          }}
+          sx={buttonStyle}
         >
           <Eye className="w-4 h-4" />
-          <Typography
-            variant="caption"
-            sx={{ fontSize: "0.7rem", marginTop: "4px" }}
-          >
+          <Typography variant="caption" sx={captionStyle}>
             Read
           </Typography>
         </Button>
@@ -129,24 +103,10 @@ const columns: GridColDef[] = [
         <Button
           size="medium"
           variant="text"
-          sx={{
-            minWidth: "auto",
-            padding: "8px 16px",
-            color: "#2F27CE",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 80,
-            height: "100%",
-            opacity: 0.6,
-          }}
+          sx={buttonStyle}
         >
           <Trash2 className="w-4 h-4" />
-          <Typography
-            variant="caption"
-            sx={{ fontSize: "0.7rem", marginTop: "4px" }}
-          >
+          <Typography variant="caption" sx={captionStyle}>
             Delete
           </Typography>
         </Button>
@@ -156,6 +116,12 @@ const columns: GridColDef[] = [
 ];
 
 export default function MerchandiserDashboard() {
+  const { setLoading } = useCommonUtils();  
+
+  useEffect(() => {
+    setLoading(false);
+  }, [setLoading]);
+
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center relative">
       <Navbar />
@@ -202,3 +168,26 @@ export default function MerchandiserDashboard() {
     </div>
   );
 }
+
+const buttonStyle = {
+  minWidth: "auto",
+  padding: "8px 16px",
+  color: "#2F27CE",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 80,
+  height: "100%",
+  opacity: 0.6,
+  "&:hover": {
+    opacity: 1,
+    backgroundColor: "rgba(47, 39, 206, 0.04)",
+  },
+};
+
+const captionStyle = {
+  fontSize: "0.7rem",
+  marginTop: "4px",
+  color: "#2F27CE",
+};
