@@ -2,12 +2,13 @@
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Button, Box, Stack, Typography } from "@mui/material";
-import { Eye, Filter, MapPin } from "lucide-react";
+import { Eye} from "lucide-react";
 import { useModalStore } from "@/app/stores/useModalStore";
 import { useDateStore } from "@/app/stores/useDateStore"; 
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Navbar from "@/components/frontend/Navbar";
+import Filters from "@/components/frontend/Filters";
 
 const buttonStyle = {
   minWidth: "auto",
@@ -67,7 +68,6 @@ const rows = [
     beer: "25",
     juice: "45",
   },
-  // Add more rows as needed...
 ];
 
 const columns: GridColDef[] = [
@@ -136,26 +136,7 @@ export default function Forms() {
     handleFilterClick,
   } = useModalStore();
 
-  const { fromDate, toDate, setFromDate, setToDate } = useDateStore(); // Access the date store
-
-  const filterButtons = ["Custom", "Outlet"];
-
-  const buttonStyles = {
-    color: "#2d2d2d",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 80,
-    height: "100%",
-    opacity: 0.6,
-    border: "1px solid rgba(45, 45, 45, 0.1)",
-    transition: "opacity 0.3s, background-color 0.3s",
-    "&:hover": {
-      opacity: 1,
-      backgroundColor: "rgba(47, 39, 206, 0.04)",
-    },
-  };
+  const { fromDate, toDate, setFromDate, setToDate } = useDateStore(); 
 
   const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
     console.log("Applying custom filter with dates:", { fromDate, toDate });
@@ -172,7 +153,6 @@ export default function Forms() {
     setIsOutletModalOpen(false);
   };
 
-  // Filter rows based on selected date range
   const filteredRows = rows.filter((row) => {
     const createdAt = new Date(row.createdAt);
     return (
@@ -199,45 +179,10 @@ export default function Forms() {
             marginBottom: "8px",
           }}
         >
-          <Stack direction="row" spacing={2} alignItems="center">
-            {filterButtons.map((label) => (
-              <Button
-                key={label}
-                variant="outlined"
-                size="small"
-                onClick={() => handleFilterClick(label as "Custom" | "Outlet")}
-                sx={{
-                  ...buttonStyles,
-                  borderColor: selectedFilter.startsWith(label)
-                    ? "#433BFF"
-                    : "rgba(45, 45, 45, 0.1)",
-                  color: selectedFilter.startsWith(label)
-                    ? "#433BFF"
-                    : "#2d2d2d",
-                  opacity: selectedFilter.startsWith(label) ? 1 : 0.6,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "8px",
-                  textTransform: "none",
-                  padding: "10px 16px",
-                }}
-              >
-                {label === "Custom" && <Filter size={20} />}
-                {label === "Outlet" && <MapPin size={20} />}
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    textTransform: "none",
-                  }}
-                >
-                  {label}
-                </Typography>
-              </Button>
-            ))}
-          </Stack>
+          <Filters 
+            selectedFilter={selectedFilter}
+            handleFilterClick={handleFilterClick}
+          />
         </Box>
 
         <Box
@@ -250,7 +195,7 @@ export default function Forms() {
           }}
         >
           <DataGrid
-            rows={filteredRows} // Use filtered rows based on selected date range
+            rows={filteredRows}
             columns={columns}
             pageSizeOptions={[5, 10]}
             pagination

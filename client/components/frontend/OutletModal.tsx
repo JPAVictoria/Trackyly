@@ -112,11 +112,11 @@ export default function OutletModal({ open, onClose, onSelectOutlet }: OutletMod
         </Box>
       </DialogContent>
       <DialogActions className="p-4 gap-2">
-        <Button onClick={handleClear} {...buttonStyles}>
-          Clear
-        </Button>
         <Button onClick={onClose} {...buttonStyles}>
           Cancel
+        </Button>
+        <Button onClick={handleClear} {...buttonStyles}>
+          Clear
         </Button>
         <Button onClick={handleApply} {...applyButtonStyles}>
           Apply
