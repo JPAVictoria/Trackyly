@@ -4,6 +4,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Button, Box, Stack, Typography } from "@mui/material";
 import { Eye, Filter, MapPin } from "lucide-react";
 import { useModalStore } from "@/app/stores/useModalStore";
+import { useDateStore } from "@/app/stores/useDateStore"; 
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Navbar from "@/components/frontend/Navbar";
@@ -58,6 +59,15 @@ const rows = [
     beer: "40",
     juice: "50",
   },
+  {
+    id: 2,
+    outlet: "Makati City",
+    createdAt: "April 25, 2025 5:30 PM",
+    wine: "30",
+    beer: "25",
+    juice: "45",
+  },
+  // Add more rows as needed...
 ];
 
 const columns: GridColDef[] = [
@@ -126,6 +136,8 @@ export default function Forms() {
     handleFilterClick,
   } = useModalStore();
 
+  const { fromDate, toDate, setFromDate, setToDate } = useDateStore(); // Access the date store
+
   const filterButtons = ["Custom", "Outlet"];
 
   const buttonStyles = {
@@ -145,11 +157,10 @@ export default function Forms() {
     },
   };
 
-  const handleApplyCustomFilter = (
-    fromDate: Date | null,
-    toDate: Date | null
-  ) => {
+  const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
     console.log("Applying custom filter with dates:", { fromDate, toDate });
+    setFromDate(fromDate);
+    setToDate(toDate);
     setSelectedFilter("Custom");
     setIsDateModalOpen(false);
   };
@@ -161,9 +172,18 @@ export default function Forms() {
     setIsOutletModalOpen(false);
   };
 
+  // Filter rows based on selected date range
+  const filteredRows = rows.filter((row) => {
+    const createdAt = new Date(row.createdAt);
+    return (
+      (fromDate ? createdAt >= fromDate : true) &&
+      (toDate ? createdAt <= toDate : true)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center">
-      <Navbar/>
+      <Navbar />
       <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-5">
         Overall Share of Shelf Forms
       </h1>
@@ -198,7 +218,7 @@ export default function Forms() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: "8px", 
+                  gap: "8px",
                   textTransform: "none",
                   padding: "10px 16px",
                 }}
@@ -230,7 +250,7 @@ export default function Forms() {
           }}
         >
           <DataGrid
-            rows={rows}
+            rows={filteredRows} // Use filtered rows based on selected date range
             columns={columns}
             pageSizeOptions={[5, 10]}
             pagination

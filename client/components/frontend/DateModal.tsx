@@ -12,17 +12,17 @@ import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useDateStore } from "@/app/stores/useDateStore";
 
-interface CustomFilterModalProps {
+interface DateFilterModal {
   open: boolean;
   onClose: () => void;
   onApply: (fromDate: Date | null, toDate: Date | null) => void;
 }
 
-export default function CustomFilterModal({
+export default function DateFilterModal({
   open,
   onClose,
   onApply,
-}: CustomFilterModalProps) {
+}: DateFilterModal) {
   const { fromDate, toDate, setFromDate, setToDate, resetDates } = useDateStore();
 
   const handleApply = () => {
