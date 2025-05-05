@@ -11,6 +11,7 @@ import {
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/frontend/Navbar";
 import { Button } from "@mui/material";
+import useRoleGuard from "@/app/hooks/useRoleGuard";
 
 const buttonStyles = {
   backgroundColor: "#fff",
@@ -27,6 +28,9 @@ const buttonStyles = {
 };
 
 export default function CreateForm() {
+
+    useRoleGuard(["MERCHANDISER"]);
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f9f9fc] px-4 py-10">
       <Navbar />

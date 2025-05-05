@@ -9,6 +9,7 @@ import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Navbar from "@/components/frontend/Navbar";
 import Filters from "@/components/frontend/Filters";
+import useRoleGuard from "@/app/hooks/useRoleGuard";
 
 const buttonStyle = {
   minWidth: "auto",
@@ -126,6 +127,9 @@ const columns: GridColDef[] = [
 ];
 
 export default function Forms() {
+
+    useRoleGuard(["ADMIN"]);
+  
   const {
     selectedFilter,
     isDateModalOpen,

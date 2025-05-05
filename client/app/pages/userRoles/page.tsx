@@ -8,6 +8,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import { UserActions } from "@/components/frontend/UserActions"; 
+import useRoleGuard from "@/app/hooks/useRoleGuard";
 
 interface User {
   id: string;
@@ -87,6 +88,9 @@ const useSoftDeleteUser = () => {
 };
 
 export default function UserRoles() {
+
+  useRoleGuard(["ADMIN"]);
+  
   const { data: users = [], isLoading } = useUsers();
   const toggleRole = useToggleRole();
   const softDeleteUser = useSoftDeleteUser();

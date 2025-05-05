@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@mui/material";
+import useRoleGuard from "@/app/hooks/useRoleGuard";
 
 const buttonStyles = {
   backgroundColor: "#fff",
@@ -18,6 +19,8 @@ const buttonStyles = {
 };
 
 export default function Conforme() {
+    useRoleGuard(["MERCHANDISER"]);
+  
   const [checkboxes, setCheckboxes] = useState([false, false, false, false]);
 
   const handleCheckboxChange = (index: number) => {
