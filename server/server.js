@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const cookieParser = require("cookie-parser");
 
 const registerRouter = require("./api/auth/register/auth.route");
 const loginRouter = require("./api/auth/login/auth.route");
@@ -16,6 +17,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
 
 app.use("/user/register", registerRouter);
