@@ -1,8 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; 
 import { Button } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
+import { useLoading } from "@/app/context/loaderContext";
+import { useSnackbar } from "@/app/context/SnackbarContext"; 
+import axios from "axios"; 
+
+interface FormData {
+  wine: string | null;
+  beer: string | null;
+  juice: string | null;
+  outlet: string | null;
+  total: string | null;
+  timeIn: string | null;
+  merchandiserId: string | null; 
+}
 
 const buttonStyles = {
   backgroundColor: "#fff",
@@ -19,15 +33,93 @@ const buttonStyles = {
 };
 
 export default function Conforme() {
-    useRoleGuard(["MERCHANDISER"]);
+
   
+  useRoleGuard(["MERCHANDISER"]);
+
+  const router = useRouter();
+  const { setLoading } = useLoading(); 
+  const { openSnackbar } = useSnackbar(); 
+
+  const [formData, setFormData] = useState<FormData>({
+    wine: null,
+    beer: null,
+    juice: null,
+    outlet: null,
+    total: null,
+    timeIn: null,
+    merchandiserId: null, 
+  });
+
   const [checkboxes, setCheckboxes] = useState([false, false, false, false]);
+
+  useEffect(() => {
+    // Get query params from the URL
+    const queryParams = new URLSearchParams(window.location.search);
+    const data: FormData = {
+      wine: queryParams.get("wine"),
+      beer: queryParams.get("beer"),
+      juice: queryParams.get("juice"),
+      outlet: queryParams.get("outlet"),
+      total: queryParams.get("total"),
+      timeIn: queryParams.get("timeIn"),
+      merchandiserId: JSON.parse(localStorage.getItem("user") || "{}").id, 
+    };
+
+    setFormData(data);
+  }, [router]);
 
   const handleCheckboxChange = (index: number) => {
     const updated = [...checkboxes];
     updated[index] = !updated[index];
     setCheckboxes(updated);
   };
+
+  const allCheckboxesChecked = checkboxes.every((checkbox) => checkbox);
+
+  const handleGoBack = () => {
+    router.push(`/pages/createForm?wine=${formData.wine}&beer=${formData.beer}&juice=${formData.juice}&outlet=${formData.outlet}&total=${formData.total}&timeIn=${formData.timeIn}`);
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true); 
+  
+    console.log(formData);
+  
+    
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const merchandiserId = user?.id;
+  
+    if (!merchandiserId) {
+      openSnackbar("Merchandiser ID is missing. Please log in again.", "error");
+      setLoading(false); 
+      return; 
+    }
+  
+    try {
+      const response = await axios.post("http://localhost:5000/user/sosform", {
+        merchandiserId, 
+        outlet: formData.outlet,
+        wine: formData.wine,
+        beer: formData.beer,
+        juice: formData.juice,
+        createdAt: new Date().toISOString(),
+      });
+  
+      if (response.status === 201) {
+        openSnackbar("Form submitted successfully!", "success"); 
+        router.push("/pages/merchandiserDashboard");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      openSnackbar("Failed to submit the form. Please try again.", "error"); 
+    } finally {
+      setLoading(false); 
+    }
+  };
+  
+
+
 
   return (
     <div className="min-h-screen bg-[#f9f9fb] flex flex-col items-center justify-center p-6">
@@ -39,31 +131,30 @@ export default function Conforme() {
         <div className="flex justify-between items-center text-sm font-medium mb-7">
           <div className="text-center">
             <p className="text-[#2d2d2d] font-semibold mb-2">Actual Time-in</p>
-            <p className="text-[#2d2d2d] font-normal">10-29-2004 19:24:24 PM</p>
+            <p className="text-[#2d2d2d] font-normal">{formData.timeIn}</p>
           </div>
           <div className="text-center">
             <p className="text-[#2d2d2d] font-semibold mb-2">Outlet</p>
-            <p className="text-[#2d2d2d] font-normal">SA BAHAY NI ALING NENA</p>
+            <p className="text-[#2d2d2d] font-normal">{formData.outlet}</p>
           </div>
         </div>
 
         <div className="text-center mt-6 mb-5 space-y-4 text-[#2d2d2d]">
           <p className="font-semibold text-sm">Input Details</p>
-          <p className="text-sm">Total Beverages - 10</p>
-          <p className="text-sm">Wine - 30</p>
-          <p className="text-sm">Beer - 50</p>
-          <p className="text-sm">Juice - 20</p>
+          <p className="text-sm">Total Beverages - {formData.total}</p>
+          <p className="text-sm">Wine - {formData.wine}</p>
+          <p className="text-sm">Beer - {formData.beer}</p>
+          <p className="text-sm">Juice - {formData.juice}</p>
         </div>
 
         <hr className="my-4 opacity-20" />
 
-
         <div className="space-y-4 text-[12px]">
-          {[
+          {[ 
             "All information provided in this form is complete, true, and correct to the best of my knowledge",
             "All reimbursement regarding transportation and other valid expenses are accurate",
-            "I understand that any false information provided might lead to the disapproval of any related reimbursement and that it may be grounds for demerit, suspension, or even termination of employment and that",
-            "All information provided in this form was reviewed before submission.",
+            "I understand that any false information provided might lead to the disapproval of any related reimbursement and that it may be grounds for demerit, suspension, or even termination of employment",
+            "All information provided in this form was reviewed before submission."
           ].map((text, idx) => (
             <div key={idx} className="flex items-start space-x-2">
               <input
@@ -78,10 +169,15 @@ export default function Conforme() {
         </div>
 
         <div className="flex justify-between items-center pt-6">
-          <Button sx={buttonStyles} variant="outlined">
+          <Button sx={buttonStyles} variant="outlined" onClick={handleGoBack}>
             ← Go back
           </Button>
-          <Button sx={buttonStyles} variant="outlined">
+          <Button
+            sx={buttonStyles}
+            variant="outlined"
+            onClick={handleSubmit}
+            disabled={!allCheckboxesChecked}
+          >
             Submit
           </Button>
         </div>

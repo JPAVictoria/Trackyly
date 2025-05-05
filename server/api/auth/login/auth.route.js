@@ -41,12 +41,14 @@ router.post("/login", async (req, res) => {
       message: "Login successful",
       token,
       user: {
+        id: user.id, // 👈 Add this line
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
       },
     });
+    
     
   } catch (err) {
     console.error("Login error:", err);

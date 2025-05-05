@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,6 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/frontend/Navbar";
 import { Button } from "@mui/material";
+import { useRouter } from "next/navigation"; 
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 
 const buttonStyles = {
@@ -28,9 +30,33 @@ const buttonStyles = {
 };
 
 export default function CreateForm() {
+  useRoleGuard(["MERCHANDISER"]);
 
-    useRoleGuard(["MERCHANDISER"]);
-  
+  const [wine, setWine] = useState<number>(0);
+  const [beer, setBeer] = useState<number>(0);
+  const [juice, setJuice] = useState<number>(0);
+  const [outlet, setOutlet] = useState<string>("");
+  const [timeIn] = useState(() => new Date().toLocaleString());
+
+  const totalBeverages = wine + beer + juice;
+
+  const router = useRouter();
+
+  const handleMoveToConfirmation = () => {
+    const formData = {
+      wine: String(wine),
+      beer: String(beer),
+      juice: String(juice),
+      outlet,
+      total: String(totalBeverages),
+      timeIn,
+    };
+
+    router.push(`/pages/conforme?${new URLSearchParams(formData).toString()}`);
+  };
+
+  const outlets = ["PARANAQUE_CITY", "MUNTINLUPA_CITY", "QUEZON_CITY"];
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f9f9fc] px-4 py-10">
       <Navbar />
@@ -50,7 +76,7 @@ export default function CreateForm() {
             <Input
               id="time-in"
               type="text"
-              value="04/20/2025 03:42:42 PM"
+              value={timeIn}
               className="mt-1 text-[#6b7280] border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed transition-all duration-300 focus:outline-none"
               readOnly
             />
@@ -60,7 +86,7 @@ export default function CreateForm() {
             <Label htmlFor="outlet" className="text-[#2d2d2d] mb-2 font-medium">
               Outlet
             </Label>
-            <Select>
+            <Select onValueChange={setOutlet}>
               <SelectTrigger
                 id="outlet"
                 className="mt-1 w-full cursor-pointer focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 data-[state=open]:ring-1 data-[state=open]:ring-[#2F27CE]"
@@ -68,24 +94,15 @@ export default function CreateForm() {
                 <SelectValue placeholder="Choose an outlet" />
               </SelectTrigger>
               <SelectContent className="bg-white border border-[#2d2d2d]/50 shadow-md">
-                <SelectItem 
-                  value="outlet-a" 
-                  className="cursor-pointer hover:bg-[#2F27CE]/10"
-                >
-                  Outlet A
-                </SelectItem>
-                <SelectItem 
-                  value="outlet-b" 
-                  className="cursor-pointer hover:bg-[#2F27CE]/10"
-                >
-                  Outlet B
-                </SelectItem>
-                <SelectItem 
-                  value="outlet-c" 
-                  className="cursor-pointer hover:bg-[#2F27CE]/10"
-                >
-                  Outlet C
-                </SelectItem>
+                {outlets.map((outletValue) => (
+                  <SelectItem
+                    key={outletValue}
+                    value={outletValue}
+                    className="cursor-pointer hover:bg-[#2F27CE]/10"
+                  >
+                    {outletValue.replace("_", " ")}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -101,30 +118,34 @@ export default function CreateForm() {
               </Label>
               <Input
                 type="number"
+                value={totalBeverages}
                 readOnly
-                className="flex-1 max-w-sm text-[#6b7280] border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed transition-all duration-300 focus:outline-none"
+                className="flex-1 max-w-sm text-[#6b7280] border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed transition-all duration-300 focus:outline-none text-center"
               />
             </div>
 
             {["Wine", "Beer", "Juice"].map((label) => (
-              <div
-                key={label}
-                className="col-span-3 flex items-center justify-center gap-4"
-              >
+              <div key={label} className="col-span-3 flex items-center justify-center gap-4">
                 <Label className="w-32 text-[#2d2d2d] font-normal">
                   {label}
                 </Label>
                 <Input
                   type="number"
-                  className="flex-1 max-w-sm transition-all duration-300 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30"
+                  value={label === "Wine" ? wine : label === "Beer" ? beer : juice}
+                  onChange={(e) =>
+                    label === "Wine" ? setWine(Number(e.target.value)) :
+                    label === "Beer" ? setBeer(Number(e.target.value)) :
+                    setJuice(Number(e.target.value))
+                  }
+                  className="flex-1 max-w-sm transition-all duration-300 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 text-center"
                 />
               </div>
             ))}
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button sx={buttonStyles} variant="outlined">
-              Move to confirmation →
+            <Button sx={buttonStyles} variant="outlined" onClick={handleMoveToConfirmation}>
+              Move to confirmation →  
             </Button>
           </div>
         </div>
