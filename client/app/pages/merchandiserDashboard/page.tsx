@@ -6,7 +6,8 @@ import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Pencil, Eye, Trash2 } from "lucide-react";
 import { Box, Button, Stack, Typography } from "@mui/material";
-import { useCommonUtils } from "@/app/hooks/useCommonUtils"; // Assuming useCommonUtils hook provides setLoading
+import { useCommonUtils } from "@/app/hooks/useCommonUtils"; 
+import useRoleGuard from "@/app/hooks/useRoleGuard";
 
 const rows = [
   {
@@ -116,6 +117,9 @@ const columns: GridColDef[] = [
 ];
 
 export default function MerchandiserDashboard() {
+
+  useRoleGuard(["MERCHANDISER"]);
+
   const { setLoading } = useCommonUtils();  
 
   useEffect(() => {

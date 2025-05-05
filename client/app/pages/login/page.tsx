@@ -69,7 +69,7 @@ export default function Login() {
       } else if (user.role === "MERCHANDISER") {
         router.push("/pages/merchandiserDashboard");
       } else {
-        openSnackbar("Unknown role. Contact support.", "error");
+        openSnackbar("Login failed, please try again.", "error");
         Cookies.remove("token");
         localStorage.removeItem("user");
       }

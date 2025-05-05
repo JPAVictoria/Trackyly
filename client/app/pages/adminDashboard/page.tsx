@@ -6,10 +6,13 @@ import AnalyticsBlock from "@/components/frontend/AnalyticsBlock";
 import StatsOverViewBlock from "@/components/frontend/StatsOverViewBlock";
 import Navbar from "@/components/frontend/Navbar";
 import { useLoading } from "@/app/context/loaderContext";
+import useRoleGuard from "@/app/hooks/useRoleGuard";
+
 
 export default function Dashboard() {
   const { setLoading } = useLoading();
-
+  useRoleGuard(["ADMIN"]);
+  
   useEffect(() => {
     setLoading(false);
   }, [setLoading]);
