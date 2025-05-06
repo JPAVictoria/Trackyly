@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/frontend/Navbar";
@@ -10,7 +10,6 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
-import { useEffect } from "react";
 import { useLoading } from "@/app/context/loaderContext";
 
 export default function MerchandiserDashboard() {
@@ -18,11 +17,23 @@ export default function MerchandiserDashboard() {
   const { openSnackbar } = useCommonUtils();
   const queryClient = useQueryClient();
   const { setLoading } = useLoading();
-  
-      useEffect(() => {
-        setLoading(false);
-      }, [setLoading]);
 
+  useEffect(() => {
+    setLoading(false);
+  }, [setLoading]);
+
+  // Initialize state to hold the user information
+  const [merchandiserId, setMerchandiserId] = useState<string | null>(null);
+
+  // Set merchandiserId from localStorage when the component is mounted (client-side)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      setMerchandiserId(user.id || null);
+    }
+  }, []); // Empty dependency array means this effect runs only once, when the component mounts
+
+  // Type definition for SOSForm
   type SOSForm = {
     id: string;
     outlet: string;
@@ -32,6 +43,7 @@ export default function MerchandiserDashboard() {
     createdAt: string;
   };
 
+  // Format the outlet name
   const formatOutletName = (outlet: string) => {
     return outlet
       .split("_")
@@ -40,14 +52,20 @@ export default function MerchandiserDashboard() {
   };
 
   // Fetch SOS forms data
-  const { data: sosForms = [], isLoading, error } = useQuery<SOSForm[]>({
+  const {
+    data: sosForms = [],
+    isLoading,
+    error,
+  } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
       const res = await axios.get("http://localhost:5000/user/sosform", {
         withCredentials: true,
+        params: { merchandiserId },
       });
       return res.data;
     },
+    enabled: !!merchandiserId, // Ensure query runs only when merchandiserId is set
   });
 
   const deleteMutation = useMutation({
@@ -59,8 +77,9 @@ export default function MerchandiserDashboard() {
       );
     },
     onSuccess: (_, id) => {
-      queryClient.setQueryData<SOSForm[]>(['sosForms'], (old) => 
-        old?.filter(form => form.id !== id) || []
+      queryClient.setQueryData<SOSForm[]>(
+        ["sosForms"],
+        (old) => old?.filter((form) => form.id !== id) || []
       );
       openSnackbar("Form successfully deleted", "success");
     },

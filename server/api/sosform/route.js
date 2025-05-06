@@ -32,12 +32,20 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
+    const { merchandiserId } = req.query; // Get merchandiserId from query params
+
+    if (!merchandiserId) {
+      return res.status(400).json({ error: "merchandiserId is required" });
+    }
+
     const forms = await prisma.sOSForm.findMany({
       where: {
-        deleted: false, // Only return non-deleted forms
+        deleted: false,
+        merchandiserId: merchandiserId, // Filter by the specific merchandiser
       },
       orderBy: { createdAt: "desc" },
     });
+    
     return res.status(200).json(forms);
   } catch (err) {
     console.error("Error fetching SOSForms:", err);
