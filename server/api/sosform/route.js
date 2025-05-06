@@ -32,7 +32,7 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { merchandiserId } = req.query; // Get merchandiserId from query params
+    const { merchandiserId } = req.query; 
 
     if (!merchandiserId) {
       return res.status(400).json({ error: "merchandiserId is required" });
@@ -41,7 +41,7 @@ router.get("/", async (req, res) => {
     const forms = await prisma.sOSForm.findMany({
       where: {
         deleted: false,
-        merchandiserId: merchandiserId, // Filter by the specific merchandiser
+        merchandiserId: merchandiserId, 
       },
       orderBy: { createdAt: "desc" },
     });
@@ -71,4 +71,25 @@ router.put("/softDelete/:id", async (req, res) => {
   }
 });
 
+router.get("/all", async (req, res) => {
+  try {
+    const forms = await prisma.sOSForm.findMany({
+      where: {
+        deleted: false,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    
+    return res.status(200).json(forms);
+  } catch (err) {
+    console.error("Error fetching all SOSForms:", err);
+    return res.status(500).json({ 
+      error: "Internal server error", 
+      details: err.message 
+    });
+  }
+});
+
 module.exports = router;
+
+

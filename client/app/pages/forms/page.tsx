@@ -1,196 +1,143 @@
 "use client";
-
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Button, Box, Stack, Typography } from "@mui/material";
-import { Eye } from "lucide-react";
-import { useModalStore } from "@/app/stores/useModalStore";
-import { useDateStore } from "@/app/stores/useDateStore";
-import DateModal from "@/components/frontend/DateModal";
-import OutletModal from "@/components/frontend/OutletModal";
+import React, { useEffect } from "react";
+import axios from "axios";
+import { useQuery} from "@tanstack/react-query";
 import Navbar from "@/components/frontend/Navbar";
-import Filters from "@/components/frontend/Filters";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import {Eye} from "lucide-react";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
+import { format } from "date-fns";
+import { useLoading } from "@/app/context/loaderContext";
 
-const buttonStyle = {
-  minWidth: "auto",
-  padding: "8px 16px",
-  color: "#2F27CE",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 80,
-  height: "100%",
-  opacity: 0.6,
-  transition: "opacity 0.3s, background-color 0.3s",
-  "&:hover": {
-    opacity: 1,
-    backgroundColor: "rgba(47, 39, 206, 0.04)",
-  },
+type SOSForm = {
+  id: string;
+  outlet: string;
+  wine: number;
+  beer: number;
+  juice: number;
+  createdAt: string;
 };
 
-const captionStyle = {
-  fontSize: "0.7rem",
-  marginTop: "4px",
-  color: "#2F27CE",
-};
+export default function AdminForms() {
+  useRoleGuard(["ADMIN"]);
+  const { setLoading } = useLoading();
 
-const ActionButtons = () => (
-  <Stack
-    direction="row"
-    spacing={2}
-    justifyContent="center"
-    alignItems="center"
-    sx={{ height: "100%" }}
-  >
-    <Button size="medium" variant="text" sx={buttonStyle}>
-      <Eye className="w-4 h-4" />
-      <Typography variant="caption" sx={captionStyle}>
-        Read
-      </Typography>
-    </Button>
-  </Stack>
-);
+  useEffect(() => {
+    setLoading(false);
+  }, [setLoading]);
 
-const rows = [
-  {
-    id: 1,
-    outlet: "PARANAQUE CITY",
-    createdAt: "March 20, 2025 7:50 PM",
-    wine: "20",
-    beer: "40",
-    juice: "50",
-  },
-  {
-    id: 2,
-    outlet: "Makati City",
-    createdAt: "April 25, 2025 5:30 PM",
-    wine: "30",
-    beer: "25",
-    juice: "45",
-  },
-];
-
-const columns: GridColDef[] = [
-  {
-    field: "outlet",
-    headerName: "Outlet",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "createdAt",
-    headerName: "Created Date",
-    flex: 1.2,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "wine",
-    headerName: "Wine",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "beer",
-    headerName: "Beer",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "juice",
-    headerName: "Juice",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "actions",
-    headerName: "Action",
-    width: 150,
-    sortable: false,
-    filterable: false,
-    disableColumnMenu: true,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-    renderCell: () => <ActionButtons />,
-  },
-];
-
-export default function Forms() {
-
-    useRoleGuard(["ADMIN"]);
-  
-  const {
-    selectedFilter,
-    isDateModalOpen,
-    isOutletModalOpen,
-    setSelectedFilter,
-    setIsDateModalOpen,
-    setIsOutletModalOpen,
-    handleFilterClick,
-  } = useModalStore();
-
-  const { fromDate, toDate, setFromDate, setToDate } = useDateStore();
-
-  const handleApplyCustomFilter = (
-    fromDate: Date | null,
-    toDate: Date | null
-  ) => {
-    console.log("Applying custom filter with dates:", { fromDate, toDate });
-    setFromDate(fromDate);
-    setToDate(toDate);
-    setSelectedFilter("Custom");
-    setIsDateModalOpen(false);
-  };
-
-  const handleApplyOutletFilter = (outlet: string | null) => {
-    if (outlet) {
-      setSelectedFilter(`Outlet: ${outlet}`);
-    }
-    setIsOutletModalOpen(false);
-  };
-
-  const filteredRows = rows.filter((row) => {
-    const createdAt = new Date(row.createdAt);
-    return (
-      (fromDate ? createdAt >= fromDate : true) &&
-      (toDate ? createdAt <= toDate : true)
-    );
+  const { data: sosForms = [], isLoading, error } = useQuery<SOSForm[]>({
+    queryKey: ["sosForms"],
+    queryFn: async () => {
+      const res = await axios.get("http://localhost:5000/user/sosform/all", {
+        withCredentials: true,
+      });
+      return res.data;
+    },
   });
 
+
+  const formatOutletName = (outlet: string) => {
+    return outlet
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  const rows = sosForms.map((form) => ({
+    id: form.id,
+    outlet: formatOutletName(form.outlet),
+    createdAt: format(new Date(form.createdAt), "MMMM d, yyyy h:mm a"),
+    wine: form.wine,
+    beer: form.beer,
+    juice: form.juice,
+  }));
+
+  // Define columns for the DataGrid
+  const columns: GridColDef[] = [
+    {
+      field: "outlet",
+      headerName: "Outlet",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "createdAt",
+      headerName: "Created Date",
+      flex: 1.2,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "wine",
+      headerName: "Wine",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "beer",
+      headerName: "Beer",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "juice",
+      headerName: "Juice",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "actions",
+      headerName: "Action",
+      width: 300,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+      renderCell: () => (
+        <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="center"
+          alignItems="center"
+          sx={{ height: "100%" }}
+        >
+          <Button size="medium" variant="text" sx={buttonStyle}>
+            <Eye className="w-4 h-4" />
+            <Typography variant="caption" sx={captionStyle}>
+              Read
+            </Typography>
+          </Button>
+        </Stack>
+      ),
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center relative">
       <Navbar />
-      <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-5">
-        Overall Share of Shelf Forms
+      <div className="flex flex-col items-center justify-center p-10 w-full text-center">
+      <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-10">
+        User Roles and Permissions
       </h1>
 
-      <div className="flex flex-col items-center justify-center p-10 w-full text-center">
-        <Box
-          sx={{
-            width: "80%",
-            maxWidth: "90vw",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            marginBottom: "8px",
-          }}
-        >
-          <Filters
-            selectedFilter={selectedFilter}
-            handleFilterClick={handleFilterClick}
-          />
-        </Box>
+        {error && (
+          <Typography color="error" className="mb-4">
+            Failed to load SOS forms: {(error as Error).message}
+          </Typography>
+        )}
 
         <Box
           sx={{
@@ -203,9 +150,9 @@ export default function Forms() {
         >
           <DataGrid
             getRowId={(row) => row.id}
-            rows={filteredRows}
+            rows={rows}
             columns={columns}
-            loading={false}
+            loading={isLoading}
             pagination
             pageSizeOptions={[5, 10, 20]}
             disableColumnMenu
@@ -220,7 +167,6 @@ export default function Forms() {
             sx={{
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: "#fff",
-                color: "#3E2723",
                 fontWeight: "bold",
               },
               "& .MuiDataGrid-columnSeparator": {
@@ -236,18 +182,29 @@ export default function Forms() {
           />
         </Box>
       </div>
-
-      <DateModal
-        open={isDateModalOpen}
-        onClose={() => setIsDateModalOpen(false)}
-        onApply={handleApplyCustomFilter}
-      />
-
-      <OutletModal
-        open={isOutletModalOpen}
-        onClose={() => setIsOutletModalOpen(false)}
-        onSelectOutlet={handleApplyOutletFilter}
-      />
     </div>
   );
 }
+
+const buttonStyle = {
+  minWidth: "auto",
+  padding: "8px 16px",
+  color: "#2F27CE",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 80,
+  height: "100%",
+  opacity: 0.6,
+  "&:hover": {
+    opacity: 1,
+    backgroundColor: "rgba(47, 39, 206, 0.04)",
+  },
+};
+
+const captionStyle = {
+  fontSize: "0.7rem",
+  marginTop: "4px",
+  color: "#2F27CE",
+};
