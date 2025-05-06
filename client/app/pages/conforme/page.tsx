@@ -50,31 +50,67 @@ export default function Conforme() {
   });
 
   const [isEdit, setIsEdit] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   const [formId, setFormId] = useState<string | null>(null);
   const [checkboxes, setCheckboxes] = useState([false, false, false, false]);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
+    const id = queryParams.get("id");
+    const readonly = queryParams.get("readonly") === "true";
+
+    setIsReadOnly(readonly);
+    setIsEdit(queryParams.get("edit") === "true");
+    setFormId(id);
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const merchandiserId = user?.id;
 
-    const data: FormData = {
-      wine: queryParams.get("wine"),
-      beer: queryParams.get("beer"),
-      juice: queryParams.get("juice"),
-      outlet: queryParams.get("outlet"),
-      total: queryParams.get("total"),
-      timeIn: queryParams.get("timeIn"),
-      merchandiserId,
-    };
-
-    setFormData(data);
-    setIsEdit(queryParams.get("edit") === "true");
-    setFormId(queryParams.get("id"));
+    if (readonly && id) {
+      // Fetch the form data by ID
+      axios
+        .get(`http://localhost:5000/user/sosform/${id}`)
+        .then((response) => {
+          const data = response.data;
+          setFormData({
+            wine: data.wine.toString(),
+            beer: data.beer.toString(),
+            juice: data.juice.toString(),
+            outlet: data.outlet,
+            total: (data.wine + data.beer + data.juice).toString(),
+            timeIn: new Date(data.createdAt).toLocaleString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            
+            merchandiserId,
+          });
+          setCheckboxes([true, true, true, true]);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch form for read-only view", error);
+        });
+    } else {
+      const data: FormData = {
+        wine: queryParams.get("wine"),
+        beer: queryParams.get("beer"),
+        juice: queryParams.get("juice"),
+        outlet: queryParams.get("outlet"),
+        total: queryParams.get("total"),
+        timeIn: queryParams.get("timeIn"),
+        merchandiserId,
+      };
+      setFormData(data);
+    }
   }, [router]);
 
   const handleCheckboxChange = (index: number) => {
+    if (isReadOnly) return;
+
     const updated = [...checkboxes];
     updated[index] = !updated[index];
     setCheckboxes(updated);
@@ -116,16 +152,22 @@ export default function Conforme() {
       let response;
 
       if (isEdit && formId) {
-        // If editing, send PUT request
-        response = await axios.put(`http://localhost:5000/user/sosform/${formId}`, payload);
+        response = await axios.put(
+          `http://localhost:5000/user/sosform/${formId}`,
+          payload
+        );
       } else {
-        // If creating, send POST request
-        response = await axios.post("http://localhost:5000/user/sosform", payload);
+        response = await axios.post(
+          "http://localhost:5000/user/sosform",
+          payload
+        );
       }
 
       if (response.status === 201 || response.status === 200) {
         openSnackbar(
-          isEdit ? "Form updated successfully!" : "Form submitted successfully!",
+          isEdit
+            ? "Form updated successfully!"
+            : "Form submitted successfully!",
           "success"
         );
         router.push("/pages/merchandiserDashboard");
@@ -187,7 +229,7 @@ export default function Conforme() {
         <hr className="my-4 opacity-20" />
 
         <div className="space-y-4 text-[12px]">
-          {[ // Checkbox agreement texts
+          {[
             "All information provided in this form is complete, true, and correct to the best of my knowledge",
             "All reimbursement regarding transportation and other valid expenses are accurate",
             "I understand that any false information provided might lead to the disapproval of any related reimbursement and that it may be grounds for demerit, suspension, or even termination of employment",
@@ -198,6 +240,7 @@ export default function Conforme() {
                 type="checkbox"
                 className="mt-1 cursor-pointer"
                 checked={checkboxes[idx]}
+                disabled={isReadOnly}
                 onChange={() => handleCheckboxChange(idx)}
               />
               <label className="text-[#2d2d2d]">{text}</label>
@@ -205,19 +248,33 @@ export default function Conforme() {
           ))}
         </div>
 
-        <div className="flex justify-between items-center pt-6">
-          <Button sx={buttonStyles} variant="outlined" onClick={handleGoBack}>
-            ← Go back
-          </Button>
-          <Button
-            sx={buttonStyles}
-            variant="outlined"
-            onClick={handleSubmit}
-            disabled={!allCheckboxesChecked}
-          >
-            {isEdit ? "Update" : "Submit"}
-          </Button>
-        </div>
+        {!isReadOnly && (
+          <div className="flex justify-between items-center pt-6">
+            <Button sx={buttonStyles} variant="outlined" onClick={handleGoBack}>
+              ← Go back
+            </Button>
+            <Button
+              sx={buttonStyles}
+              variant="outlined"
+              onClick={handleSubmit}
+              disabled={!allCheckboxesChecked}
+            >
+              {isEdit ? "Update" : "Submit"}
+            </Button>
+          </div>
+        )}
+
+        {isReadOnly && (
+          <div className="flex justify-end pt-6">
+            <Button
+              sx={buttonStyles}
+              variant="outlined"
+              onClick={() => router.push("/pages/merchandiserDashboard")}
+            >
+              ← Back to Dashboard
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

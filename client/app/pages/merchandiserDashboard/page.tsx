@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/frontend/Navbar";
 import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -14,7 +14,7 @@ import { format } from "date-fns";
 import { useLoading } from "@/app/context/loaderContext";
 
 export default function MerchandiserDashboard() {
-  const router = useRouter(); 
+  const router = useRouter();
   useRoleGuard(["MERCHANDISER"]);
   const { openSnackbar } = useCommonUtils();
   const queryClient = useQueryClient();
@@ -74,8 +74,9 @@ export default function MerchandiserDashboard() {
       );
     },
     onSuccess: (_, id) => {
-      queryClient.setQueryData<SOSForm[]>(["sosForms"], (old) =>
-        old?.filter((form) => form.id !== id) || []
+      queryClient.setQueryData<SOSForm[]>(
+        ["sosForms"],
+        (old) => old?.filter((form) => form.id !== id) || []
       );
       openSnackbar("Form successfully deleted", "success");
     },
@@ -88,10 +89,14 @@ export default function MerchandiserDashboard() {
     deleteMutation.mutate(id);
   };
 
+  const handleRead = (id: string) => {
+    router.push(`/pages/conforme?id=${id}&readonly=true`);
+  };
+
+  
   const handleEdit = (id: string) => {
     router.push(`/pages/createForm?id=${id}&edit=true`);
   };
-  
 
   const rows = sosForms.map((form) => ({
     id: form.id,
@@ -161,18 +166,29 @@ export default function MerchandiserDashboard() {
           alignItems="center"
           sx={{ height: "100%" }}
         >
-          <Button size="medium" variant="text" sx={buttonStyle} onClick={() => handleEdit(params.row.id)}>
+          <Button
+            size="medium"
+            variant="text"
+            sx={buttonStyle}
+            onClick={() => handleEdit(params.row.id)}
+          >
             <Pencil className="w-4 h-4" />
             <Typography variant="caption" sx={captionStyle}>
               Edit
             </Typography>
           </Button>
-          <Button size="medium" variant="text" sx={buttonStyle}>
+          <Button
+            size="medium"
+            variant="text"
+            sx={buttonStyle}
+            onClick={() => handleRead(params.row.id)}
+          >
             <Eye className="w-4 h-4" />
             <Typography variant="caption" sx={captionStyle}>
               Read
             </Typography>
           </Button>
+
           <Button
             size="medium"
             variant="text"
