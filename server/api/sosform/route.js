@@ -18,7 +18,8 @@ router.post("/", async (req, res) => {
         beer: Number(beer),
         juice: Number(juice),
         createdAt: createdAt ? new Date(createdAt) : new Date(),
-        merchandiserId, 
+        merchandiserId,
+        deleted: false, // Explicitly set deleted flag
       },
     });
 
@@ -32,6 +33,9 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const forms = await prisma.sOSForm.findMany({
+      where: {
+        deleted: false, // Only return non-deleted forms
+      },
       orderBy: { createdAt: "desc" },
     });
     return res.status(200).json(forms);
@@ -41,5 +45,22 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.put("/softDelete/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const updatedForm = await prisma.sOSForm.update({
+      where: { id },
+      data: { 
+        deleted: true,
+      },
+    });
+
+    return res.status(200).json({ message: "Form soft deleted", data: updatedForm });
+  } catch (err) {
+    console.error("Error soft deleting SOSForm:", err);
+    return res.status(500).json({ error: "Internal server error", details: err.message });
+  }
+});
 
 module.exports = router;

@@ -1,8 +1,7 @@
 "use client";
-
-import React, { useEffect } from "react";
+import React from "react";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/frontend/Navbar";
 import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -12,35 +11,30 @@ import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
 
-type SOSForm = {
-  id: string;
-  outlet: string;
-  wine: number;
-  beer: number;
-  juice: number;
-  createdAt: string;
-};
-
-const formatOutletName = (outlet: string) => {
-  return outlet
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-};
-
 export default function MerchandiserDashboard() {
   useRoleGuard(["MERCHANDISER"]);
-  const { setLoading } = useCommonUtils();
+  const { openSnackbar } = useCommonUtils();
+  const queryClient = useQueryClient();
+  const [loading, setLoading] = React.useState(false);
 
-  useEffect(() => {
-    setLoading(false);
-  }, [setLoading]);
+  type SOSForm = {
+    id: string;
+    outlet: string;
+    wine: number;
+    beer: number;
+    juice: number;
+    createdAt: string;
+  };
 
-  const {
-    data = [],
-    isLoading,
-    error,
-  } = useQuery({
+  const formatOutletName = (outlet: string) => {
+    return outlet
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  // Fetch SOS forms data
+  const { data: sosForms = [], isLoading, error } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
       const res = await axios.get("http://localhost:5000/user/sosform", {
@@ -50,7 +44,34 @@ export default function MerchandiserDashboard() {
     },
   });
 
-  const rows = (data as SOSForm[]).map((form) => ({
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => {
+      setLoading(true);
+      return axios.put(
+        `http://localhost:5000/user/sosform/softDelete/${id}`,
+        {},
+        { withCredentials: true }
+      );
+    },
+    onSuccess: (_, id) => {
+      queryClient.setQueryData<SOSForm[]>(['sosForms'], (old) => 
+        old?.filter(form => form.id !== id) || []
+      );
+      openSnackbar("Form successfully deleted", "success");
+    },
+    onError: () => {
+      openSnackbar("Failed to delete form", "error");
+    },
+    onSettled: () => {
+      setLoading(false);
+    }
+  });
+
+  const handleSoftDelete = (id: string) => {
+    deleteMutation.mutate(id);
+  };
+
+  const rows = sosForms.map((form) => ({
     id: form.id,
     outlet: formatOutletName(form.outlet),
     createdAt: format(new Date(form.createdAt), "MMMM d, yyyy h:mm a"),
@@ -110,7 +131,7 @@ export default function MerchandiserDashboard() {
       headerAlign: "center",
       align: "center",
       headerClassName: "bold-header",
-      renderCell: () => (
+      renderCell: (params) => (
         <Stack
           direction="row"
           spacing={2}
@@ -130,10 +151,16 @@ export default function MerchandiserDashboard() {
               Read
             </Typography>
           </Button>
-          <Button size="medium" variant="text" sx={buttonStyle}>
+          <Button
+            size="medium"
+            variant="text"
+            sx={buttonStyle}
+            onClick={() => handleSoftDelete(params.row.id)}
+            disabled={loading}
+          >
             <Trash2 className="w-4 h-4" />
             <Typography variant="caption" sx={captionStyle}>
-              Delete
+              {loading ? "Deleting..." : "Delete"}
             </Typography>
           </Button>
         </Stack>
@@ -151,7 +178,7 @@ export default function MerchandiserDashboard() {
 
         {error && (
           <Typography color="error" className="mb-4">
-            Failed to load SOS forms: {error.message}
+            Failed to load SOS forms: {(error as Error).message}
           </Typography>
         )}
 
