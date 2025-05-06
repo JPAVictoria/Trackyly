@@ -1,14 +1,15 @@
 "use client";
 import React, { useEffect } from "react";
 import axios from "axios";
-import { useQuery} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/frontend/Navbar";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {Eye} from "lucide-react";
+import { Eye } from "lucide-react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
 import { useLoading } from "@/app/context/loaderContext";
+import { useRouter } from "next/navigation";
 
 type SOSForm = {
   id: string;
@@ -17,19 +18,23 @@ type SOSForm = {
   beer: number;
   juice: number;
   createdAt: string;
-  email: string; 
+  email: string;
 };
-
 
 export default function AdminForms() {
   useRoleGuard(["ADMIN"]);
   const { setLoading } = useLoading();
+  const router = useRouter();
 
   useEffect(() => {
     setLoading(false);
   }, [setLoading]);
 
-  const { data: sosForms = [], isLoading, error } = useQuery<SOSForm[]>({
+  const {
+    data: sosForms = [],
+    isLoading,
+    error,
+  } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
       const res = await axios.get("http://localhost:5000/user/sosform/all", {
@@ -38,7 +43,6 @@ export default function AdminForms() {
       return res.data;
     },
   });
-
 
   const formatOutletName = (outlet: string) => {
     return outlet
@@ -54,9 +58,12 @@ export default function AdminForms() {
     wine: form.wine,
     beer: form.beer,
     juice: form.juice,
-    email: form.email, 
+    email: form.email,
   }));
-  
+
+  const handleRead = (id: string) => {
+    router.push(`/pages/conforme?id=${id}&readonly=true`);
+  };
 
   // Define columns for the DataGrid
   const columns: GridColDef[] = [
@@ -118,7 +125,7 @@ export default function AdminForms() {
       headerAlign: "center",
       align: "center",
       headerClassName: "bold-header",
-      renderCell: () => (
+      renderCell: (params) => (
         <Stack
           direction="row"
           spacing={2}
@@ -128,7 +135,8 @@ export default function AdminForms() {
         >
           <Button size="medium" variant="text" sx={buttonStyle}>
             <Eye className="w-4 h-4" />
-            <Typography variant="caption" sx={captionStyle}>
+            <Typography variant="caption" sx={captionStyle} onClick={() => handleRead(params.row.id)}
+            >
               Read
             </Typography>
           </Button>
@@ -141,9 +149,9 @@ export default function AdminForms() {
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center relative">
       <Navbar />
       <div className="flex flex-col items-center justify-center p-10 w-full text-center">
-      <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-10">
-        User Roles and Permissions
-      </h1>
+        <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-10">
+          User Roles and Permissions
+        </h1>
 
         {error && (
           <Typography color="error" className="mb-4">

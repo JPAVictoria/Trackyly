@@ -33,7 +33,7 @@ const buttonStyles = {
 };
 
 export default function Conforme() {
-  useRoleGuard(["MERCHANDISER"]);
+  useRoleGuard(["MERCHANDISER","ADMIN"]);
 
   const router = useRouter();
   const { setLoading } = useLoading();

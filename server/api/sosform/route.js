@@ -3,6 +3,59 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+router.get("/all", async (req, res) => {
+  try {
+    const forms = await prisma.sOSForm.findMany({
+      where: {
+        deleted: false,
+      },
+      include: {
+        merchandiser: {
+          select: {
+            email: true, 
+          },
+        },
+      },
+    });
+
+    const formsWithEmail = forms.map(form => ({
+      ...form,
+      email: form.merchandiser?.email || "",
+    }));
+
+    return res.status(200).json(formsWithEmail);
+  } catch (err) {
+    console.error("Error fetching all SOSForms:", err);
+    return res.status(500).json({
+      error: "Internal server error",
+      details: err.message,
+    });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const { merchandiserId } = req.query; 
+
+    if (!merchandiserId) {
+      return res.status(400).json({ error: "merchandiserId is required" });
+    }
+
+    const forms = await prisma.sOSForm.findMany({
+      where: {
+        deleted: false,
+        merchandiserId: merchandiserId, 
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    
+    return res.status(200).json(forms);
+  } catch (err) {
+    console.error("Error fetching SOSForms:", err);
+    return res.status(500).json({ error: "Internal server error", details: err.message });
+  }
+});
+
 router.post("/", async (req, res) => {
   try {
     const { outlet, wine, beer, juice, createdAt, merchandiserId } = req.body;
@@ -82,28 +135,6 @@ router.get("/:id", async (req, res) => {
 
 
 
-router.get("/", async (req, res) => {
-  try {
-    const { merchandiserId } = req.query; 
-
-    if (!merchandiserId) {
-      return res.status(400).json({ error: "merchandiserId is required" });
-    }
-
-    const forms = await prisma.sOSForm.findMany({
-      where: {
-        deleted: false,
-        merchandiserId: merchandiserId, 
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    
-    return res.status(200).json(forms);
-  } catch (err) {
-    console.error("Error fetching SOSForms:", err);
-    return res.status(500).json({ error: "Internal server error", details: err.message });
-  }
-});
 
 router.put("/softDelete/:id", async (req, res) => {
   const { id } = req.params;
@@ -123,36 +154,7 @@ router.put("/softDelete/:id", async (req, res) => {
   }
 });
 
-router.get("/all", async (req, res) => {
-  try {
-    const forms = await prisma.sOSForm.findMany({
-      where: {
-        deleted: false,
-      },
-      orderBy: { createdAt: "desc" },
-      include: {
-        merchandiser: {
-          select: {
-            email: true, 
-          },
-        },
-      },
-    });
 
-    const formsWithEmail = forms.map(form => ({
-      ...form,
-      email: form.merchandiser?.email || "",
-    }));
-
-    return res.status(200).json(formsWithEmail);
-  } catch (err) {
-    console.error("Error fetching all SOSForms:", err);
-    return res.status(500).json({
-      error: "Internal server error",
-      details: err.message,
-    });
-  }
-});
 
 
 module.exports = router;
