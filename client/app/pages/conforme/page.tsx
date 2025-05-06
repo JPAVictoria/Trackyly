@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { useLoading } from "@/app/context/loaderContext";
-import { useSnackbar } from "@/app/context/SnackbarContext"; 
-import axios from "axios"; 
+import { useSnackbar } from "@/app/context/SnackbarContext";
+import axios from "axios";
 
 interface FormData {
   wine: string | null;
@@ -15,7 +15,7 @@ interface FormData {
   outlet: string | null;
   total: string | null;
   timeIn: string | null;
-  merchandiserId: string | null; 
+  merchandiserId: string | null;
 }
 
 const buttonStyles = {
@@ -33,13 +33,11 @@ const buttonStyles = {
 };
 
 export default function Conforme() {
-
-  
   useRoleGuard(["MERCHANDISER"]);
 
   const router = useRouter();
-  const { setLoading } = useLoading(); 
-  const { openSnackbar } = useSnackbar(); 
+  const { setLoading } = useLoading();
+  const { openSnackbar } = useSnackbar();
 
   const [formData, setFormData] = useState<FormData>({
     wine: null,
@@ -48,7 +46,7 @@ export default function Conforme() {
     outlet: null,
     total: null,
     timeIn: null,
-    merchandiserId: null, 
+    merchandiserId: null,
   });
 
   const [checkboxes, setCheckboxes] = useState([false, false, false, false]);
@@ -63,7 +61,7 @@ export default function Conforme() {
       outlet: queryParams.get("outlet"),
       total: queryParams.get("total"),
       timeIn: queryParams.get("timeIn"),
-      merchandiserId: JSON.parse(localStorage.getItem("user") || "{}").id, 
+      merchandiserId: JSON.parse(localStorage.getItem("user") || "{}").id,
     };
 
     setFormData(data);
@@ -78,48 +76,46 @@ export default function Conforme() {
   const allCheckboxesChecked = checkboxes.every((checkbox) => checkbox);
 
   const handleGoBack = () => {
-    router.push(`/pages/createForm?wine=${formData.wine}&beer=${formData.beer}&juice=${formData.juice}&outlet=${formData.outlet}&total=${formData.total}&timeIn=${formData.timeIn}`);
+    router.push(
+      `/pages/createForm?wine=${formData.wine}&beer=${formData.beer}&juice=${formData.juice}&outlet=${formData.outlet}&total=${formData.total}&timeIn=${formData.timeIn}`
+    );
   };
 
   const handleSubmit = async () => {
-    setLoading(true); 
-  
+    setLoading(true);
+
     console.log(formData);
-  
-    
+
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const merchandiserId = user?.id;
-  
+
     if (!merchandiserId) {
       openSnackbar("Merchandiser ID is missing. Please log in again.", "error");
-      setLoading(false); 
-      return; 
+      setLoading(false);
+      return;
     }
-  
+
     try {
       const response = await axios.post("http://localhost:5000/user/sosform", {
-        merchandiserId, 
+        merchandiserId,
         outlet: formData.outlet,
         wine: formData.wine,
         beer: formData.beer,
         juice: formData.juice,
         createdAt: new Date().toISOString(),
       });
-  
+
       if (response.status === 201) {
-        openSnackbar("Form submitted successfully!", "success"); 
+        openSnackbar("Form submitted successfully!", "success");
         router.push("/pages/merchandiserDashboard");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      openSnackbar("Failed to submit the form. Please try again.", "error"); 
+      openSnackbar("Failed to submit the form. Please try again.", "error");
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
-  
-
-
 
   return (
     <div className="min-h-screen bg-[#f9f9fb] flex flex-col items-center justify-center p-6">
@@ -141,20 +137,40 @@ export default function Conforme() {
 
         <div className="text-center mt-6 mb-5 space-y-4 text-[#2d2d2d]">
           <p className="font-semibold text-sm">Input Details</p>
-          <p className="text-sm">Total Beverages - {formData.total}</p>
-          <p className="text-sm">Wine - {formData.wine}</p>
-          <p className="text-sm">Beer - {formData.beer}</p>
-          <p className="text-sm">Juice - {formData.juice}</p>
+          <p className="text-sm">
+            Total Beverages -{" "}
+            {formData.total && !isNaN(Number(formData.total))
+              ? Number(formData.total).toLocaleString()
+              : "0"}
+          </p>
+          <p className="text-sm">
+            Wine -{" "}
+            {formData.wine && !isNaN(Number(formData.wine))
+              ? Number(formData.wine).toLocaleString()
+              : "0"}
+          </p>
+          <p className="text-sm">
+            Beer -{" "}
+            {formData.beer && !isNaN(Number(formData.beer))
+              ? Number(formData.beer).toLocaleString()
+              : "0"}
+          </p>
+          <p className="text-sm">
+            Juice -{" "}
+            {formData.juice && !isNaN(Number(formData.juice))
+              ? Number(formData.juice).toLocaleString()
+              : "0"}
+          </p>
         </div>
 
         <hr className="my-4 opacity-20" />
 
         <div className="space-y-4 text-[12px]">
-          {[ 
+          {[
             "All information provided in this form is complete, true, and correct to the best of my knowledge",
             "All reimbursement regarding transportation and other valid expenses are accurate",
             "I understand that any false information provided might lead to the disapproval of any related reimbursement and that it may be grounds for demerit, suspension, or even termination of employment",
-            "All information provided in this form was reviewed before submission."
+            "All information provided in this form was reviewed before submission.",
           ].map((text, idx) => (
             <div key={idx} className="flex items-start space-x-2">
               <input

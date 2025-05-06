@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,6 +14,7 @@ import Navbar from "@/components/frontend/Navbar";
 import { Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
+import { useSearchParams } from "next/navigation";
 
 const buttonStyles = {
   backgroundColor: "#fff",
@@ -31,6 +32,21 @@ const buttonStyles = {
 
 export default function CreateForm() {
   useRoleGuard(["MERCHANDISER"]);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const wineFromQuery = Number(searchParams.get("wine"));
+    const beerFromQuery = Number(searchParams.get("beer"));
+    const juiceFromQuery = Number(searchParams.get("juice"));
+    const outletFromQuery = searchParams.get("outlet");
+  
+    if (!isNaN(wineFromQuery)) setWine(wineFromQuery);
+    if (!isNaN(beerFromQuery)) setBeer(beerFromQuery);
+    if (!isNaN(juiceFromQuery)) setJuice(juiceFromQuery);
+    if (outletFromQuery) setOutlet(outletFromQuery);
+  }, [searchParams]);
+  
 
   const [wine, setWine] = useState<number>(0);
   const [beer, setBeer] = useState<number>(0);
@@ -51,7 +67,6 @@ export default function CreateForm() {
       isValidNumber(juice)
     );
   }, [outlet, wine, beer, juice]);
-  
 
   const handleMoveToConfirmation = () => {
     const formData = {
@@ -78,7 +93,10 @@ export default function CreateForm() {
       <div className="w-full max-w-xl rounded-sm border border-gray-200 shadow-sm bg-white p-8">
         <div className="space-y-6">
           <div>
-            <Label htmlFor="time-in" className="text-[#2d2d2d] mb-2 font-medium">
+            <Label
+              htmlFor="time-in"
+              className="text-[#2d2d2d] mb-2 font-medium"
+            >
               Actual Time-in
             </Label>
             <Input
@@ -94,8 +112,8 @@ export default function CreateForm() {
             <Label htmlFor="outlet" className="text-[#2d2d2d] mb-2 font-medium">
               Outlet
             </Label>
-            <Select onValueChange={setOutlet}>
-              <SelectTrigger
+            <Select value={outlet} onValueChange={setOutlet}>
+            <SelectTrigger
                 id="outlet"
                 className="mt-1 w-full cursor-pointer focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 data-[state=open]:ring-1 data-[state=open]:ring-[#2F27CE]"
               >
@@ -125,36 +143,40 @@ export default function CreateForm() {
                 Total Beverages
               </Label>
               <Input
-                type="number"
-                value={totalBeverages}
+                type="text"
+                value={totalBeverages.toLocaleString()}
                 readOnly
                 className="flex-1 max-w-sm text-[#6b7280] font-bold border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed transition-all duration-300 focus:outline-none text-center"
               />
             </div>
 
             {["Wine", "Beer", "Juice"].map((label) => (
-              <div key={label} className="col-span-3 flex items-center justify-center gap-4">
+              <div
+                key={label}
+                className="col-span-3 flex items-center justify-center gap-4"
+              >
                 <Label className="w-32 text-[#2d2d2d] font-normal">
                   {label}
                 </Label>
                 <Input
-                  type="number"
+                  type="text"
                   value={
                     label === "Wine"
-                      ? wine
+                      ? wine.toLocaleString()
                       : label === "Beer"
-                      ? beer
-                      : juice
+                      ? beer.toLocaleString()
+                      : juice.toLocaleString()
                   }
-                  onChange={(e) =>
-                    label === "Wine"
-                      ? setWine(Number(e.target.value))
-                      : label === "Beer"
-                      ? setBeer(Number(e.target.value))
-                      : setJuice(Number(e.target.value))
-                  }
+                  onChange={(e) => {
+                    const numericValue = Number(
+                      e.target.value.replace(/,/g, "")
+                    );
+                    if (isNaN(numericValue)) return;
+                    if (label === "Wine") setWine(numericValue);
+                    else if (label === "Beer") setBeer(numericValue);
+                    else setJuice(numericValue);
+                  }}
                   className="flex-1 max-w-sm transition-all duration-300 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 text-center"
-                  min={0}
                 />
               </div>
             ))}
