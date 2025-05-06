@@ -15,6 +15,7 @@ import { Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { useSearchParams } from "next/navigation";
+import { format } from "date-fns"; 
 
 const buttonStyles = {
   backgroundColor: "#fff",
@@ -52,7 +53,11 @@ export default function CreateForm() {
   const [beer, setBeer] = useState<number>(0);
   const [juice, setJuice] = useState<number>(0);
   const [outlet, setOutlet] = useState<string>("");
-  const [timeIn] = useState(() => new Date().toLocaleString());
+  
+  const [timeIn] = useState(() => {
+    const now = new Date();
+    return format(now, "MMMM dd, yyyy hh:mm a"); // e.g., August 28, 2005 02:30 PM
+  });
 
   const totalBeverages = wine + beer + juice;
 
@@ -160,17 +165,9 @@ export default function CreateForm() {
                 </Label>
                 <Input
                   type="text"
-                  value={
-                    label === "Wine"
-                      ? wine.toLocaleString()
-                      : label === "Beer"
-                      ? beer.toLocaleString()
-                      : juice.toLocaleString()
-                  }
+                  value={label === "Wine" ? wine.toLocaleString() : label === "Beer" ? beer.toLocaleString() : juice.toLocaleString()}
                   onChange={(e) => {
-                    const numericValue = Number(
-                      e.target.value.replace(/,/g, "")
-                    );
+                    const numericValue = Number(e.target.value.replace(/,/g, ""));
                     if (isNaN(numericValue)) return;
                     if (label === "Wine") setWine(numericValue);
                     else if (label === "Beer") setBeer(numericValue);
