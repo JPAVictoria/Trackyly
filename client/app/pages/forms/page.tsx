@@ -17,7 +17,9 @@ type SOSForm = {
   beer: number;
   juice: number;
   createdAt: string;
+  email: string; 
 };
+
 
 export default function AdminForms() {
   useRoleGuard(["ADMIN"]);
@@ -52,7 +54,9 @@ export default function AdminForms() {
     wine: form.wine,
     beer: form.beer,
     juice: form.juice,
+    email: form.email, 
   }));
+  
 
   // Define columns for the DataGrid
   const columns: GridColDef[] = [
@@ -97,9 +101,17 @@ export default function AdminForms() {
       headerClassName: "bold-header",
     },
     {
+      field: "email",
+      headerName: "Merchandiser Email",
+      flex: 1.5,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
       field: "actions",
       headerName: "Action",
-      width: 300,
+      width: 150,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,

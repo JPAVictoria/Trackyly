@@ -78,17 +78,30 @@ router.get("/all", async (req, res) => {
         deleted: false,
       },
       orderBy: { createdAt: "desc" },
+      include: {
+        merchandiser: {
+          select: {
+            email: true, 
+          },
+        },
+      },
     });
-    
-    return res.status(200).json(forms);
+
+    const formsWithEmail = forms.map(form => ({
+      ...form,
+      email: form.merchandiser?.email || "",
+    }));
+
+    return res.status(200).json(formsWithEmail);
   } catch (err) {
     console.error("Error fetching all SOSForms:", err);
-    return res.status(500).json({ 
-      error: "Internal server error", 
-      details: err.message 
+    return res.status(500).json({
+      error: "Internal server error",
+      details: err.message,
     });
   }
 });
+
 
 module.exports = router;
 
