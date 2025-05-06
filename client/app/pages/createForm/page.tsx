@@ -12,10 +12,10 @@ import {
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/frontend/Navbar";
 import { Button } from "@mui/material";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
-import { useSearchParams } from "next/navigation";
-import { format } from "date-fns"; 
+import { format } from "date-fns";
+import axios from "axios";
 
 const buttonStyles = {
   backgroundColor: "#fff",
@@ -35,33 +35,75 @@ export default function CreateForm() {
   useRoleGuard(["MERCHANDISER"]);
 
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const wineFromQuery = Number(searchParams.get("wine"));
-    const beerFromQuery = Number(searchParams.get("beer"));
-    const juiceFromQuery = Number(searchParams.get("juice"));
-    const outletFromQuery = searchParams.get("outlet");
-  
-    if (!isNaN(wineFromQuery)) setWine(wineFromQuery);
-    if (!isNaN(beerFromQuery)) setBeer(beerFromQuery);
-    if (!isNaN(juiceFromQuery)) setJuice(juiceFromQuery);
-    if (outletFromQuery) setOutlet(outletFromQuery);
-  }, [searchParams]);
-  
+  const isEditMode = searchParams.get("edit") === "true";
+  const formId = searchParams.get("id");
 
   const [wine, setWine] = useState<number>(0);
   const [beer, setBeer] = useState<number>(0);
   const [juice, setJuice] = useState<number>(0);
   const [outlet, setOutlet] = useState<string>("");
-  
+
   const [timeIn] = useState(() => {
     const now = new Date();
-    return format(now, "MMMM dd, yyyy hh:mm a"); // e.g., August 28, 2005 02:30 PM
+    return format(now, "MMMM dd, yyyy hh:mm a");
   });
 
-  const totalBeverages = wine + beer + juice;
+  useEffect(() => {
+    console.log("Current Search Params:", searchParams.toString()); // Log URL params for debugging
+
+    // If we're editing an existing form, fetch its details
+    if (isEditMode && formId) {
+      console.log("Editing mode enabled, fetching form data"); // Log edit mode
+      const fetchData = async () => {
+        try {
+          const { data } = await axios.get(
+            `http://localhost:5000/user/sosform/${formId}`,
+            { withCredentials: true }
+          );
+          console.log("Fetched data:", data); // Log fetched data for debugging
+
+          setWine(data.wine || 0);
+          setBeer(data.beer || 0);
+          setJuice(data.juice || 0);
+          setOutlet(data.outlet || "");
+        } catch (error) {
+          console.error("Failed to fetch form data:", error);
+        }
+      };
+
+      fetchData();
+    } else {
+      // If we are creating a new form, initialize state from query params
+      const wineFromQuery = Number(searchParams.get("wine"));
+      const beerFromQuery = Number(searchParams.get("beer"));
+      const juiceFromQuery = Number(searchParams.get("juice"));
+      const outletFromQuery = searchParams.get("outlet");
+
+      console.log("Query Params for New Form:", {
+        wineFromQuery,
+        beerFromQuery,
+        juiceFromQuery,
+        outletFromQuery,
+      }); // Log incoming query params
+
+      const hasQueryValues =
+        !isNaN(wineFromQuery) ||
+        !isNaN(beerFromQuery) ||
+        !isNaN(juiceFromQuery) ||
+        Boolean(outletFromQuery);
+
+      if (hasQueryValues) {
+        if (!isNaN(wineFromQuery)) setWine(wineFromQuery);
+        if (!isNaN(beerFromQuery)) setBeer(beerFromQuery);
+        if (!isNaN(juiceFromQuery)) setJuice(juiceFromQuery);
+        if (outletFromQuery) setOutlet(outletFromQuery);
+      }
+    }
+  }, [searchParams, isEditMode, formId]);
 
   const router = useRouter();
+
+  const totalBeverages = wine + beer + juice;
 
   const isFormComplete = useMemo(() => {
     const isValidNumber = (val: number) => !isNaN(val) && val >= 0;
@@ -74,16 +116,22 @@ export default function CreateForm() {
   }, [outlet, wine, beer, juice]);
 
   const handleMoveToConfirmation = () => {
-    const formData = {
+    const params = new URLSearchParams({
       wine: String(wine),
       beer: String(beer),
       juice: String(juice),
       outlet,
       total: String(totalBeverages),
       timeIn,
-    };
+    });
 
-    router.push(`/pages/conforme?${new URLSearchParams(formData).toString()}`);
+    // Add edit info if applicable
+    if (isEditMode && formId) {
+      params.append("edit", "true");
+      params.append("id", formId);
+    }
+
+    router.push(`/pages/conforme?${params.toString()}`);
   };
 
   const outlets = ["PARANAQUE_CITY", "MUNTINLUPA_CITY", "QUEZON_CITY"];
@@ -92,7 +140,7 @@ export default function CreateForm() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f9f9fc] px-4 py-10">
       <Navbar />
       <h2 className="text-xl font-bold text-[#2F27CE] mb-10">
-        Create/Update SOS Form
+        {isEditMode ? "Update SOS Form" : "Create SOS Form"}
       </h2>
 
       <div className="w-full max-w-xl rounded-sm border border-gray-200 shadow-sm bg-white p-8">
@@ -108,8 +156,8 @@ export default function CreateForm() {
               id="time-in"
               type="text"
               value={timeIn}
-              className="mt-1 text-[#6b7280] border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed transition-all duration-300 focus:outline-none"
               readOnly
+              className="mt-1 text-[#6b7280] border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed transition-all duration-300 focus:outline-none"
             />
           </div>
 
@@ -118,7 +166,7 @@ export default function CreateForm() {
               Outlet
             </Label>
             <Select value={outlet} onValueChange={setOutlet}>
-            <SelectTrigger
+              <SelectTrigger
                 id="outlet"
                 className="mt-1 w-full cursor-pointer focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 data-[state=open]:ring-1 data-[state=open]:ring-[#2F27CE]"
               >
@@ -131,6 +179,7 @@ export default function CreateForm() {
                     value={outletValue}
                     className="cursor-pointer hover:bg-[#2F27CE]/10"
                   >
+                    {" "}
                     {outletValue.replace("_", " ")}
                   </SelectItem>
                 ))}
@@ -151,7 +200,7 @@ export default function CreateForm() {
                 type="text"
                 value={totalBeverages.toLocaleString()}
                 readOnly
-                className="flex-1 max-w-sm text-[#6b7280] font-bold border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed transition-all duration-300 focus:outline-none text-center"
+                className="flex-1 max-w-sm text-[#6b7280] font-bold border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed text-center"
               />
             </div>
 
@@ -165,9 +214,17 @@ export default function CreateForm() {
                 </Label>
                 <Input
                   type="text"
-                  value={label === "Wine" ? wine.toLocaleString() : label === "Beer" ? beer.toLocaleString() : juice.toLocaleString()}
+                  value={
+                    label === "Wine"
+                      ? wine.toLocaleString()
+                      : label === "Beer"
+                      ? beer.toLocaleString()
+                      : juice.toLocaleString()
+                  }
                   onChange={(e) => {
-                    const numericValue = Number(e.target.value.replace(/,/g, ""));
+                    const numericValue = Number(
+                      e.target.value.replace(/,/g, "")
+                    );
                     if (isNaN(numericValue)) return;
                     if (label === "Wine") setWine(numericValue);
                     else if (label === "Beer") setBeer(numericValue);

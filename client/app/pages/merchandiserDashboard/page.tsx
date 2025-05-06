@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation"; 
 import Navbar from "@/components/frontend/Navbar";
 import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -13,6 +14,7 @@ import { format } from "date-fns";
 import { useLoading } from "@/app/context/loaderContext";
 
 export default function MerchandiserDashboard() {
+  const router = useRouter(); 
   useRoleGuard(["MERCHANDISER"]);
   const { openSnackbar } = useCommonUtils();
   const queryClient = useQueryClient();
@@ -22,18 +24,15 @@ export default function MerchandiserDashboard() {
     setLoading(false);
   }, [setLoading]);
 
-  // Initialize state to hold the user information
   const [merchandiserId, setMerchandiserId] = useState<string | null>(null);
 
-  // Set merchandiserId from localStorage when the component is mounted (client-side)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       setMerchandiserId(user.id || null);
     }
-  }, []); // Empty dependency array means this effect runs only once, when the component mounts
+  }, []);
 
-  // Type definition for SOSForm
   type SOSForm = {
     id: string;
     outlet: string;
@@ -43,7 +42,6 @@ export default function MerchandiserDashboard() {
     createdAt: string;
   };
 
-  // Format the outlet name
   const formatOutletName = (outlet: string) => {
     return outlet
       .split("_")
@@ -51,7 +49,6 @@ export default function MerchandiserDashboard() {
       .join(" ");
   };
 
-  // Fetch SOS forms data
   const {
     data: sosForms = [],
     isLoading,
@@ -65,7 +62,7 @@ export default function MerchandiserDashboard() {
       });
       return res.data;
     },
-    enabled: !!merchandiserId, // Ensure query runs only when merchandiserId is set
+    enabled: !!merchandiserId,
   });
 
   const deleteMutation = useMutation({
@@ -77,9 +74,8 @@ export default function MerchandiserDashboard() {
       );
     },
     onSuccess: (_, id) => {
-      queryClient.setQueryData<SOSForm[]>(
-        ["sosForms"],
-        (old) => old?.filter((form) => form.id !== id) || []
+      queryClient.setQueryData<SOSForm[]>(["sosForms"], (old) =>
+        old?.filter((form) => form.id !== id) || []
       );
       openSnackbar("Form successfully deleted", "success");
     },
@@ -91,6 +87,11 @@ export default function MerchandiserDashboard() {
   const handleSoftDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
+
+  const handleEdit = (id: string) => {
+    router.push(`/pages/createForm?id=${id}&edit=true`);
+  };
+  
 
   const rows = sosForms.map((form) => ({
     id: form.id,
@@ -160,7 +161,7 @@ export default function MerchandiserDashboard() {
           alignItems="center"
           sx={{ height: "100%" }}
         >
-          <Button size="medium" variant="text" sx={buttonStyle}>
+          <Button size="medium" variant="text" sx={buttonStyle} onClick={() => handleEdit(params.row.id)}>
             <Pencil className="w-4 h-4" />
             <Typography variant="caption" sx={captionStyle}>
               Edit

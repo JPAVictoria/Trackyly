@@ -30,6 +30,58 @@ router.post("/", async (req, res) => {
   }
 });
 
+// PUT /user/sosform/:id
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { outlet, wine, beer, juice } = req.body;
+
+  try {
+    const updatedForm = await prisma.sOSForm.update({
+      where: { id },
+      data: {
+        outlet,
+        wine: Number(wine),
+        beer: Number(beer),
+        juice: Number(juice),
+      },
+    });
+
+    return res.status(200).json({ message: "Form updated", data: updatedForm });
+  } catch (err) {
+    console.error("Error updating SOSForm:", err);
+    return res.status(500).json({ error: "Internal server error", details: err.message });
+  }
+});
+
+
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Ensure that id is a valid UUID string
+    const formId = id;
+
+    if (!formId) {
+      return res.status(400).json({ error: "Form ID is required" });
+    }
+
+    const form = await prisma.sOSForm.findUnique({
+      where: { id: formId },  // Use formId directly as it's a UUID string
+    });
+
+    if (!form) {
+      return res.status(404).json({ error: "Form not found" });
+    }
+
+    return res.status(200).json(form);
+  } catch (err) {
+    console.error("Error fetching form:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+
 router.get("/", async (req, res) => {
   try {
     const { merchandiserId } = req.query; 

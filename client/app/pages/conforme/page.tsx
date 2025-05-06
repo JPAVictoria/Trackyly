@@ -49,11 +49,16 @@ export default function Conforme() {
     merchandiserId: null,
   });
 
+  const [isEdit, setIsEdit] = useState(false);
+  const [formId, setFormId] = useState<string | null>(null);
   const [checkboxes, setCheckboxes] = useState([false, false, false, false]);
 
   useEffect(() => {
-    // Get query params from the URL
     const queryParams = new URLSearchParams(window.location.search);
+
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const merchandiserId = user?.id;
+
     const data: FormData = {
       wine: queryParams.get("wine"),
       beer: queryParams.get("beer"),
@@ -61,10 +66,12 @@ export default function Conforme() {
       outlet: queryParams.get("outlet"),
       total: queryParams.get("total"),
       timeIn: queryParams.get("timeIn"),
-      merchandiserId: JSON.parse(localStorage.getItem("user") || "{}").id,
+      merchandiserId,
     };
 
     setFormData(data);
+    setIsEdit(queryParams.get("edit") === "true");
+    setFormId(queryParams.get("id"));
   }, [router]);
 
   const handleCheckboxChange = (index: number) => {
@@ -76,37 +83,51 @@ export default function Conforme() {
   const allCheckboxesChecked = checkboxes.every((checkbox) => checkbox);
 
   const handleGoBack = () => {
-    router.push(
-      `/pages/createForm?wine=${formData.wine}&beer=${formData.beer}&juice=${formData.juice}&outlet=${formData.outlet}&total=${formData.total}&timeIn=${formData.timeIn}`
-    );
+    const queryParams = new URLSearchParams({
+      wine: formData.wine || "",
+      beer: formData.beer || "",
+      juice: formData.juice || "",
+      outlet: formData.outlet || "",
+      total: formData.total || "",
+      timeIn: formData.timeIn || "",
+    });
+
+    if (isEdit && formId) {
+      queryParams.append("edit", "true");
+      queryParams.append("id", formId);
+    }
+
+    router.push(`/pages/createForm?${queryParams.toString()}`);
   };
 
   const handleSubmit = async () => {
     setLoading(true);
 
-    console.log(formData);
-
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const merchandiserId = user?.id;
-
-    if (!merchandiserId) {
-      openSnackbar("Merchandiser ID is missing. Please log in again.", "error");
-      setLoading(false);
-      return;
-    }
+    const payload = {
+      merchandiserId: formData.merchandiserId,
+      outlet: formData.outlet,
+      wine: Number(formData.wine),
+      beer: Number(formData.beer),
+      juice: Number(formData.juice),
+      createdAt: new Date().toISOString(),
+    };
 
     try {
-      const response = await axios.post("http://localhost:5000/user/sosform", {
-        merchandiserId,
-        outlet: formData.outlet,
-        wine: formData.wine,
-        beer: formData.beer,
-        juice: formData.juice,
-        createdAt: new Date().toISOString(),
-      });
+      let response;
 
-      if (response.status === 201) {
-        openSnackbar("Form submitted successfully!", "success");
+      if (isEdit && formId) {
+        // If editing, send PUT request
+        response = await axios.put(`http://localhost:5000/user/sosform/${formId}`, payload);
+      } else {
+        // If creating, send POST request
+        response = await axios.post("http://localhost:5000/user/sosform", payload);
+      }
+
+      if (response.status === 201 || response.status === 200) {
+        openSnackbar(
+          isEdit ? "Form updated successfully!" : "Form submitted successfully!",
+          "success"
+        );
         router.push("/pages/merchandiserDashboard");
       }
     } catch (error) {
@@ -166,7 +187,7 @@ export default function Conforme() {
         <hr className="my-4 opacity-20" />
 
         <div className="space-y-4 text-[12px]">
-          {[
+          {[ // Checkbox agreement texts
             "All information provided in this form is complete, true, and correct to the best of my knowledge",
             "All reimbursement regarding transportation and other valid expenses are accurate",
             "I understand that any false information provided might lead to the disapproval of any related reimbursement and that it may be grounds for demerit, suspension, or even termination of employment",
@@ -194,7 +215,7 @@ export default function Conforme() {
             onClick={handleSubmit}
             disabled={!allCheckboxesChecked}
           >
-            Submit
+            {isEdit ? "Update" : "Submit"}
           </Button>
         </div>
       </div>
