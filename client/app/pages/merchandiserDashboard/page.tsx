@@ -10,12 +10,18 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
+import { useEffect } from "react";
+import { useLoading } from "@/app/context/loaderContext";
 
 export default function MerchandiserDashboard() {
   useRoleGuard(["MERCHANDISER"]);
   const { openSnackbar } = useCommonUtils();
   const queryClient = useQueryClient();
-  const [loading, setLoading] = React.useState(false);
+  const { setLoading } = useLoading();
+  
+      useEffect(() => {
+        setLoading(false);
+      }, [setLoading]);
 
   type SOSForm = {
     id: string;
@@ -46,7 +52,6 @@ export default function MerchandiserDashboard() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => {
-      setLoading(true);
       return axios.put(
         `http://localhost:5000/user/sosform/softDelete/${id}`,
         {},
@@ -62,9 +67,6 @@ export default function MerchandiserDashboard() {
     onError: () => {
       openSnackbar("Failed to delete form", "error");
     },
-    onSettled: () => {
-      setLoading(false);
-    }
   });
 
   const handleSoftDelete = (id: string) => {
@@ -156,11 +158,10 @@ export default function MerchandiserDashboard() {
             variant="text"
             sx={buttonStyle}
             onClick={() => handleSoftDelete(params.row.id)}
-            disabled={loading}
           >
             <Trash2 className="w-4 h-4" />
             <Typography variant="caption" sx={captionStyle}>
-              {loading ? "Deleting..." : "Delete"}
+              Delete
             </Typography>
           </Button>
         </Stack>
