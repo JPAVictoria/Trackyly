@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -42,30 +42,22 @@ export default function CreateForm() {
   const [beer, setBeer] = useState<number>(0);
   const [juice, setJuice] = useState<number>(0);
   const [outlet, setOutlet] = useState<string>("");
-
-  const [timeIn] = useState(() => {
-    const now = new Date();
-    return format(now, "MMMM dd, yyyy hh:mm a");
-  });
+  const [timeIn, setTimeIn] = useState<string>("");
 
   useEffect(() => {
-    console.log("Current Search Params:", searchParams.toString()); // Log URL params for debugging
-
-    // If we're editing an existing form, fetch its details
+    // Check if the form is in edit mode
     if (isEditMode && formId) {
-      console.log("Editing mode enabled, fetching form data"); // Log edit mode
       const fetchData = async () => {
         try {
           const { data } = await axios.get(
             `http://localhost:5000/user/sosform/${formId}`,
             { withCredentials: true }
           );
-          console.log("Fetched data:", data); // Log fetched data for debugging
-
           setWine(data.wine || 0);
           setBeer(data.beer || 0);
           setJuice(data.juice || 0);
           setOutlet(data.outlet || "");
+          setTimeIn(format(new Date(data.createdAt), "MMMM dd, yyyy hh:mm a")); 
         } catch (error) {
           console.error("Failed to fetch form data:", error);
         }
@@ -73,33 +65,10 @@ export default function CreateForm() {
 
       fetchData();
     } else {
-      // If we are creating a new form, initialize state from query params
-      const wineFromQuery = Number(searchParams.get("wine"));
-      const beerFromQuery = Number(searchParams.get("beer"));
-      const juiceFromQuery = Number(searchParams.get("juice"));
-      const outletFromQuery = searchParams.get("outlet");
-
-      console.log("Query Params for New Form:", {
-        wineFromQuery,
-        beerFromQuery,
-        juiceFromQuery,
-        outletFromQuery,
-      }); // Log incoming query params
-
-      const hasQueryValues =
-        !isNaN(wineFromQuery) ||
-        !isNaN(beerFromQuery) ||
-        !isNaN(juiceFromQuery) ||
-        Boolean(outletFromQuery);
-
-      if (hasQueryValues) {
-        if (!isNaN(wineFromQuery)) setWine(wineFromQuery);
-        if (!isNaN(beerFromQuery)) setBeer(beerFromQuery);
-        if (!isNaN(juiceFromQuery)) setJuice(juiceFromQuery);
-        if (outletFromQuery) setOutlet(outletFromQuery);
-      }
+      const now = new Date();
+      setTimeIn(format(now, "MMMM dd, yyyy hh:mm a"));
     }
-  }, [searchParams, isEditMode, formId]);
+  }, [isEditMode, formId]);
 
   const router = useRouter();
 
