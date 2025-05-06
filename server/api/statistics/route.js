@@ -1,4 +1,3 @@
-
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 
@@ -7,12 +6,17 @@ const prisma = new PrismaClient();
 
 router.get("/", async (req, res) => {
   try {
+    // Fetch count for SOS Forms, excluding soft-deleted ones
     const [sosCount, merchCount] = await Promise.all([
-      prisma.sOSForm.count(),
+      prisma.sOSForm.count({
+        where: {
+          deleted: false, // Exclude soft-deleted SOS forms
+        },
+      }),
       prisma.user.count({
         where: {
           role: "MERCHANDISER",
-          deleted: false, 
+          deleted: false, // Only count users that are not deleted
         },
       }),
     ]);
