@@ -1,130 +1,145 @@
 "use client";
 
-import React, { useEffect } from "react"; 
+import React, { useEffect } from "react";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/frontend/Navbar";
 import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Pencil, Eye, Trash2 } from "lucide-react";
 import { Box, Button, Stack, Typography } from "@mui/material";
-import { useCommonUtils } from "@/app/hooks/useCommonUtils"; 
+import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
+import { format } from "date-fns";
 
-const rows = [
-  {
-    id: 1,
-    outlet: "PARANAQUE CITY",
-    createdAt: "March 20, 2025 7:50 PM",
-    wine: "20",
-    beer: "40",
-    juice: "50",
-  },
-];
+type SOSForm = {
+  id: string;
+  outlet: string;
+  wine: number;
+  beer: number;
+  juice: number;
+  createdAt: string;
+};
 
-const columns: GridColDef[] = [
-  {
-    field: "outlet",
-    headerName: "Outlet",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "createdAt",
-    headerName: "Created Date",
-    flex: 1.2,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "wine",
-    headerName: "Wine",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "beer",
-    headerName: "Beer",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "juice",
-    headerName: "Juice",
-    flex: 1,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-  },
-  {
-    field: "actions",
-    headerName: "Action",
-    width: 350,
-    sortable: false,
-    filterable: false,
-    disableColumnMenu: true,
-    headerAlign: "center",
-    align: "center",
-    headerClassName: "bold-header",
-    renderCell: () => (
-      <Stack
-        direction="row"
-        spacing={2}
-        justifyContent="center"
-        alignItems="center"
-        sx={{ height: "100%" }}
-      >
-        <Button
-          size="medium"
-          variant="text"
-          sx={buttonStyle}
-        >
-          <Pencil className="w-4 h-4" />
-          <Typography variant="caption" sx={captionStyle}>
-            Edit
-          </Typography>
-        </Button>
-
-        <Button
-          size="medium"
-          variant="text"
-          sx={buttonStyle}
-        >
-          <Eye className="w-4 h-4" />
-          <Typography variant="caption" sx={captionStyle}>
-            Read
-          </Typography>
-        </Button>
-
-        <Button
-          size="medium"
-          variant="text"
-          sx={buttonStyle}
-        >
-          <Trash2 className="w-4 h-4" />
-          <Typography variant="caption" sx={captionStyle}>
-            Delete
-          </Typography>
-        </Button>
-      </Stack>
-    ),
-  },
-];
+const formatOutletName = (outlet: string) => {
+  return outlet
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
 
 export default function MerchandiserDashboard() {
-
   useRoleGuard(["MERCHANDISER"]);
-
-  const { setLoading } = useCommonUtils();  
+  const { setLoading } = useCommonUtils();
 
   useEffect(() => {
     setLoading(false);
   }, [setLoading]);
+
+  const {
+    data = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["sosForms"],
+    queryFn: async () => {
+      const res = await axios.get("http://localhost:5000/user/sosform", {
+        withCredentials: true,
+      });
+      return res.data;
+    },
+  });
+
+  const rows = (data as SOSForm[]).map((form) => ({
+    id: form.id,
+    outlet: formatOutletName(form.outlet),
+    createdAt: format(new Date(form.createdAt), "MMMM d, yyyy h:mm a"),
+    wine: form.wine,
+    beer: form.beer,
+    juice: form.juice,
+  }));
+
+  const columns: GridColDef[] = [
+    {
+      field: "outlet",
+      headerName: "Outlet",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "createdAt",
+      headerName: "Created Date",
+      flex: 1.2,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "wine",
+      headerName: "Wine",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "beer",
+      headerName: "Beer",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "juice",
+      headerName: "Juice",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+    },
+    {
+      field: "actions",
+      headerName: "Action",
+      width: 300,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      headerAlign: "center",
+      align: "center",
+      headerClassName: "bold-header",
+      renderCell: () => (
+        <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="center"
+          alignItems="center"
+          sx={{ height: "100%" }}
+        >
+          <Button size="medium" variant="text" sx={buttonStyle}>
+            <Pencil className="w-4 h-4" />
+            <Typography variant="caption" sx={captionStyle}>
+              Edit
+            </Typography>
+          </Button>
+          <Button size="medium" variant="text" sx={buttonStyle}>
+            <Eye className="w-4 h-4" />
+            <Typography variant="caption" sx={captionStyle}>
+              Read
+            </Typography>
+          </Button>
+          <Button size="medium" variant="text" sx={buttonStyle}>
+            <Trash2 className="w-4 h-4" />
+            <Typography variant="caption" sx={captionStyle}>
+              Delete
+            </Typography>
+          </Button>
+        </Stack>
+      ),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center relative">
@@ -133,6 +148,13 @@ export default function MerchandiserDashboard() {
         <div className="mb-6 w-full max-w-md">
           <NameBlock />
         </div>
+
+        {error && (
+          <Typography color="error" className="mb-4">
+            Failed to load SOS forms: {error.message}
+          </Typography>
+        )}
+
         <Box
           sx={{
             height: 500,
@@ -140,30 +162,37 @@ export default function MerchandiserDashboard() {
             maxWidth: "90vw",
             backgroundColor: "white",
             borderRadius: "8px",
-            boxShadow: 1,
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#f3f3f3",
-            },
-            "& .MuiDataGrid-footerContainer": {
-              borderTop: "1px solid #eee",
-            },
           }}
         >
           <DataGrid
+            getRowId={(row) => row.id}
             rows={rows}
             columns={columns}
-            pageSizeOptions={[5, 10]}
+            loading={isLoading}
             pagination
-            rowHeight={75}
+            pageSizeOptions={[5, 10, 20]}
+            disableColumnMenu
+            disableColumnResize
             disableRowSelectionOnClick
-            getRowId={(row) => row.id}
-            sx={{
-              "& .bold-header": {
-                fontWeight: "bold",
-                fontSize: "0.9rem",
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 5, page: 0 },
               },
-              "& .MuiDataGrid-row:hover": {
-                backgroundColor: "inherit",
+            }}
+            rowHeight={80}
+            sx={{
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#fff",
+                fontWeight: "bold",
+              },
+              "& .MuiDataGrid-columnSeparator": {
+                display: "none !important",
+              },
+              "& .MuiDataGrid-virtualScroller": {
+                overflowX: "hidden !important",
+              },
+              "& .MuiDataGrid-row": {
+                ":hover": { backgroundColor: "transparent" },
               },
             }}
           />

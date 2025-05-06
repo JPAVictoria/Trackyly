@@ -29,5 +29,17 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const forms = await prisma.sOSForm.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return res.status(200).json(forms);
+  } catch (err) {
+    console.error("Error fetching SOSForms:", err);
+    return res.status(500).json({ error: "Internal server error", details: err.message });
+  }
+});
+
 
 module.exports = router;
