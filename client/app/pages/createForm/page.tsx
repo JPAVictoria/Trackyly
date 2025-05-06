@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -12,7 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/frontend/Navbar";
 import { Button } from "@mui/material";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 
 const buttonStyles = {
@@ -42,6 +42,17 @@ export default function CreateForm() {
 
   const router = useRouter();
 
+  const isFormComplete = useMemo(() => {
+    const isValidNumber = (val: number) => !isNaN(val) && val >= 0;
+    return (
+      outlet.trim() !== "" &&
+      isValidNumber(wine) &&
+      isValidNumber(beer) &&
+      isValidNumber(juice)
+    );
+  }, [outlet, wine, beer, juice]);
+  
+
   const handleMoveToConfirmation = () => {
     const formData = {
       wine: String(wine),
@@ -67,10 +78,7 @@ export default function CreateForm() {
       <div className="w-full max-w-xl rounded-sm border border-gray-200 shadow-sm bg-white p-8">
         <div className="space-y-6">
           <div>
-            <Label
-              htmlFor="time-in"
-              className="text-[#2d2d2d] mb-2 font-medium"
-            >
+            <Label htmlFor="time-in" className="text-[#2d2d2d] mb-2 font-medium">
               Actual Time-in
             </Label>
             <Input
@@ -120,7 +128,7 @@ export default function CreateForm() {
                 type="number"
                 value={totalBeverages}
                 readOnly
-                className="flex-1 max-w-sm text-[#6b7280] border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed transition-all duration-300 focus:outline-none text-center"
+                className="flex-1 max-w-sm text-[#6b7280] font-bold border border-[#2d2d2d]/50 bg-transparent cursor-not-allowed transition-all duration-300 focus:outline-none text-center"
               />
             </div>
 
@@ -131,21 +139,35 @@ export default function CreateForm() {
                 </Label>
                 <Input
                   type="number"
-                  value={label === "Wine" ? wine : label === "Beer" ? beer : juice}
+                  value={
+                    label === "Wine"
+                      ? wine
+                      : label === "Beer"
+                      ? beer
+                      : juice
+                  }
                   onChange={(e) =>
-                    label === "Wine" ? setWine(Number(e.target.value)) :
-                    label === "Beer" ? setBeer(Number(e.target.value)) :
-                    setJuice(Number(e.target.value))
+                    label === "Wine"
+                      ? setWine(Number(e.target.value))
+                      : label === "Beer"
+                      ? setBeer(Number(e.target.value))
+                      : setJuice(Number(e.target.value))
                   }
                   className="flex-1 max-w-sm transition-all duration-300 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 text-center"
+                  min={0}
                 />
               </div>
             ))}
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button sx={buttonStyles} variant="outlined" onClick={handleMoveToConfirmation}>
-              Move to confirmation →  
+            <Button
+              sx={buttonStyles}
+              variant="outlined"
+              onClick={handleMoveToConfirmation}
+              disabled={!isFormComplete}
+            >
+              Move to confirmation →
             </Button>
           </div>
         </div>
