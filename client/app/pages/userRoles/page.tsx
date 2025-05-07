@@ -9,6 +9,7 @@ import axios from "axios";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import { UserActions } from "@/components/frontend/UserActions"; 
 import useRoleGuard from "@/app/hooks/useRoleGuard";
+import {centerAligned } from "@/app/styles/styles";
 
 interface User {
   id: string;
@@ -107,21 +108,17 @@ export default function UserRoles() {
       field: "email",
       headerName: "Email",
       flex: 1.5,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
+      ...centerAligned,
     },
     {
       field: "role",
       headerName: "Role",
       flex: 1,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
+      ...centerAligned,
       renderCell: (params) => {
         const role = params.value;
         let chipProps;
-
+  
         switch (role) {
           case "ADMIN":
             chipProps = {
@@ -149,7 +146,7 @@ export default function UserRoles() {
             };
             break;
         }
-
+  
         return <Chip size="medium" {...chipProps} />;
       },
     },
@@ -157,9 +154,7 @@ export default function UserRoles() {
       field: "createdAt",
       headerName: "Created At",
       flex: 1.2,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
+      ...centerAligned,
     },
     {
       field: "actions",
@@ -168,11 +163,9 @@ export default function UserRoles() {
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
+      ...centerAligned,
       renderCell: (params) => {
-        const row = params.row as User;
+        const row = params.row as User; 
         return (
           <UserActions
             user={row}

@@ -11,15 +11,13 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
-import { useLoading } from "@/app/context/loaderContext";
-import { buttonStyle, captionStyle } from "@/app/styles/styles"; 
+import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles"; 
 
 export default function MerchandiserDashboard() {
   const router = useRouter();
   useRoleGuard(["MERCHANDISER"]);
-  const { openSnackbar } = useCommonUtils();
+  const { openSnackbar, setLoading } = useCommonUtils();
   const queryClient = useQueryClient();
-  const { setLoading } = useLoading();
 
   useEffect(() => {
     setLoading(false);
@@ -109,46 +107,11 @@ export default function MerchandiserDashboard() {
   }));
 
   const columns: GridColDef[] = [
-    {
-      field: "outlet",
-      headerName: "Outlet",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
-    {
-      field: "createdAt",
-      headerName: "Created Date",
-      flex: 1.2,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
-    {
-      field: "wine",
-      headerName: "Wine",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
-    {
-      field: "beer",
-      headerName: "Beer",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
-    {
-      field: "juice",
-      headerName: "Juice",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
+    { field: "outlet", headerName: "Outlet", flex: 1, ...centerAligned },
+    { field: "createdAt", headerName: "Created Date", flex: 1.2, ...centerAligned },
+    { field: "wine", headerName: "Wine", flex: 1, ...centerAligned },
+    { field: "beer", headerName: "Beer", flex: 1, ...centerAligned },
+    { field: "juice", headerName: "Juice", flex: 1, ...centerAligned },
     {
       field: "actions",
       headerName: "Action",
@@ -156,17 +119,9 @@ export default function MerchandiserDashboard() {
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
+      ...centerAligned,
       renderCell: (params) => (
-        <Stack
-          direction="row"
-          spacing={2}
-          justifyContent="center"
-          alignItems="center"
-          sx={{ height: "100%" }}
-        >
+        <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ height: "100%" }}>
           <Button
             size="medium"
             variant="text"
@@ -174,9 +129,7 @@ export default function MerchandiserDashboard() {
             onClick={() => handleEdit(params.row.id)}
           >
             <Pencil className="w-4 h-4" />
-            <Typography variant="caption" sx={captionStyle}>
-              Edit
-            </Typography>
+            <Typography variant="caption" sx={captionStyle}>Edit</Typography>
           </Button>
           <Button
             size="medium"
@@ -185,11 +138,8 @@ export default function MerchandiserDashboard() {
             onClick={() => handleRead(params.row.id)}
           >
             <Eye className="w-4 h-4" />
-            <Typography variant="caption" sx={captionStyle}>
-              Read
-            </Typography>
+            <Typography variant="caption" sx={captionStyle}>Read</Typography>
           </Button>
-
           <Button
             size="medium"
             variant="text"
@@ -197,9 +147,7 @@ export default function MerchandiserDashboard() {
             onClick={() => handleSoftDelete(params.row.id)}
           >
             <Trash2 className="w-4 h-4" />
-            <Typography variant="caption" sx={captionStyle}>
-              Delete
-            </Typography>
+            <Typography variant="caption" sx={captionStyle}>Delete</Typography>
           </Button>
         </Stack>
       ),

@@ -9,12 +9,8 @@ interface DateStore {
 }
 
 export const useDateStore = create<DateStore>((set) => ({
-  fromDate: (() => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - 1);
-    return date;
-  })(),
-  toDate: new Date(),
+  fromDate: null,
+  toDate: null,
   setFromDate: (date) => set({ fromDate: date }),
   setToDate: (date) => set({ toDate: date }),
   resetDates: () => set({ fromDate: null, toDate: null }),
