@@ -60,7 +60,6 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Ensure that id is a valid UUID string
     const formId = id;
 
     if (!formId) {
@@ -68,7 +67,7 @@ router.get("/:id", async (req, res) => {
     }
 
     const form = await prisma.sOSForm.findUnique({
-      where: { id: formId },  // Use formId directly as it's a UUID string
+      where: { id: formId },  
     });
 
     if (!form) {

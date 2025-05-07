@@ -10,6 +10,10 @@ import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
 import { useLoading } from "@/app/context/loaderContext";
 import { useRouter } from "next/navigation";
+import { useModalStore } from "@/app/stores/useModalStore";
+import DateModal from "@/components/frontend/DateModal";
+import OutletModal from "@/components/frontend/OutletModal";
+import Filters from "@/components/frontend/Filters";
 
 type SOSForm = {
   id: string;
@@ -146,6 +150,16 @@ export default function AdminForms() {
     },
   ];
 
+  // Modal and Filter UI logic
+  const {
+    selectedFilter,
+    isDateModalOpen,
+    isOutletModalOpen,
+    setIsDateModalOpen,
+    setIsOutletModalOpen,
+    handleFilterClick,
+  } = useModalStore();
+
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center relative">
       <Navbar />
@@ -160,6 +174,24 @@ export default function AdminForms() {
           </Typography>
         )}
 
+        {/* Filters UI */}
+        <Box
+          sx={{
+            width: "80%",
+            maxWidth: "90vw",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            marginBottom: "8px",
+          }}
+        >
+          <Filters
+            selectedFilter={selectedFilter}
+            handleFilterClick={handleFilterClick}
+          />
+        </Box>
+
+        {/* Data Grid */}
         <Box
           sx={{
             height: 500,
@@ -203,6 +235,19 @@ export default function AdminForms() {
           />
         </Box>
       </div>
+
+      {/* Modal Components */}
+      <DateModal
+        open={isDateModalOpen}
+        onClose={() => setIsDateModalOpen(false)}
+        onApply={() => {}}
+      />
+
+      <OutletModal
+        open={isOutletModalOpen}
+        onClose={() => setIsOutletModalOpen(false)}
+        onSelectOutlet={() => {}}
+      />
     </div>
   );
 }
