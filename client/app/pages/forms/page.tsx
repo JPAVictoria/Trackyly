@@ -7,14 +7,21 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Eye } from "lucide-react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
-import { format } from "date-fns";
+import {
+  format,
+  parseISO,
+  isWithinInterval,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
 import { useLoading } from "@/app/context/loaderContext";
 import { useRouter } from "next/navigation";
 import { useModalStore } from "@/app/stores/useModalStore";
-import DateModal from "@/components/frontend/DateModal";
+import DateFilterModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Filters from "@/components/frontend/Filters";
 import { buttonStyle, captionStyle } from "@/app/styles/styles";
+import { useDateStore } from "@/app/stores/useDateStore";
 
 type SOSForm = {
   id: string;
@@ -30,6 +37,7 @@ export default function AdminForms() {
   useRoleGuard(["ADMIN"]);
   const { setLoading } = useLoading();
   const router = useRouter();
+  const { fromDate, toDate } = useDateStore();
 
   useEffect(() => {
     setLoading(false);
@@ -60,8 +68,22 @@ export default function AdminForms() {
 
   const rows = sosForms
     .filter((form) => {
-      if (!selectedOutlet) return true;
-      return form.outlet === selectedOutlet;
+      // Filter by outlet if selected
+      if (selectedOutlet && form.outlet !== selectedOutlet) return false;
+
+      // Filter by date range if selected
+      if (fromDate && toDate) {
+        const formDate = parseISO(form.createdAt);
+        const startDate = startOfDay(fromDate);
+        const endDate = endOfDay(toDate);
+
+        return isWithinInterval(formDate, {
+          start: startDate,
+          end: endDate,
+        });
+      }
+
+      return true;
     })
     .sort(
       (a, b) =>
@@ -206,6 +228,8 @@ export default function AdminForms() {
           <Filters
             selectedFilter={selectedFilter}
             handleFilterClick={handleFilterClick}
+            isDateFilterActive={!!fromDate && !!toDate}
+            isOutletFilterActive={!!selectedOutlet}
           />
         </Box>
 
@@ -253,7 +277,7 @@ export default function AdminForms() {
         </Box>
       </div>
 
-      <DateModal
+      <DateFilterModal
         open={isDateModalOpen}
         onClose={() => setIsDateModalOpen(false)}
         onApply={() => {}}
@@ -263,7 +287,7 @@ export default function AdminForms() {
         open={isOutletModalOpen}
         onClose={() => setIsOutletModalOpen(false)}
         onSelectOutlet={handleSelectOutlet}
-        selectedOutlet={selectedOutlet} 
+        selectedOutlet={selectedOutlet}
       />
     </div>
   );
