@@ -7,7 +7,9 @@ import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { useLoading } from "@/app/context/loaderContext";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 import axios from "axios";
-import {buttonStyles} from "@/app/styles/styles"; 
+import { buttonStyles } from "@/app/styles/styles";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 interface FormData {
   wine: string | null;
   beer: string | null;
@@ -18,12 +20,23 @@ interface FormData {
   merchandiserId: string | null;
 }
 
+interface SOSFormResponse {
+  id: string;
+  wine: number;
+  beer: number;
+  juice: number;
+  outlet: string;
+  createdAt: string;
+  merchandiserId: string;
+}
+
 export default function Conforme() {
   useRoleGuard(["MERCHANDISER", "ADMIN"]);
 
   const router = useRouter();
-  const { setLoading } = useLoading();  
+  const { setLoading } = useLoading();
   const { openSnackbar } = useSnackbar();
+  const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState<FormData>({
     wine: null,
@@ -39,7 +52,76 @@ export default function Conforme() {
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [formId, setFormId] = useState<string | null>(null);
   const [checkboxes, setCheckboxes] = useState([false, false, false, false]);
-  const [userRole, setUserRole] = useState<string | null>(null); // NEW
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  const formatOutletName = (outlet: string | null): string => {
+    if (!outlet) return "";
+    return outlet.replace(/_/g, " ").toUpperCase();
+  };
+  
+  
+
+  const { data: readonlyFormData } = useQuery<SOSFormResponse, Error>({
+    queryKey: ["sosForm", formId],
+    queryFn: async () => {
+      if (!formId) throw new Error("No form ID provided");
+      const response = await axios.get(`http://localhost:5000/user/sosform/${formId}`);
+      return response.data;
+    },
+    enabled: isReadOnly && !!formId,
+  });
+  
+  useEffect(() => {
+    setLoading(false);
+    if (readonlyFormData) {
+      setFormData({
+        wine: readonlyFormData.wine.toString(),
+        beer: readonlyFormData.beer.toString(),
+        juice: readonlyFormData.juice.toString(),
+        outlet: readonlyFormData.outlet,
+        total: (readonlyFormData.wine + readonlyFormData.beer + readonlyFormData.juice).toString(),
+        timeIn: new Date(readonlyFormData.createdAt).toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        merchandiserId: readonlyFormData.merchandiserId,
+      });
+      setCheckboxes([true, true, true, true]);
+    }
+  }, [readonlyFormData, setLoading]);
+  
+  const submitFormMutation = useMutation({
+    mutationFn: async (payload: {
+      merchandiserId: string | null;
+      outlet: string | null;
+      wine: number;
+      beer: number;
+      juice: number;
+      createdAt: string;
+    }) => {
+      if (isEdit && formId) {
+        return axios.put(`http://localhost:5000/user/sosform/${formId}`, payload);
+      } else {
+        return axios.post("http://localhost:5000/user/sosform", payload);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sosForms"] });
+      openSnackbar(
+        isEdit ? "Form updated successfully!" : "Form submitted successfully!",
+        "success"
+      );
+      router.push("/pages/merchandiserDashboard");
+    },
+    onError: (error) => {
+      console.error("Error submitting form:", error);
+      openSnackbar("Failed to submit the form. Please try again.", "error");
+    },
+  });
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -52,36 +134,9 @@ export default function Conforme() {
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const merchandiserId = user?.id;
-    setUserRole(user?.role || null); // NEW
+    setUserRole(user?.role || null);
 
-    if (readonly && id) {
-      axios
-        .get(`http://localhost:5000/user/sosform/${id}`)
-        .then((response) => {
-          const data = response.data;
-          setFormData({
-            wine: data.wine.toString(),
-            beer: data.beer.toString(),
-            juice: data.juice.toString(),
-            outlet: data.outlet,
-            total: (data.wine + data.beer + data.juice).toString(),
-            timeIn: new Date(data.createdAt).toLocaleString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }),
-            merchandiserId,
-          });
-          setCheckboxes([true, true, true, true]);
-        })
-        .catch((error) => {
-          console.error("Failed to fetch form for read-only view", error);
-        })
-        .finally(() => setLoading(false));  
-    } else {
+    if (!readonly) {
       const data: FormData = {
         wine: queryParams.get("wine"),
         beer: queryParams.get("beer"),
@@ -93,7 +148,7 @@ export default function Conforme() {
       };
       setFormData(data);
     }
-  }, [router, setLoading]);
+  }, [router]);
 
   const handleCheckboxChange = (index: number) => {
     if (isReadOnly) return;
@@ -123,43 +178,20 @@ export default function Conforme() {
   };
 
   const handleSubmit = async () => {
-    setLoading(true);  
-
-    const payload = {
-      merchandiserId: formData.merchandiserId,
-      outlet: formData.outlet,
-      wine: Number(formData.wine),
-      beer: Number(formData.beer),
-      juice: Number(formData.juice),
-      createdAt: new Date().toISOString(),
-    };
-
+    setLoading(true);
     try {
-      let response;
+      const payload = {
+        merchandiserId: formData.merchandiserId,
+        outlet: formData.outlet,
+        wine: Number(formData.wine),
+        beer: Number(formData.beer),
+        juice: Number(formData.juice),
+        createdAt: new Date().toISOString(),
+      };
 
-      if (isEdit && formId) {
-        response = await axios.put(
-          `http://localhost:5000/user/sosform/${formId}`,
-          payload
-        );
-      } else {
-        response = await axios.post("http://localhost:5000/user/sosform", payload);
-      }
-
-      if (response.status === 201 || response.status === 200) {
-        openSnackbar(
-          isEdit
-            ? "Form updated successfully!"
-            : "Form submitted successfully!",
-          "success"
-        );
-        router.push("/pages/merchandiserDashboard");
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      openSnackbar("Failed to submit the form. Please try again.", "error");
+      await submitFormMutation.mutateAsync(payload);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -183,7 +215,7 @@ export default function Conforme() {
           </div>
           <div className="text-center">
             <p className="text-[#2d2d2d] font-semibold mb-2">Outlet</p>
-            <p className="text-[#2d2d2d] font-normal">{formData.outlet}</p>
+            <p className="text-[#2d2d2d] font-normal">{formatOutletName(formData.outlet)}</p>
           </div>
         </div>
 
@@ -246,9 +278,9 @@ export default function Conforme() {
               sx={buttonStyles}
               variant="outlined"
               onClick={handleSubmit}
-              disabled={!allCheckboxesChecked}
+              disabled={!allCheckboxesChecked || submitFormMutation.isPending}
             >
-              {isEdit ? "Update" : "Submit"}
+              {submitFormMutation.isPending ? "Processing..." : isEdit ? "Update" : "Submit"}
             </Button>
           </div>
         )}

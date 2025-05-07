@@ -14,7 +14,7 @@ import { useModalStore } from "@/app/stores/useModalStore";
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Filters from "@/components/frontend/Filters";
-import { buttonStyle, captionStyle } from "@/app/styles/styles"; 
+import { buttonStyle, captionStyle } from "@/app/styles/styles";
 
 type SOSForm = {
   id: string;
@@ -49,7 +49,6 @@ export default function AdminForms() {
     },
   });
 
-  // State for selected outlet
   const [selectedOutlet, setSelectedOutlet] = useState<string | null>(null);
 
   const formatOutletName = (outlet: string) => {
@@ -61,9 +60,13 @@ export default function AdminForms() {
 
   const rows = sosForms
     .filter((form) => {
-      if (!selectedOutlet) return true; // Show all forms if no outlet is selected
-      return form.outlet === selectedOutlet; // Only show forms that match the selected outlet
+      if (!selectedOutlet) return true;
+      return form.outlet === selectedOutlet;
     })
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
     .map((form) => ({
       id: form.id,
       outlet: formatOutletName(form.outlet),
@@ -75,8 +78,8 @@ export default function AdminForms() {
     }));
 
   const handleRead = (id: string) => {
-    setLoading(true);  
-    console.log("Navigating to form ID:", id); 
+    setLoading(true);
+    console.log("Navigating to form ID:", id);
     router.push(`/pages/conforme?id=${id}&readonly=true`);
   };
 
@@ -149,7 +152,11 @@ export default function AdminForms() {
         >
           <Button size="medium" variant="text" sx={buttonStyle}>
             <Eye className="w-4 h-4" />
-            <Typography variant="caption" sx={captionStyle} onClick={() => handleRead(params.row.id)}>
+            <Typography
+              variant="caption"
+              sx={captionStyle}
+              onClick={() => handleRead(params.row.id)}
+            >
               Read
             </Typography>
           </Button>
@@ -169,7 +176,7 @@ export default function AdminForms() {
 
   const handleSelectOutlet = (outlet: string | null) => {
     setSelectedOutlet(outlet);
-    setIsOutletModalOpen(false); // Close the outlet modal after selection
+    setIsOutletModalOpen(false);
   };
 
   return (
@@ -186,7 +193,6 @@ export default function AdminForms() {
           </Typography>
         )}
 
-        {/* Filters UI */}
         <Box
           sx={{
             width: "80%",
@@ -203,7 +209,6 @@ export default function AdminForms() {
           />
         </Box>
 
-        {/* Data Grid */}
         <Box
           sx={{
             height: 500,
@@ -248,7 +253,6 @@ export default function AdminForms() {
         </Box>
       </div>
 
-      {/* Modal Components */}
       <DateModal
         open={isDateModalOpen}
         onClose={() => setIsDateModalOpen(false)}
@@ -259,6 +263,7 @@ export default function AdminForms() {
         open={isOutletModalOpen}
         onClose={() => setIsOutletModalOpen(false)}
         onSelectOutlet={handleSelectOutlet}
+        selectedOutlet={selectedOutlet} 
       />
     </div>
   );

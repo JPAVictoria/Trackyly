@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -23,10 +23,24 @@ interface OutletModalProps {
   open: boolean;
   onClose: () => void;
   onSelectOutlet: (outlet: string | null) => void;
+  selectedOutlet: string | null;
 }
 
-export default function OutletModal({ open, onClose, onSelectOutlet }: OutletModalProps) {
+
+export default function OutletModal({
+  open,
+  onClose,
+  onSelectOutlet,
+  selectedOutlet: selectedOutletProp, 
+}: OutletModalProps) {
   const [selectedOutlet, setSelectedOutlet] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedOutlet(selectedOutletProp);
+    }
+  }, [open, selectedOutletProp]);
+
 
   const handleApply = () => {
     onSelectOutlet(selectedOutlet);
