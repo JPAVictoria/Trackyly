@@ -56,6 +56,32 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Ensure that id is a valid UUID string
+    const formId = id;
+
+    if (!formId) {
+      return res.status(400).json({ error: "Form ID is required" });
+    }
+
+    const form = await prisma.sOSForm.findUnique({
+      where: { id: formId },  // Use formId directly as it's a UUID string
+    });
+
+    if (!form) {
+      return res.status(404).json({ error: "Form not found" });
+    }
+
+    return res.status(200).json(form);
+  } catch (err) {
+    console.error("Error fetching form:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.post("/", async (req, res) => {
   try {
     const { outlet, wine, beer, juice, createdAt, merchandiserId } = req.body;
@@ -105,35 +131,6 @@ router.put("/:id", async (req, res) => {
     return res.status(500).json({ error: "Internal server error", details: err.message });
   }
 });
-
-
-router.get("/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Ensure that id is a valid UUID string
-    const formId = id;
-
-    if (!formId) {
-      return res.status(400).json({ error: "Form ID is required" });
-    }
-
-    const form = await prisma.sOSForm.findUnique({
-      where: { id: formId },  // Use formId directly as it's a UUID string
-    });
-
-    if (!form) {
-      return res.status(404).json({ error: "Form not found" });
-    }
-
-    return res.status(200).json(form);
-  } catch (err) {
-    console.error("Error fetching form:", err);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-
 
 
 router.put("/softDelete/:id", async (req, res) => {

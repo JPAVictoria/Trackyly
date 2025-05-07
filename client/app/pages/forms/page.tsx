@@ -62,6 +62,8 @@ export default function AdminForms() {
   }));
 
   const handleRead = (id: string) => {
+    setLoading(true);  
+    console.log("Navigating to form ID:", id); 
     router.push(`/pages/conforme?id=${id}&readonly=true`);
   };
 

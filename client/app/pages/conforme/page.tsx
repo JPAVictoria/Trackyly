@@ -36,7 +36,7 @@ export default function Conforme() {
   useRoleGuard(["MERCHANDISER", "ADMIN"]);
 
   const router = useRouter();
-  const { setLoading } = useLoading();
+  const { setLoading } = useLoading();  
   const { openSnackbar } = useSnackbar();
 
   const [formData, setFormData] = useState<FormData>({
@@ -93,7 +93,8 @@ export default function Conforme() {
         })
         .catch((error) => {
           console.error("Failed to fetch form for read-only view", error);
-        });
+        })
+        .finally(() => setLoading(false));  
     } else {
       const data: FormData = {
         wine: queryParams.get("wine"),
@@ -106,7 +107,7 @@ export default function Conforme() {
       };
       setFormData(data);
     }
-  }, [router]);
+  }, [router, setLoading]);
 
   const handleCheckboxChange = (index: number) => {
     if (isReadOnly) return;
@@ -136,7 +137,7 @@ export default function Conforme() {
   };
 
   const handleSubmit = async () => {
-    setLoading(true);
+    setLoading(true);  
 
     const payload = {
       merchandiserId: formData.merchandiserId,
@@ -172,7 +173,7 @@ export default function Conforme() {
       console.error("Error submitting form:", error);
       openSnackbar("Failed to submit the form. Please try again.", "error");
     } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
 
