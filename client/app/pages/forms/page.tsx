@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/frontend/Navbar";
@@ -49,6 +49,9 @@ export default function AdminForms() {
     },
   });
 
+  // State for selected outlet
+  const [selectedOutlet, setSelectedOutlet] = useState<string | null>(null);
+
   const formatOutletName = (outlet: string) => {
     return outlet
       .split("_")
@@ -56,15 +59,20 @@ export default function AdminForms() {
       .join(" ");
   };
 
-  const rows = sosForms.map((form) => ({
-    id: form.id,
-    outlet: formatOutletName(form.outlet),
-    createdAt: format(new Date(form.createdAt), "MMMM d, yyyy h:mm a"),
-    wine: form.wine,
-    beer: form.beer,
-    juice: form.juice,
-    email: form.email,
-  }));
+  const rows = sosForms
+    .filter((form) => {
+      if (!selectedOutlet) return true; // Show all forms if no outlet is selected
+      return form.outlet === selectedOutlet; // Only show forms that match the selected outlet
+    })
+    .map((form) => ({
+      id: form.id,
+      outlet: formatOutletName(form.outlet),
+      createdAt: format(new Date(form.createdAt), "MMMM d, yyyy h:mm a"),
+      wine: form.wine,
+      beer: form.beer,
+      juice: form.juice,
+      email: form.email,
+    }));
 
   const handleRead = (id: string) => {
     setLoading(true);  
@@ -141,8 +149,7 @@ export default function AdminForms() {
         >
           <Button size="medium" variant="text" sx={buttonStyle}>
             <Eye className="w-4 h-4" />
-            <Typography variant="caption" sx={captionStyle} onClick={() => handleRead(params.row.id)}
-            >
+            <Typography variant="caption" sx={captionStyle} onClick={() => handleRead(params.row.id)}>
               Read
             </Typography>
           </Button>
@@ -151,7 +158,6 @@ export default function AdminForms() {
     },
   ];
 
-  // Modal and Filter UI logic
   const {
     selectedFilter,
     isDateModalOpen,
@@ -160,6 +166,11 @@ export default function AdminForms() {
     setIsOutletModalOpen,
     handleFilterClick,
   } = useModalStore();
+
+  const handleSelectOutlet = (outlet: string | null) => {
+    setSelectedOutlet(outlet);
+    setIsOutletModalOpen(false); // Close the outlet modal after selection
+  };
 
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center relative">
@@ -247,9 +258,8 @@ export default function AdminForms() {
       <OutletModal
         open={isOutletModalOpen}
         onClose={() => setIsOutletModalOpen(false)}
-        onSelectOutlet={() => {}}
+        onSelectOutlet={handleSelectOutlet}
       />
     </div>
   );
 }
-
