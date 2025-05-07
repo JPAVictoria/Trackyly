@@ -20,7 +20,7 @@ import { useModalStore } from "@/app/stores/useModalStore";
 import DateFilterModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Filters from "@/components/frontend/Filters";
-import { buttonStyle, captionStyle } from "@/app/styles/styles";
+import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles";
 import { useDateStore } from "@/app/stores/useDateStore";
 
 type SOSForm = {
@@ -46,7 +46,6 @@ export default function AdminForms() {
   const {
     data: sosForms = [],
     isLoading,
-    error,
   } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
@@ -68,10 +67,8 @@ export default function AdminForms() {
 
   const rows = sosForms
     .filter((form) => {
-      // Filter by outlet if selected
       if (selectedOutlet && form.outlet !== selectedOutlet) return false;
 
-      // Filter by date range if selected
       if (fromDate && toDate) {
         const formDate = parseISO(form.createdAt);
         const startDate = startOfDay(fromDate);
@@ -106,54 +103,12 @@ export default function AdminForms() {
   };
 
   const columns: GridColDef[] = [
-    {
-      field: "outlet",
-      headerName: "Outlet",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
-    {
-      field: "createdAt",
-      headerName: "Created Date",
-      flex: 1.2,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
-    {
-      field: "wine",
-      headerName: "Wine",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
-    {
-      field: "beer",
-      headerName: "Beer",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
-    {
-      field: "juice",
-      headerName: "Juice",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
-    {
-      field: "email",
-      headerName: "Merchandiser Email",
-      flex: 1.5,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
-    },
+    { field: "outlet", headerName: "Outlet", flex: 1, ...centerAligned },
+    { field: "createdAt", headerName: "Created Date", flex: 1.2, ...centerAligned },
+    { field: "wine", headerName: "Wine", flex: 1, ...centerAligned },
+    { field: "beer", headerName: "Beer", flex: 1, ...centerAligned },
+    { field: "juice", headerName: "Juice", flex: 1, ...centerAligned },
+    { field: "email", headerName: "Merchandiser Email", flex: 1.5, ...centerAligned },
     {
       field: "actions",
       headerName: "Action",
@@ -161,24 +116,12 @@ export default function AdminForms() {
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
-      headerAlign: "center",
-      align: "center",
-      headerClassName: "bold-header",
+      ...centerAligned,
       renderCell: (params) => (
-        <Stack
-          direction="row"
-          spacing={2}
-          justifyContent="center"
-          alignItems="center"
-          sx={{ height: "100%" }}
-        >
-          <Button size="medium" variant="text" sx={buttonStyle}>
+        <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ height: "100%" }}>
+          <Button size="medium" variant="text" sx={buttonStyle} onClick={() => handleRead(params.row.id)}>
             <Eye className="w-4 h-4" />
-            <Typography
-              variant="caption"
-              sx={captionStyle}
-              onClick={() => handleRead(params.row.id)}
-            >
+            <Typography variant="caption" sx={captionStyle}>
               Read
             </Typography>
           </Button>
@@ -186,6 +129,7 @@ export default function AdminForms() {
       ),
     },
   ];
+  
 
   const {
     selectedFilter,
@@ -208,12 +152,6 @@ export default function AdminForms() {
         <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-10">
           User Roles and Permissions
         </h1>
-
-        {error && (
-          <Typography color="error" className="mb-4">
-            Failed to load SOS forms: {(error as Error).message}
-          </Typography>
-        )}
 
         <Box
           sx={{

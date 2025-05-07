@@ -35,3 +35,8 @@ export const buttonStyle = {
     },
   };
   
+  export const centerAligned = {
+    headerAlign: "center" as const,
+    align: "center" as const,
+    headerClassName: "bold-header",
+  };
