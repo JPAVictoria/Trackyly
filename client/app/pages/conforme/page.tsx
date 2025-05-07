@@ -33,7 +33,7 @@ const buttonStyles = {
 };
 
 export default function Conforme() {
-  useRoleGuard(["MERCHANDISER","ADMIN"]);
+  useRoleGuard(["MERCHANDISER", "ADMIN"]);
 
   const router = useRouter();
   const { setLoading } = useLoading();
@@ -53,6 +53,7 @@ export default function Conforme() {
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [formId, setFormId] = useState<string | null>(null);
   const [checkboxes, setCheckboxes] = useState([false, false, false, false]);
+  const [userRole, setUserRole] = useState<string | null>(null); // NEW
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -65,9 +66,9 @@ export default function Conforme() {
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const merchandiserId = user?.id;
+    setUserRole(user?.role || null); // NEW
 
     if (readonly && id) {
-      // Fetch the form data by ID
       axios
         .get(`http://localhost:5000/user/sosform/${id}`)
         .then((response) => {
@@ -86,7 +87,6 @@ export default function Conforme() {
               minute: "2-digit",
               hour12: true,
             }),
-            
             merchandiserId,
           });
           setCheckboxes([true, true, true, true]);
@@ -110,7 +110,6 @@ export default function Conforme() {
 
   const handleCheckboxChange = (index: number) => {
     if (isReadOnly) return;
-
     const updated = [...checkboxes];
     updated[index] = !updated[index];
     setCheckboxes(updated);
@@ -157,10 +156,7 @@ export default function Conforme() {
           payload
         );
       } else {
-        response = await axios.post(
-          "http://localhost:5000/user/sosform",
-          payload
-        );
+        response = await axios.post("http://localhost:5000/user/sosform", payload);
       }
 
       if (response.status === 201 || response.status === 200) {
@@ -180,11 +176,17 @@ export default function Conforme() {
     }
   };
 
+  const handleBackToDashboard = () => {
+    if (userRole === "ADMIN") {
+      router.push("/pages/forms");
+    } else {
+      router.push("/pages/merchandiserDashboard");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f9f9fb] flex flex-col items-center justify-center p-6">
-      <h1 className="text-xl font-bold text-[#2F27CE] mb-10">
-        Summary & Conformé
-      </h1>
+      <h1 className="text-xl font-bold text-[#2F27CE] mb-10">Summary & Conformé</h1>
 
       <div className="rounded-sm border border-gray-200 shadow-sm bg-white w-full max-w-2xl p-10 space-y-4">
         <div className="flex justify-between items-center text-sm font-medium mb-7">
@@ -269,7 +271,7 @@ export default function Conforme() {
             <Button
               sx={buttonStyles}
               variant="outlined"
-              onClick={() => router.push("/pages/merchandiserDashboard")}
+              onClick={handleBackToDashboard}
             >
               ← Back to Dashboard
             </Button>

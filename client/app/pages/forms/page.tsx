@@ -65,7 +65,6 @@ export default function AdminForms() {
     router.push(`/pages/conforme?id=${id}&readonly=true`);
   };
 
-  // Define columns for the DataGrid
   const columns: GridColDef[] = [
     {
       field: "outlet",
