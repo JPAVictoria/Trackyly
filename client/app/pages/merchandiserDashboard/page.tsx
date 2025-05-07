@@ -12,6 +12,7 @@ import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
 import { useLoading } from "@/app/context/loaderContext";
+import { buttonStyle, captionStyle } from "@/app/styles/styles"; 
 
 export default function MerchandiserDashboard() {
   const router = useRouter();
@@ -266,25 +267,4 @@ export default function MerchandiserDashboard() {
   );
 }
 
-const buttonStyle = {
-  minWidth: "auto",
-  padding: "8px 16px",
-  color: "#2F27CE",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 80,
-  height: "100%",
-  opacity: 0.6,
-  "&:hover": {
-    opacity: 1,
-    backgroundColor: "rgba(47, 39, 206, 0.04)",
-  },
-};
 
-const captionStyle = {
-  fontSize: "0.7rem",
-  marginTop: "4px",
-  color: "#2F27CE",
-};

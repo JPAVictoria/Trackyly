@@ -7,7 +7,7 @@ import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { useLoading } from "@/app/context/loaderContext";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 import axios from "axios";
-
+import {buttonStyles} from "@/app/styles/styles"; 
 interface FormData {
   wine: string | null;
   beer: string | null;
@@ -17,20 +17,6 @@ interface FormData {
   timeIn: string | null;
   merchandiserId: string | null;
 }
-
-const buttonStyles = {
-  backgroundColor: "#fff",
-  color: "#000",
-  borderColor: "rgba(45, 45, 45, 0.1)",
-  textTransform: "none",
-  fontSize: "0.75rem",
-  padding: "4px 10px",
-  cursor: "pointer",
-  "&:hover": {
-    backgroundColor: "#f5f5f5",
-    borderColor: "rgba(45, 45, 45, 0.2)",
-  },
-};
 
 export default function Conforme() {
   useRoleGuard(["MERCHANDISER", "ADMIN"]);

@@ -16,20 +16,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
 import axios from "axios";
+import { buttonStyles} from "@/app/styles/styles"; 
 
-const buttonStyles = {
-  backgroundColor: "#fff",
-  color: "#000",
-  borderColor: "rgba(45, 45, 45, 0.1)",
-  textTransform: "none",
-  fontSize: "0.75rem",
-  padding: "4px 10px",
-  cursor: "pointer",
-  "&:hover": {
-    backgroundColor: "#f5f5f5",
-    borderColor: "rgba(45, 45, 45, 0.2)",
-  },
-};
+
 
 export default function CreateForm() {
   useRoleGuard(["MERCHANDISER"]);

@@ -14,6 +14,7 @@ import { useModalStore } from "@/app/stores/useModalStore";
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Filters from "@/components/frontend/Filters";
+import { buttonStyle, captionStyle } from "@/app/styles/styles"; 
 
 type SOSForm = {
   id: string;
@@ -252,25 +253,3 @@ export default function AdminForms() {
   );
 }
 
-const buttonStyle = {
-  minWidth: "auto",
-  padding: "8px 16px",
-  color: "#2F27CE",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 80,
-  height: "100%",
-  opacity: 0.6,
-  "&:hover": {
-    opacity: 1,
-    backgroundColor: "rgba(47, 39, 206, 0.04)",
-  },
-};
-
-const captionStyle = {
-  fontSize: "0.7rem",
-  marginTop: "4px",
-  color: "#2F27CE",
-};
