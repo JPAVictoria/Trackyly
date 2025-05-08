@@ -9,6 +9,7 @@ import OutletModal from "@/components/frontend/OutletModal";
 import { useModalStore } from "@/app/stores/useModalStore";
 import { useLoading } from "@/app/context/loaderContext";
 import type { PieValueType } from '@mui/x-charts/models';
+import { useEffect } from "react";
 
 interface ProductDistribution {
   outlet: string;
@@ -28,11 +29,12 @@ export default function AnalyticsBlock() {
     handleFilterClick,
   } = useModalStore();
 
-  const { setLoading } = useLoading(); // <-- use loading context
+  const { setLoading } = useLoading(); 
 
   const {
     data: distribution,
     isError,
+    refetch,
   } = useQuery<ProductDistribution[]>({
     queryKey: ["quarterlyProductDistribution", selectedFilter],
     queryFn: async () => {
@@ -41,9 +43,10 @@ export default function AnalyticsBlock() {
         let url = "http://localhost:5000/user/analytics/quarter";
   
         if (selectedFilter === "Custom") {
-
           url = "http://localhost:5000/user/analytics/custom";
-        } 
+        } else if (selectedFilter.startsWith("Outlet:")) {
+          url = `http://localhost:5000/user/analytics/outlet?outlet=${selectedFilter.replace("Outlet: ", "")}`;
+        }
   
         const res = await axios.get(url);
         return res.data;
@@ -51,9 +54,13 @@ export default function AnalyticsBlock() {
         setLoading(false);
       }
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0, 
+    refetchOnMount: true, 
   });
-  
+
+  useEffect(() => {
+    refetch();
+  }, [selectedFilter, refetch]);
 
   const filterButtons = ["Custom", "Outlet", "Default"];
 
@@ -129,7 +136,12 @@ export default function AnalyticsBlock() {
               key={label}
               variant="outlined"
               size="small"
-              onClick={() => handleFilterClick(label as "Custom" | "Outlet" | "Default")}
+              onClick={() => {
+                handleFilterClick(label as "Custom" | "Outlet" | "Default");
+                if (label === "Default") {
+                  setSelectedFilter("Default");
+                }
+              }}
               sx={{
                 ...buttonStyles,
                 borderColor: selectedFilter.startsWith(label) ? "#433BFF" : buttonStyles.borderColor,
