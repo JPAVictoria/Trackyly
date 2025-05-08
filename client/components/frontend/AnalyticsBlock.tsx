@@ -14,7 +14,7 @@ export default function AnalyticsBlock() {
     setSelectedFilter,
     setIsDateModalOpen,
     setIsOutletModalOpen,
-    handleFilterClick
+    handleFilterClick,
   } = useModalStore();
 
   const pieChartData = [
@@ -40,7 +40,10 @@ export default function AnalyticsBlock() {
     return `${value.value}%`;
   };
 
-  const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
+  const handleApplyCustomFilter = (
+    fromDate: Date | null,
+    toDate: Date | null
+  ) => {
     console.log("Applying custom filter with dates:", { fromDate, toDate });
     setSelectedFilter("Custom");
     setIsDateModalOpen(false);
@@ -67,15 +70,17 @@ export default function AnalyticsBlock() {
               key={label}
               variant="outlined"
               size="small"
-              onClick={() => handleFilterClick(label as 'Custom' | 'Outlet' | 'Default')}
+              onClick={() =>
+                handleFilterClick(label as "Custom" | "Outlet" | "Default")
+              }
               sx={{
                 ...buttonStyles,
-                borderColor:
-                  selectedFilter.startsWith(label)
-                    ? "#433BFF"
-                    : buttonStyles.borderColor,
-                color:
-                  selectedFilter.startsWith(label) ? "#433BFF" : buttonStyles.color,
+                borderColor: selectedFilter.startsWith(label)
+                  ? "#433BFF"
+                  : buttonStyles.borderColor,
+                color: selectedFilter.startsWith(label)
+                  ? "#433BFF"
+                  : buttonStyles.color,
               }}
             >
               {label}
@@ -112,6 +117,11 @@ export default function AnalyticsBlock() {
         open={isOutletModalOpen}
         onClose={() => setIsOutletModalOpen(false)}
         onSelectOutlet={handleApplyOutletFilter}
+        selectedOutlet={
+          selectedFilter.startsWith("Outlet:")
+            ? selectedFilter.replace("Outlet: ", "")
+            : null
+        }
       />
     </div>
   );

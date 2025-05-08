@@ -32,32 +32,48 @@ export default function CreateForm() {
   const [juice, setJuice] = useState<number>(0);
   const [outlet, setOutlet] = useState<string>("");
   const [timeIn, setTimeIn] = useState<string>("");
+  const comingFromConforme = searchParams.get("fromConforme") === "true";
 
   useEffect(() => {
-    // Check if the form is in edit mode
-    if (isEditMode && formId) {
-      const fetchData = async () => {
-        try {
-          const { data } = await axios.get(
-            `http://localhost:5000/user/sosform/${formId}`,
-            { withCredentials: true }
-          );
+    const fetchData = async () => {
+      try {
+        if (isEditMode && !comingFromConforme && formId) {
+          const { data } = await axios.get(`http://localhost:5000/user/sosform/${formId}`, {
+            withCredentials: true,
+          });
           setWine(data.wine || 0);
           setBeer(data.beer || 0);
           setJuice(data.juice || 0);
           setOutlet(data.outlet || "");
-          setTimeIn(format(new Date(data.createdAt), "MMMM dd, yyyy hh:mm a")); 
-        } catch (error) {
-          console.error("Failed to fetch form data:", error);
+          setTimeIn(format(new Date(data.createdAt), "MMMM dd, yyyy hh:mm a"));
+        } else {
+          // Use values from query params
+          const wineParam = searchParams.get("wine");
+          const beerParam = searchParams.get("beer");
+          const juiceParam = searchParams.get("juice");
+          const outletParam = searchParams.get("outlet");
+          const timeInParam = searchParams.get("timeIn");
+  
+          setWine(wineParam ? Number(wineParam) : 0);
+          setBeer(beerParam ? Number(beerParam) : 0);
+          setJuice(juiceParam ? Number(juiceParam) : 0);
+          setOutlet(outletParam || "");
+          setTimeIn(
+            timeInParam
+              ? timeInParam
+              : format(new Date(), "MMMM dd, yyyy hh:mm a")
+          );
         }
-      };
-
-      fetchData();
-    } else {
-      const now = new Date();
-      setTimeIn(format(now, "MMMM dd, yyyy hh:mm a"));
-    }
+      } catch (error) {
+        console.error("Failed to fetch form data:", error);
+      }
+    };
+  
+    fetchData();
   }, [isEditMode, formId]);
+  
+  
+  
 
   const router = useRouter();
 

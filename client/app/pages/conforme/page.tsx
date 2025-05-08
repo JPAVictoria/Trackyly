@@ -167,15 +167,17 @@ export default function Conforme() {
       outlet: formData.outlet || "",
       total: formData.total || "",
       timeIn: formData.timeIn || "",
+      fromConforme: "true",
     });
-
+  
     if (isEdit && formId) {
       queryParams.append("edit", "true");
       queryParams.append("id", formId);
     }
-
+  
     router.push(`/pages/createForm?${queryParams.toString()}`);
   };
+  
 
   const handleSubmit = async () => {
     setLoading(true);
