@@ -11,10 +11,9 @@ router.get("/quarter", async (req, res) => {
     const quarterStart = new Date(now.getFullYear(), startMonth, 1);
     const quarterEnd = new Date(now.getFullYear(), startMonth + 3, 0);
 
-    // Get forms within the current quarter and group by outlet
     const forms = await prisma.sOSForm.findMany({
       where: {
-        deleted: false,
+        deleted: false, // Ensure only non-deleted forms are considered
         createdAt: {
           gte: quarterStart,
           lte: quarterEnd,
@@ -49,7 +48,6 @@ router.get("/quarter", async (req, res) => {
 
     console.log(results); // Log the final grouped results
 
-    
     return res.status(200).json(results);
   } catch (err) {
     console.error("Error getting quarterly product distribution:", err);
