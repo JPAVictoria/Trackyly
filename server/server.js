@@ -10,6 +10,7 @@ const resetRouter = require("./api/auth/reset/auth.route");
 const statisticsRouter = require("./api/statistics/route");
 const usersRoute = require("./api/configureUser/route");
 const formRoute = require("./api/sosform/route");
+const analyticsRoute = require("./api/analytics/route");
 
 const corsOptions = {
   origin: 'http://localhost:3000',
@@ -28,6 +29,7 @@ app.use("/user/reset", resetRouter);
 app.use("/user/statistics", statisticsRouter);
 app.use("/user/configureUser", usersRoute);
 app.use("/user/sosform", formRoute);
+app.use("/user/analytics", analyticsRoute);
 
 
 
