@@ -3,11 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { Button, CircularProgress, Tooltip } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import { useModalStore } from "@/app/stores/useModalStore";
-
+import type { PieValueType } from '@mui/x-charts/models';
 interface ProductDistribution {
   outlet: string;
   wine: number;
@@ -36,7 +36,7 @@ export default function AnalyticsBlock() {
       const res = await axios.get("http://localhost:5000/user/analytics/quarter");
       return res.data;
     },
-    staleTime: 5 * 60 * 1000, 
+    staleTime: 5 * 60 * 1000,
   });
 
   const filterButtons = ["Custom", "Outlet", "Default"];
@@ -48,7 +48,7 @@ export default function AnalyticsBlock() {
     textTransform: "none",
     "&:hover": {
       backgroundColor: "#f5f5f5",
-      borderColor: "rgba(45, 45, 45, 0.2)",
+      borderColor: "rgba(45, 45, 0.2)",
     },
   };
 
@@ -66,25 +66,43 @@ export default function AnalyticsBlock() {
     setIsOutletModalOpen(false);
   };
 
-  // Generate Pie Chart data based on distribution for each outlet
-  const getPieChartData = () => {
+  interface PieChartDataItem {
+    id: string;
+    value: number;
+    label: string;
+    color: string;
+    wine: number;
+    beer: number;
+    juice: number;
+  }
+  
+  const getPieChartData = (): PieChartDataItem[] => {
     if (!distribution || distribution.length === 0) return [];
-
+  
     return distribution.map((outletData, index) => ({
       id: outletData.outlet,
-      value: outletData.wine + outletData.beer + outletData.juice, // Total quantity for this outlet
-      color: ["#06b6d4", "#a855f7", "#14b8a6"][index % 3], // Use different colors for different outlets
-      outletName: outletData.outlet,
+      value: outletData.wine + outletData.beer + outletData.juice,
+      label: String(outletData.outlet),
+      color: ["#06b6d4", "#a855f7", "#14b8a6"][index % 3],
       wine: outletData.wine,
       beer: outletData.beer,
       juice: outletData.juice,
     }));
   };
-
-  // Format the tooltip information to display vertically
-  const valueFormatter = (value: { value: number }) => {
-    return `${value.value}`; // Show quantity instead of percentage
+  
+  
+  const valueFormatter = (slice: PieValueType) => {
+    const labelStr = typeof slice.label === "string" ? slice.label : undefined;
+    if (!labelStr) return `${slice.value}`;
+  
+    const data = getPieChartData().find((d) => d.label === labelStr);
+  
+    if (!data) return `${labelStr}: ${slice.value}`;
+  
+    return `${labelStr} - Wine: ${data.wine}, Beer: ${data.beer}, Juice: ${data.juice}`;
   };
+  
+  
 
   return (
     <div className="bg-white shadow-md rounded-sm p-6 max-w-md w-full">
@@ -119,49 +137,22 @@ export default function AnalyticsBlock() {
           ) : !distribution || distribution.length === 0 ? (
             <p>No data available for this period.</p>
           ) : (
-            <div className="relative">
-              <PieChart
-                series={[
-                  {
-                    data: getPieChartData(),
-                    highlightScope: { fade: "global", highlight: "item" },
-                    faded: {
-                      innerRadius: 30,
-                      additionalRadius: -30,
-                      color: "gray",
-                    },
-                    valueFormatter,
+            <PieChart
+              series={[
+                {
+                  data: getPieChartData(),
+                  highlightScope: { fade: "global", highlight: "item" },
+                  faded: {
+                    innerRadius: 30,
+                    additionalRadius: -30,
+                    color: "gray",
                   },
-                ]}
-                height={250}
-              />
-              {/* Tooltip Overlay Logic */}
-              {getPieChartData().map((outletData) => (
-                <Tooltip
-                  key={outletData.id}
-                  title={
-                    <div className="flex flex-col">
-                      <strong>{outletData.outletName}</strong>
-                      <span>Wine: {outletData.wine}</span>
-                      <span>Beer: {outletData.beer}</span>
-                      <span>Juice: {outletData.juice}</span>
-                    </div>
-                  }
-                  arrow
-                  placement="top"
-                >
-                  <div
-                    className="absolute"
-                    style={{
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                </Tooltip>
-              ))}
-            </div>
+                  valueFormatter,
+                },
+              ]}
+              height={250}
+              hideLegend={true} // Set legend to hidden
+            />
           )}
         </div>
       </div>
