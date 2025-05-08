@@ -34,18 +34,26 @@ export default function AnalyticsBlock() {
     data: distribution,
     isError,
   } = useQuery<ProductDistribution[]>({
-    queryKey: ["quarterlyProductDistribution"],
+    queryKey: ["quarterlyProductDistribution", selectedFilter],
     queryFn: async () => {
-      setLoading(true); // start loader
+      setLoading(true);
       try {
-        const res = await axios.get("http://localhost:5000/user/analytics/quarter");
+        let url = "http://localhost:5000/user/analytics/quarter";
+  
+        if (selectedFilter === "Custom") {
+
+          url = "http://localhost:5000/user/analytics/custom";
+        } 
+  
+        const res = await axios.get(url);
         return res.data;
       } finally {
-        setLoading(false); // stop loader
+        setLoading(false);
       }
     },
     staleTime: 5 * 60 * 1000,
   });
+  
 
   const filterButtons = ["Custom", "Outlet", "Default"];
 
@@ -105,7 +113,7 @@ export default function AnalyticsBlock() {
   
     if (!data) return `${labelStr}: ${slice.value}`;
   
-    return `${labelStr} - Wine: ${data.wine}, Beer: ${data.beer}, Juice: ${data.juice}`;
+    return `Wine - ${data.wine}\nBeer - ${data.beer}\nJuice - ${data.juice}`;
   };
 
   return (
