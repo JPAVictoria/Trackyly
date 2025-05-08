@@ -3,11 +3,13 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { Button, CircularProgress } from "@mui/material";
+import { Button } from "@mui/material";
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import { useModalStore } from "@/app/stores/useModalStore";
+import { useLoading } from "@/app/context/loaderContext";
 import type { PieValueType } from '@mui/x-charts/models';
+
 interface ProductDistribution {
   outlet: string;
   wine: number;
@@ -26,15 +28,21 @@ export default function AnalyticsBlock() {
     handleFilterClick,
   } = useModalStore();
 
+  const { setLoading } = useLoading(); // <-- use loading context
+
   const {
     data: distribution,
-    isLoading,
     isError,
   } = useQuery<ProductDistribution[]>({
     queryKey: ["quarterlyProductDistribution"],
     queryFn: async () => {
-      const res = await axios.get("http://localhost:5000/user/analytics/quarter");
-      return res.data;
+      setLoading(true); // start loader
+      try {
+        const res = await axios.get("http://localhost:5000/user/analytics/quarter");
+        return res.data;
+      } finally {
+        setLoading(false); // stop loader
+      }
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -75,10 +83,9 @@ export default function AnalyticsBlock() {
     beer: number;
     juice: number;
   }
-  
+
   const getPieChartData = (): PieChartDataItem[] => {
     if (!distribution || distribution.length === 0) return [];
-  
     return distribution.map((outletData, index) => ({
       id: outletData.outlet,
       value: outletData.wine + outletData.beer + outletData.juice,
@@ -89,8 +96,7 @@ export default function AnalyticsBlock() {
       juice: outletData.juice,
     }));
   };
-  
-  
+
   const valueFormatter = (slice: PieValueType) => {
     const labelStr = typeof slice.label === "string" ? slice.label : undefined;
     if (!labelStr) return `${slice.value}`;
@@ -101,8 +107,6 @@ export default function AnalyticsBlock() {
   
     return `${labelStr} - Wine: ${data.wine}, Beer: ${data.beer}, Juice: ${data.juice}`;
   };
-  
-  
 
   return (
     <div className="bg-white shadow-md rounded-sm p-6 max-w-md w-full">
@@ -130,9 +134,7 @@ export default function AnalyticsBlock() {
         </div>
 
         <div className="flex-1 flex justify-center items-center min-h-[250px]">
-          {isLoading ? (
-            <CircularProgress />
-          ) : isError ? (
+          {isError ? (
             <p className="text-red-500">Error loading chart data.</p>
           ) : !distribution || distribution.length === 0 ? (
             <p>No data available for this period.</p>
@@ -151,7 +153,7 @@ export default function AnalyticsBlock() {
                 },
               ]}
               height={250}
-              hideLegend={true} // Set legend to hidden
+              hideLegend={true}
             />
           )}
         </div>
