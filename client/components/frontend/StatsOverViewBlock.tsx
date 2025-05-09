@@ -81,11 +81,13 @@ export default function StatsOverViewBlock() {
         </p>
         <p className="text-lg font-bold text-gray-800 mt-4">{sosCount}</p>
         <div className="mt-4">
-          <Link href="/pages/forms">
-            <Button sx={buttonStyles} variant="outlined">
-              View All
-            </Button>
-          </Link>
+          <Button
+            sx={buttonStyles}
+            variant="outlined"
+            onClick={() => (window.location.href = "/pages/forms")}
+          >
+            View All
+          </Button>
         </div>
       </div>
 

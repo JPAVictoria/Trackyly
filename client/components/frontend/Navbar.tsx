@@ -49,38 +49,41 @@ export default function Navbar() {
     }
   }, [userRole, hasInitialized, pathname, router]);
 
-  const iconButtons = [
-    {
-      icon: <LogOut size={18} />,
-      label: "Logout",
-      onClick: async () => await handleLogout(),
-      yOffset: -50, 
+const iconButtons = [
+  {
+    icon: <LogOut size={18} />,
+    label: "Logout",
+    onClick: async () => await handleLogout(),
+    yOffset: -50, 
+  },
+  {
+    icon: <Shield size={18} />,
+    label: "RBAC",
+    onClick: () => router.push("/pages/userRoles"),
+    yOffset: -100,
+  },
+  {
+    icon: <LayoutDashboard size={18} />,
+    label: "Forms",
+    onClick: () => {
+      window.location.href = "/pages/forms";
     },
-    {
-      icon: <Shield size={18} />,
-      label: "RBAC",
-      onClick: () => router.push("/pages/userRoles"),
-      yOffset: -100,
+    yOffset: -150,
+  },
+  {
+    icon: <BarChart size={18} />,
+    label: "Dashboard",
+    onClick: () => {
+      if (userRole === "ADMIN") {
+        window.location.href = "/pages/adminDashboard";
+      } else {
+        window.location.href = "/pages/merchandiserDashboard";
+      }
     },
-    {
-      icon: <LayoutDashboard size={18} />,
-      label: "Forms",
-      onClick: () => router.push("/pages/forms"),
-      yOffset: -150,
-    },
-    {
-      icon: <BarChart size={18} />,
-      label: "Dashboard",
-      onClick: () => {
-        if (userRole === "ADMIN") {
-          router.push("/pages/adminDashboard");
-        } else {
-          router.push("/pages/merchandiserDashboard");
-        }
-      },
-      yOffset: -200,
-    },
-  ];
+    yOffset: -200,
+  },
+];
+
 
   const handleLogout = async () => {
     setLoading(true);

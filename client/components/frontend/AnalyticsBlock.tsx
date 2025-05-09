@@ -100,17 +100,34 @@ export default function AnalyticsBlock() {
     },
   };
 
-const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
-  if (fromDate && toDate) {
-    const fromUtc = new Date(Date.UTC(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate()));
-    const toUtc = new Date(Date.UTC(toDate.getFullYear(), toDate.getMonth(), toDate.getDate(), 23, 59, 59));
+  const handleApplyCustomFilter = (
+    fromDate: Date | null,
+    toDate: Date | null
+  ) => {
+    if (fromDate && toDate) {
+      const fromUtc = new Date(
+        Date.UTC(
+          fromDate.getFullYear(),
+          fromDate.getMonth(),
+          fromDate.getDate()
+        )
+      );
+      const toUtc = new Date(
+        Date.UTC(
+          toDate.getFullYear(),
+          toDate.getMonth(),
+          toDate.getDate(),
+          23,
+          59,
+          59
+        )
+      );
 
-    setDateRange({ fromDate: fromUtc, toDate: toUtc });
-    setSelectedFilter("Custom");
-    setIsDateModalOpen(false);
-  }
-};
-
+      setDateRange({ fromDate: fromUtc, toDate: toUtc });
+      setSelectedFilter("Custom");
+      setIsDateModalOpen(false);
+    }
+  };
 
   const handleApplyOutletFilter = (outlet: string | null) => {
     if (outlet) {
@@ -202,8 +219,12 @@ Juice: ${data.juice}`;
               }}
               sx={{
                 ...buttonStyles,
-                borderColor: selectedFilter.startsWith(label) ? "#433BFF" : buttonStyles.borderColor,
-                color: selectedFilter.startsWith(label) ? "#433BFF" : buttonStyles.color,
+                borderColor: selectedFilter.startsWith(label)
+                  ? "#433BFF"
+                  : buttonStyles.borderColor,
+                color: selectedFilter.startsWith(label)
+                  ? "#433BFF"
+                  : buttonStyles.color,
               }}
             >
               {label}
@@ -214,7 +235,8 @@ Juice: ${data.juice}`;
         <div className="flex-1 flex justify-center items-center min-h-[250px]">
           {isError ? (
             <p className="text-red-500">
-              Error loading chart data: {error instanceof Error ? error.message : "Unknown error"}
+              Error loading chart data:{" "}
+              {error instanceof Error ? error.message : "Unknown error"}
             </p>
           ) : !distribution || distribution.length === 0 ? (
             <p>No data available for this period.</p>
@@ -250,7 +272,9 @@ Juice: ${data.juice}`;
         onClose={() => setIsOutletModalOpen(false)}
         onSelectOutlet={handleApplyOutletFilter}
         selectedOutlet={
-          selectedFilter.startsWith("Outlet:") ? selectedFilter.replace("Outlet: ", "") : null
+          selectedFilter.startsWith("Outlet:")
+            ? selectedFilter.replace("Outlet: ", "")
+            : null
         }
       />
     </div>
