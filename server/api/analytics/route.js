@@ -13,7 +13,7 @@ router.get("/quarter", async (req, res) => {
 
     const forms = await prisma.sOSForm.findMany({
       where: {
-        deleted: false, // Ensure only non-deleted forms are considered
+        deleted: false, 
         createdAt: {
           gte: quarterStart,
           lte: quarterEnd,
@@ -27,7 +27,7 @@ router.get("/quarter", async (req, res) => {
       },
     });
 
-    // Group the data by outlet
+    
     const outletData = forms.reduce((acc, form) => {
       if (!acc[form.outlet]) {
         acc[form.outlet] = { wine: 0, beer: 0, juice: 0 };
@@ -38,7 +38,7 @@ router.get("/quarter", async (req, res) => {
       return acc;
     }, {});
 
-    // Convert the grouped data into an array of results for each outlet
+    
     const results = Object.keys(outletData).map((outlet) => ({
       outlet,
       wine: outletData[outlet].wine,
@@ -46,7 +46,7 @@ router.get("/quarter", async (req, res) => {
       juice: outletData[outlet].juice,
     }));
 
-    console.log(results); // Log the final grouped results
+    console.log(results); 
 
     return res.status(200).json(results);
   } catch (err) {
@@ -55,6 +55,38 @@ router.get("/quarter", async (req, res) => {
       error: "Internal server error",
       details: err.message,
     });
+  }
+});
+
+router.get("/outlet", async (req, res) => {
+  const outlet = req.query.outlet;
+
+  if (!outlet) {
+    return res.status(400).json({ error: "Outlet query parameter is required" });
+  }
+
+  try {
+    const totals = await prisma.sOSForm.aggregate({
+      where: {
+        outlet,
+        deleted: false,
+      },
+      _sum: {
+        wine: true,
+        beer: true,
+        juice: true,
+      },
+    });
+
+    res.json([{
+      outlet,
+      wine: totals._sum.wine || 0,
+      beer: totals._sum.beer || 0,
+      juice: totals._sum.juice || 0,
+    }]);
+  } catch (error) {
+    console.error("Error fetching outlet data:", error);
+    res.status(500).json({ error: "Failed to fetch outlet data" });
   }
 });
 

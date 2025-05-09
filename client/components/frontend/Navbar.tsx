@@ -107,8 +107,7 @@ export default function Navbar() {
             icon: <Plus size={18} />,
             label: "Create",
             onClick: () => {
-              // Trigger a hard reload to the create form page
-              window.location.href = "/pages/createForm"; // Forces a full page reload
+              window.location.href = "/pages/createForm"; 
             },
             yOffset: -150,
           },

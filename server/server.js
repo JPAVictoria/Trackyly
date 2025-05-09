@@ -21,7 +21,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-
 app.use("/user/register", registerRouter);
 app.use("/user/login", loginRouter);
 app.use("/user/forgot", forgotRouter);
@@ -30,11 +29,6 @@ app.use("/user/statistics", statisticsRouter);
 app.use("/user/configureUser", usersRoute);
 app.use("/user/sosform", formRoute);
 app.use("/user/analytics", analyticsRoute);
-
-
-
-
-
 
 app.get("/", (req, res) => {
   res.send("Server is up and running!");

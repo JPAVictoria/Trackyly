@@ -8,11 +8,21 @@ import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import { useModalStore } from "@/app/stores/useModalStore";
 import { useLoading } from "@/app/context/loaderContext";
-import type { PieValueType } from '@mui/x-charts/models';
+import type { PieValueType } from "@mui/x-charts/models";
 import { useEffect } from "react";
 
 interface ProductDistribution {
   outlet: string;
+  wine: number;
+  beer: number;
+  juice: number;
+}
+
+interface PieChartDataItem {
+  id: string;
+  value: number;
+  label: string;
+  color: string;
   wine: number;
   beer: number;
   juice: number;
@@ -29,7 +39,7 @@ export default function AnalyticsBlock() {
     handleFilterClick,
   } = useModalStore();
 
-  const { setLoading } = useLoading(); 
+  const { setLoading } = useLoading();
 
   const {
     data: distribution,
@@ -41,21 +51,22 @@ export default function AnalyticsBlock() {
       setLoading(true);
       try {
         let url = "http://localhost:5000/user/analytics/quarter";
-  
+
         if (selectedFilter === "Custom") {
           url = "http://localhost:5000/user/analytics/custom";
         } else if (selectedFilter.startsWith("Outlet:")) {
-          url = `http://localhost:5000/user/analytics/outlet?outlet=${selectedFilter.replace("Outlet: ", "")}`;
+          const outletName = selectedFilter.replace("Outlet: ", "");
+          url = `http://localhost:5000/user/analytics/outlet?outlet=${encodeURIComponent(outletName)}`;
         }
-  
+
         const res = await axios.get(url);
         return res.data;
       } finally {
         setLoading(false);
       }
     },
-    staleTime: 0, 
-    refetchOnMount: true, 
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   useEffect(() => {
@@ -89,22 +100,48 @@ export default function AnalyticsBlock() {
     setIsOutletModalOpen(false);
   };
 
-  interface PieChartDataItem {
-    id: string;
-    value: number;
-    label: string;
-    color: string;
-    wine: number;
-    beer: number;
-    juice: number;
-  }
-
   const getPieChartData = (): PieChartDataItem[] => {
     if (!distribution || distribution.length === 0) return [];
+
+    // If filtering by Outlet: show three slices: wine, beer, juice
+    if (selectedFilter.startsWith("Outlet:")) {
+      const data = distribution[0];
+      return [
+        {
+          id: "wine",
+          value: data.wine,
+          label: "Wine",
+          color: "#06b6d4",
+          wine: data.wine,
+          beer: 0,
+          juice: 0,
+        },
+        {
+          id: "beer",
+          value: data.beer,
+          label: "Beer",
+          color: "#a855f7",
+          wine: 0,
+          beer: data.beer,
+          juice: 0,
+        },
+        {
+          id: "juice",
+          value: data.juice,
+          label: "Juice",
+          color: "#14b8a6",
+          wine: 0,
+          beer: 0,
+          juice: data.juice,
+        },
+      ];
+    }
+
+    // For Default/Custom: One slice per outlet, value = total beverages
     return distribution.map((outletData, index) => ({
       id: outletData.outlet,
       value: outletData.wine + outletData.beer + outletData.juice,
-      label: String(outletData.outlet),
+      label: outletData.outlet,
       color: ["#06b6d4", "#a855f7", "#14b8a6"][index % 3],
       wine: outletData.wine,
       beer: outletData.beer,
@@ -115,12 +152,17 @@ export default function AnalyticsBlock() {
   const valueFormatter = (slice: PieValueType) => {
     const labelStr = typeof slice.label === "string" ? slice.label : undefined;
     if (!labelStr) return `${slice.value}`;
-  
+
     const data = getPieChartData().find((d) => d.label === labelStr);
-  
     if (!data) return `${labelStr}: ${slice.value}`;
-  
-    return `Wine - ${data.wine}\nBeer - ${data.beer}\nJuice - ${data.juice}`;
+
+    // Show all beverage details for outlet slices
+    if (!selectedFilter.startsWith("Outlet:")) {
+      return `Wine - ${data.wine}\nBeer - ${data.beer}\nJuice - ${data.juice}`;
+    }
+
+    // Show just value for wine/beer/juice
+    return `${labelStr} - ${data.value}`;
   };
 
   return (
@@ -138,9 +180,7 @@ export default function AnalyticsBlock() {
               size="small"
               onClick={() => {
                 handleFilterClick(label as "Custom" | "Outlet" | "Default");
-                if (label === "Default") {
-                  setSelectedFilter("Default");
-                }
+                if (label === "Default") setSelectedFilter("Default");
               }}
               sx={{
                 ...buttonStyles,

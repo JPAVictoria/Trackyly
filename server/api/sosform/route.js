@@ -100,7 +100,7 @@ router.post("/", async (req, res) => {
         juice: Number(juice),
         createdAt: createdAt ? new Date(createdAt) : new Date(),
         merchandiserId,
-        deleted: false, // Explicitly set deleted flag
+        deleted: false, 
       },
     });
 
@@ -111,7 +111,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PUT /user/sosform/:id
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { outlet, wine, beer, juice } = req.body;
