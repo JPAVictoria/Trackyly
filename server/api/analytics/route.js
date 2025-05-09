@@ -107,12 +107,11 @@ router.get("/custom", async (req, res) => {
     return res.status(400).json({ error: "Both fromDate and toDate are required" });
   }
 
-  // Convert fromDate and toDate to UTC
   const startDate = new Date(fromDate);
-  startDate.setUTCHours(0, 0, 0, 0); // Set start of day in UTC
+  startDate.setUTCHours(0, 0, 0, 0); 
 
   const endDate = new Date(toDate);
-  endDate.setUTCHours(23, 59, 59, 999); // Set end of day in UTC
+  endDate.setUTCHours(23, 59, 59, 999); 
 
   if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
     return res.status(400).json({ error: "Invalid date format" });

@@ -155,7 +155,6 @@ const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => 
       ];
     }
 
-    // Default or Custom — aggregate per outlet
     return distribution.map((outletData, index) => ({
       id: outletData.outlet,
       value: outletData.wine + outletData.beer + outletData.juice,
@@ -174,7 +173,6 @@ const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => 
     const data = getPieChartData().find((d) => d.label === labelStr);
     if (!data) return `${labelStr}: ${slice.value}`;
 
-    // Show all product types for Custom and Default
     if (!selectedFilter.startsWith("Outlet:")) {
       return `${labelStr}
 Wine: ${data.wine}
