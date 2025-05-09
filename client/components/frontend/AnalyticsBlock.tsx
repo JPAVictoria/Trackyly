@@ -9,7 +9,7 @@ import OutletModal from "@/components/frontend/OutletModal";
 import { useModalStore } from "@/app/stores/useModalStore";
 import { useLoading } from "@/app/context/loaderContext";
 import type { PieValueType } from "@mui/x-charts/models";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ProductDistribution {
   outlet: string;
@@ -40,26 +40,40 @@ export default function AnalyticsBlock() {
   } = useModalStore();
 
   const { setLoading } = useLoading();
+  const [dateRange, setDateRange] = useState<{
+    fromDate: Date | null;
+    toDate: Date | null;
+  }>({ fromDate: null, toDate: null });
 
   const {
     data: distribution,
     isError,
+    error,
     refetch,
   } = useQuery<ProductDistribution[]>({
-    queryKey: ["quarterlyProductDistribution", selectedFilter],
+    queryKey: ["productDistribution", selectedFilter, dateRange],
     queryFn: async () => {
       setLoading(true);
       try {
         let url = "http://localhost:5000/user/analytics/quarter";
+        let params = {};
 
         if (selectedFilter === "Custom") {
           url = "http://localhost:5000/user/analytics/custom";
+          if (dateRange.fromDate && dateRange.toDate) {
+            params = {
+              fromDate: dateRange.fromDate.toISOString().split("T")[0],
+              toDate: dateRange.toDate.toISOString().split("T")[0],
+            };
+          }
         } else if (selectedFilter.startsWith("Outlet:")) {
           const outletName = selectedFilter.replace("Outlet: ", "");
-          url = `http://localhost:5000/user/analytics/outlet?outlet=${encodeURIComponent(outletName)}`;
+          url = `http://localhost:5000/user/analytics/outlet?outlet=${encodeURIComponent(
+            outletName
+          )}`;
         }
 
-        const res = await axios.get(url);
+        const res = await axios.get(url, { params });
         return res.data;
       } finally {
         setLoading(false);
@@ -71,7 +85,7 @@ export default function AnalyticsBlock() {
 
   useEffect(() => {
     refetch();
-  }, [selectedFilter, refetch]);
+  }, [selectedFilter, dateRange, refetch]);
 
   const filterButtons = ["Custom", "Outlet", "Default"];
 
@@ -86,15 +100,20 @@ export default function AnalyticsBlock() {
     },
   };
 
-  const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
-    console.log("Applying custom filter with dates:", { fromDate, toDate });
+const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
+  if (fromDate && toDate) {
+    const fromUtc = new Date(Date.UTC(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate()));
+    const toUtc = new Date(Date.UTC(toDate.getFullYear(), toDate.getMonth(), toDate.getDate(), 23, 59, 59));
+
+    setDateRange({ fromDate: fromUtc, toDate: toUtc });
     setSelectedFilter("Custom");
     setIsDateModalOpen(false);
-  };
+  }
+};
+
 
   const handleApplyOutletFilter = (outlet: string | null) => {
     if (outlet) {
-      console.log("Selected outlet:", outlet);
       setSelectedFilter(`Outlet: ${outlet}`);
     }
     setIsOutletModalOpen(false);
@@ -103,7 +122,6 @@ export default function AnalyticsBlock() {
   const getPieChartData = (): PieChartDataItem[] => {
     if (!distribution || distribution.length === 0) return [];
 
-    // If filtering by Outlet: show three slices: wine, beer, juice
     if (selectedFilter.startsWith("Outlet:")) {
       const data = distribution[0];
       return [
@@ -137,7 +155,7 @@ export default function AnalyticsBlock() {
       ];
     }
 
-    // For Default/Custom: One slice per outlet, value = total beverages
+    // Default or Custom — aggregate per outlet
     return distribution.map((outletData, index) => ({
       id: outletData.outlet,
       value: outletData.wine + outletData.beer + outletData.juice,
@@ -156,13 +174,15 @@ export default function AnalyticsBlock() {
     const data = getPieChartData().find((d) => d.label === labelStr);
     if (!data) return `${labelStr}: ${slice.value}`;
 
-    // Show all beverage details for outlet slices
+    // Show all product types for Custom and Default
     if (!selectedFilter.startsWith("Outlet:")) {
-      return `Wine - ${data.wine}\nBeer - ${data.beer}\nJuice - ${data.juice}`;
+      return `${labelStr}
+Wine: ${data.wine}
+Beer: ${data.beer}
+Juice: ${data.juice}`;
     }
 
-    // Show just value for wine/beer/juice
-    return `${labelStr} - ${data.value}`;
+    return `${labelStr}: ${data.value}`;
   };
 
   return (
@@ -195,7 +215,9 @@ export default function AnalyticsBlock() {
 
         <div className="flex-1 flex justify-center items-center min-h-[250px]">
           {isError ? (
-            <p className="text-red-500">Error loading chart data.</p>
+            <p className="text-red-500">
+              Error loading chart data: {error instanceof Error ? error.message : "Unknown error"}
+            </p>
           ) : !distribution || distribution.length === 0 ? (
             <p>No data available for this period.</p>
           ) : (
