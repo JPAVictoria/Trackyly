@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -21,17 +21,16 @@ export default function Login() {
 
   const {
     login: {
-      email,
-      password,
       loading: formLoading,
       showPassword,
-      setEmail,
-      setPassword,
       toggleShowPassword,
       resetForm,
       setLoading: setLoginLoading,
     },
   } = useAuthStore();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     return () => {
@@ -47,12 +46,14 @@ export default function Login() {
       return;
     }
 
-
     try {
-      const response = await axios.post("http://localhost:5000/user/login/login", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:5000/user/login/login",
+        {
+          email,
+          password,
+        }
+      );
 
       const { token, user } = response.data;
 
@@ -76,10 +77,9 @@ export default function Login() {
 
       setLoading(true);
       setLoginLoading(true);
-      
     } catch (error) {
       let errorMessage = "An unexpected error occurred.";
-    
+
       if (axios.isAxiosError(error)) {
         if (error.response?.data?.message) {
           errorMessage = error.response.data.message;
@@ -89,7 +89,7 @@ export default function Login() {
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
-    
+
       openSnackbar(errorMessage, "error");
     } finally {
       setLoginLoading(false);

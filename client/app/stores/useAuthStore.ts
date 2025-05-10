@@ -1,6 +1,5 @@
 import { create } from "zustand";
 
-
 interface FormStore {
   loading: boolean;
   submitted: boolean;
@@ -9,7 +8,6 @@ interface FormStore {
   resetForm: () => void;
 }
 
-
 interface PasswordVisibilityStore {
   showPassword: boolean;
   toggleShowPassword: () => void;
@@ -17,15 +15,6 @@ interface PasswordVisibilityStore {
   toggleShowConfirmPassword: () => void;
   showNew: boolean;
   toggleShowNew: () => void;
-}
-
-
-
-interface LoginStore extends FormStore, PasswordVisibilityStore {
-  email: string;
-  password: string;
-  setEmail: (email: string) => void;
-  setPassword: (password: string) => void;
 }
 
 interface ForgotPasswordStore extends FormStore {
@@ -45,14 +34,20 @@ interface RegisterStore extends FormStore, PasswordVisibilityStore {
 interface PasswordState extends FormStore, PasswordVisibilityStore {
   newPassword: string;
   confirmPassword: string;
-  showConfirm: boolean; 
-  toggleShowConfirm: () => void; 
+  showConfirm: boolean;
+  toggleShowConfirm: () => void;
   setNewPassword: (password: string) => void;
   setConfirmPassword: (password: string) => void;
   resetPasswordForm: () => void;
 }
 
-  
+interface LoginStore extends FormStore, PasswordVisibilityStore {
+  setLoading: (loading: boolean) => void;
+  setSubmitted: (submitted: boolean) => void;
+  toggleShowPassword: () => void;
+  resetForm: () => void;
+}
+
 interface AuthStore {
   login: LoginStore;
   forgotPassword: ForgotPasswordStore;
@@ -60,52 +55,68 @@ interface AuthStore {
   changePassword: PasswordState;
 }
 
-
 export const useAuthStore = create<AuthStore>((set) => ({
-  
   login: {
-    email: "",
-    password: "",
     loading: false,
     submitted: false,
     showPassword: false,
     showConfirmPassword: false,
-    showCurrent: false, 
-    showNew: false, 
-    setEmail: (email) => set((state) => ({ login: { ...state.login, email } })),
-    setPassword: (password) => set((state) => ({ login: { ...state.login, password } })),
-    setLoading: (loading) => set((state) => ({ login: { ...state.login, loading } })),
-    setSubmitted: (submitted) => set((state) => ({ login: { ...state.login, submitted } })),
+    showNew: false,
+    setLoading: (loading) =>
+      set((state) => ({ login: { ...state.login, loading } })),
+    setSubmitted: (submitted) =>
+      set((state) => ({ login: { ...state.login, submitted } })),
     toggleShowPassword: () =>
-      set((state) => ({ login: { ...state.login, showPassword: !state.login.showPassword } })),
+      set((state) => ({
+        login: { ...state.login, showPassword: !state.login.showPassword },
+      })),
     toggleShowConfirmPassword: () =>
-      set((state) => ({ login: { ...state.login, showConfirmPassword: !state.login.showConfirmPassword } })),
+      set((state) => ({
+        login: {
+          ...state.login,
+          showConfirmPassword: !state.login.showConfirmPassword,
+        },
+      })),
     toggleShowNew: () =>
-      set((state) => ({ login: { ...state.login, showNew: !state.login.showNew } })), 
+      set((state) => ({
+        login: { ...state.login, showNew: !state.login.showNew },
+      })),
     resetForm: () =>
       set((state) => ({
         login: {
           ...state.login,
-          email: "",
-          password: "",
           loading: false,
           submitted: false,
           showPassword: false,
           showConfirmPassword: false,
-          showCurrent: false, 
-          showNew: false, 
+          showNew: false,
         },
       })),
   },
-  
+
   forgotPassword: {
     email: "",
     loading: false,
-    submitted: false, 
-    setEmail: (email) => set((state) => ({ forgotPassword: { ...state.forgotPassword, email } })),
-    setLoading: (loading) => set((state) => ({ forgotPassword: { ...state.forgotPassword, loading } })),
-    setSubmitted: (submitted) => set((state) => ({ forgotPassword: { ...state.forgotPassword, submitted } })),
-    resetForm: () => set((state) => ({ forgotPassword: { ...state.forgotPassword, email: "", loading: false, submitted: false } })),
+    submitted: false,
+    setEmail: (email) =>
+      set((state) => ({ forgotPassword: { ...state.forgotPassword, email } })),
+    setLoading: (loading) =>
+      set((state) => ({
+        forgotPassword: { ...state.forgotPassword, loading },
+      })),
+    setSubmitted: (submitted) =>
+      set((state) => ({
+        forgotPassword: { ...state.forgotPassword, submitted },
+      })),
+    resetForm: () =>
+      set((state) => ({
+        forgotPassword: {
+          ...state.forgotPassword,
+          email: "",
+          loading: false,
+          submitted: false,
+        },
+      })),
   },
 
   register: {
@@ -118,18 +129,32 @@ export const useAuthStore = create<AuthStore>((set) => ({
     submitted: false,
     showPassword: false,
     showConfirmPassword: false,
-    showCurrent: false, 
-    showNew: false, 
+    showCurrent: false,
+    showNew: false,
     setField: (field, value) =>
       set((state) => ({ register: { ...state.register, [field]: value } })),
-    setLoading: (loading) => set((state) => ({ register: { ...state.register, loading } })),
-    setSubmitted: (submitted) => set((state) => ({ register: { ...state.register, submitted } })),
+    setLoading: (loading) =>
+      set((state) => ({ register: { ...state.register, loading } })),
+    setSubmitted: (submitted) =>
+      set((state) => ({ register: { ...state.register, submitted } })),
     toggleShowPassword: () =>
-      set((state) => ({ register: { ...state.register, showPassword: !state.register.showPassword } })),
+      set((state) => ({
+        register: {
+          ...state.register,
+          showPassword: !state.register.showPassword,
+        },
+      })),
     toggleShowConfirmPassword: () =>
-      set((state) => ({ register: { ...state.register, showConfirmPassword: !state.register.showConfirmPassword } })),
+      set((state) => ({
+        register: {
+          ...state.register,
+          showConfirmPassword: !state.register.showConfirmPassword,
+        },
+      })),
     toggleShowNew: () =>
-      set((state) => ({ register: { ...state.register, showNew: !state.register.showNew } })), 
+      set((state) => ({
+        register: { ...state.register, showNew: !state.register.showNew },
+      })),
     resetForm: () =>
       set((state) => ({
         register: {
@@ -143,8 +168,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
           submitted: false,
           showPassword: false,
           showConfirmPassword: false,
-          showCurrent: false, 
-          showNew: false, 
+          showCurrent: false,
+          showNew: false,
         },
       })),
   },
@@ -158,7 +183,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     showPassword: false,
     loading: false,
     submitted: false,
-  
+
     toggleShowPassword: () =>
       set((state) => ({
         changePassword: {
@@ -233,6 +258,5 @@ export const useAuthStore = create<AuthStore>((set) => ({
           submitted: false,
         },
       })),
-  }
-  
+  },
 }));
