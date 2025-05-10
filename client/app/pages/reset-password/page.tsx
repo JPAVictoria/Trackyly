@@ -12,18 +12,15 @@ import { useSnackbar } from "@/app/context/SnackbarContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useLoading } from "@/app/context/loaderContext";
+import { useState } from "react"; 
 
 export default function ChangePassword() {
   const {
     changePassword: {
-      newPassword,
-      confirmPassword,
       showNew,
-      showConfirm,
+      showConfirmPassword,
       toggleShowNew,
-      toggleShowConfirm,
-      setNewPassword,
-      setConfirmPassword,
+      toggleShowConfirmPassword,
       loading,
       submitted,
       setLoading,
@@ -31,6 +28,9 @@ export default function ChangePassword() {
       resetForm,
     },
   } = useAuthStore();
+
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
 
   const { openSnackbar } = useSnackbar();
   const router = useRouter();
@@ -90,16 +90,16 @@ export default function ChangePassword() {
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
-          <AnimatedGridPattern
-            numSquares={30}
-            maxOpacity={0.3}
-            duration={5}
-            repeatDelay={1}
-            className={cn(
-              "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
-              "absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
-            )}
-          />
+      <AnimatedGridPattern
+        numSquares={30}
+        maxOpacity={0.3}
+        duration={5}
+        repeatDelay={1}
+        className={cn(
+          "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
+          "absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
+        )}
+      />
       <h1 className="text-[18px] mb-30 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
         Trackyly
       </h1>
@@ -135,7 +135,7 @@ export default function ChangePassword() {
               Confirm New Password
             </Label>
             <Input
-              type={showConfirm ? "text" : "password"}
+              type={showConfirmPassword ? "text" : "password"}
               id="confirm-password"
               placeholder="********"
               value={confirmPassword}
@@ -143,10 +143,10 @@ export default function ChangePassword() {
               className="pr-10 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
             />
             <div
-              onClick={toggleShowConfirm}
+              onClick={toggleShowConfirmPassword}
               className="absolute top-15 right-3 -translate-y-1/2 flex items-center cursor-pointer text-gray-500 hover:text-[#2F27CE] transition"
             >
-              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </div>
           </div>
 

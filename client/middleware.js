@@ -5,7 +5,7 @@ export function middleware(request) {
   const user = token ? JSON.parse(atob(token.split('.')[1])) : null; 
   const pathname = request.nextUrl.pathname
 
-  const publicPaths = ['/pages/login', '/pages/register','/pages/forgot-password']
+  const publicPaths = ['/pages/login', '/pages/register','/pages/forgot-password','/pages/reset-password']
 
   if (publicPaths.includes(pathname)) {
     return NextResponse.next()
@@ -42,7 +42,6 @@ export const config = {
     '/pages/adminDashboard/:path*',
     '/pages/conforme/:path*',
     '/pages/createForm/:path*',
-    '/pages/reset-password/:path*',
     '/pages/userRoles/:path*',
     '/pages/merchandiserDashboard/:path*',
     '/pages/forms/:path*',
