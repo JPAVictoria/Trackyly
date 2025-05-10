@@ -5,6 +5,7 @@ import { Button } from "@mui/material";
 import axios from "axios";
 import { useStatisticStore } from "@/app/stores/useStatisticStore";
 import Link from "next/link";
+import { buttonStyles} from "@/app/styles/styles"; 
 
 export default function StatsOverViewBlock() {
   const {
@@ -44,18 +45,6 @@ export default function StatsOverViewBlock() {
     fetchStatistics();
   }, [setSosCount, setMerchCount, setLoading, setError]);
 
-  const buttonStyles = {
-    backgroundColor: "#fff",
-    color: "#000",
-    borderColor: "rgba(45, 45, 45, 0.1)",
-    textTransform: "none",
-    fontSize: "0.75rem",
-    padding: "4px 10px",
-    "&:hover": {
-      backgroundColor: "#f5f5f5",
-      borderColor: "rgba(45, 45, 45, 0.2)",
-    },
-  };
 
   if (loading) {
     return (

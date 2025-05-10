@@ -12,6 +12,7 @@ import {
   FormControl,
   Box,
 } from "@mui/material";
+import { buttonStylesFilter} from "@/app/styles/styles"; 
 
 enum Outlet {
   PARANAQUE_CITY = "PARANAQUE_CITY",
@@ -52,34 +53,6 @@ export default function OutletModal({
     setSelectedOutlet(null);
   };
 
-  const buttonStyles = {
-    variant: "outlined" as const,
-    sx: {
-      borderColor: "#2d2d2d",
-      color: "#2d2d2d",
-      padding: "8px 16px",
-      fontSize: "0.8125rem",
-      textTransform: "none",
-      "&:hover": {
-        borderColor: "#433BFF",
-        color: "#433BFF",
-        backgroundColor: "#433BFF10",
-      },
-    },
-  };
-
-  const applyButtonStyles = {
-    ...buttonStyles,
-    sx: {
-      ...buttonStyles.sx,
-      borderColor: "#433BFF",
-      color: "#433BFF",
-      "&:hover": {
-        borderColor: "#433BFF",
-        backgroundColor: "#433BFF10",
-      },
-    },
-  };
 
   const formatOutletName = (outlet: string) => {
     return outlet
@@ -126,13 +99,13 @@ export default function OutletModal({
         </Box>
       </DialogContent>
       <DialogActions className="p-4 gap-2">
-        <Button onClick={onClose} {...buttonStyles}>
+        <Button onClick={onClose} {...buttonStylesFilter}>
           Cancel
         </Button>
-        <Button onClick={handleClear} {...buttonStyles}>
+        <Button onClick={handleClear} {...buttonStylesFilter}>
           Clear
         </Button>
-        <Button onClick={handleApply} {...applyButtonStyles}>
+        <Button onClick={handleApply} {...buttonStylesFilter}>
           Apply
         </Button>
       </DialogActions>

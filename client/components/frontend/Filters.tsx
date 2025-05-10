@@ -2,6 +2,7 @@
 
 import { Button, Stack, Typography } from "@mui/material";
 import { Filter, MapPin } from "lucide-react";
+import { baseButtonStyles } from "@/app/styles/styles";
 
 interface FiltersProps {
   selectedFilter: string;
@@ -15,20 +16,6 @@ const Filters = ({
   isDateFilterActive,
   isOutletFilterActive,
 }: FiltersProps) => {
-  const baseButtonStyles = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 80,
-    height: "100%",
-    border: "1px solid rgba(45, 45, 45, 0.1)",
-    transition: "opacity 0.3s, background-color 0.3s",
-    gap: "8px",
-    textTransform: "none",
-    padding: "10px 16px",
-  };
-
   const filterButtons = [
     {
       label: "Custom",
@@ -52,9 +39,7 @@ const Filters = ({
           onClick={() => handleFilterClick(label as "Custom" | "Outlet")}
           sx={{
             ...baseButtonStyles,
-            borderColor: isActive
-              ? "#433BFF"
-              : "rgba(45, 45, 45, 0.1)",
+            borderColor: isActive ? "#433BFF" : "rgba(45, 45, 45, 0.1)",
             color: isActive ? "#433BFF" : "#2d2d2d",
             opacity: isActive ? 1 : 0.6,
             "&:hover": {

@@ -11,6 +11,7 @@ import {
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useDateStore } from "@/app/stores/useDateStore";
+import { buttonStylesFilter} from "@/app/styles/styles"; 
 
 interface DateFilterModal {
   open: boolean;
@@ -34,32 +35,6 @@ export default function DateFilterModal({
     resetDates();
   };
 
-  const buttonStyles = {
-    variant: "outlined" as const,
-    sx: {
-      borderColor: "#2d2d2d",
-      color: "#2d2d2d",
-      padding: "8px 16px",
-      fontSize: "0.8125rem",
-      textTransform: "none",
-      "&:hover": {
-        borderColor: "#433BFF",
-        color: "#433BFF",
-        backgroundColor: "#433BFF10",
-      },
-    },
-  };
-
-  const applyButtonStyles = {
-    ...buttonStyles,
-    sx: {
-      ...buttonStyles.sx,
-      "&:hover": {
-        borderColor: "#433BFF",
-        backgroundColor: "#433BFF10",
-      },
-    },
-  };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -132,13 +107,13 @@ export default function DateFilterModal({
         </LocalizationProvider>
       </DialogContent>
       <DialogActions className="p-4 gap-2">
-        <Button onClick={onClose} {...buttonStyles}>
+        <Button onClick={onClose} {...buttonStylesFilter}>
           Cancel
         </Button>
-        <Button onClick={handleClear} {...buttonStyles}>
+        <Button onClick={handleClear} {...buttonStylesFilter}>
           Clear
         </Button>
-        <Button onClick={handleApply} {...applyButtonStyles}>
+        <Button onClick={handleApply} {...buttonStylesFilter}>
           Apply
         </Button>
       </DialogActions>

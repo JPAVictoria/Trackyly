@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 router.get("/quarter", async (req, res) => {
   try {
     const now = new Date();
-    const quarter = Math.floor((now.getMonth() + 1) / 3) + 1;
+    const quarter = Math.floor(now.getMonth() / 3) + 1;
     const startMonth = (quarter - 1) * 3;
     const quarterStart = new Date(now.getFullYear(), startMonth, 1);
     const quarterEnd = new Date(now.getFullYear(), startMonth + 3, 0);
