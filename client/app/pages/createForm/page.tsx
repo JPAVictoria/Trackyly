@@ -47,7 +47,6 @@ export default function CreateForm() {
           setOutlet(data.outlet || "");
           setTimeIn(format(new Date(data.createdAt), "MMMM dd, yyyy hh:mm a"));
         } else {
-          // Use values from query params
           const wineParam = searchParams.get("wine");
           const beerParam = searchParams.get("beer");
           const juiceParam = searchParams.get("juice");
@@ -70,7 +69,7 @@ export default function CreateForm() {
     };
   
     fetchData();
-  }, [isEditMode, formId]);
+}, [isEditMode, formId, comingFromConforme, searchParams]);
   
   
   
@@ -99,7 +98,6 @@ export default function CreateForm() {
       timeIn,
     });
 
-    // Add edit info if applicable
     if (isEditMode && formId) {
       params.append("edit", "true");
       params.append("id", formId);
