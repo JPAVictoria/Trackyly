@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 import { useAuthStore } from "@/app/stores/useAuthStore";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
@@ -12,7 +13,10 @@ import axios from "axios";
 
 export default function ForgotPassword() {
   const { openSnackbar } = useSnackbar();
-  const { email, loading, setEmail, setLoading } = useAuthStore((state) => state.forgotPassword);
+  
+  const { loading, setLoading, setSubmitted} = useAuthStore((state) => state.forgotPassword);
+
+  const [email, setEmail] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,12 +27,14 @@ export default function ForgotPassword() {
     }
 
     setLoading(true);
+    setSubmitted(false);
 
     try {
       const res = await axios.post("http://localhost:5000/user/forgot/forgot", { email });
 
       if (res.status === 200 || res.status === 201) {
         openSnackbar(res.data.message, "success");
+        setSubmitted(true);
       } else {
         openSnackbar(res.data.message || "Something went wrong", "error");
       }

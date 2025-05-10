@@ -17,11 +17,6 @@ interface PasswordVisibilityStore {
   toggleShowNew: () => void;
 }
 
-interface ForgotPasswordStore extends FormStore {
-  email: string;
-  setEmail: (email: string) => void;
-}
-
 interface RegisterStore extends FormStore, PasswordVisibilityStore {
   firstName: string;
   lastName: string;
@@ -50,7 +45,7 @@ interface LoginStore extends FormStore, PasswordVisibilityStore {
 
 interface AuthStore {
   login: LoginStore;
-  forgotPassword: ForgotPasswordStore;
+  forgotPassword: FormStore;
   register: RegisterStore;
   changePassword: PasswordState;
 }
@@ -95,11 +90,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   forgotPassword: {
-    email: "",
     loading: false,
     submitted: false,
-    setEmail: (email) =>
-      set((state) => ({ forgotPassword: { ...state.forgotPassword, email } })),
     setLoading: (loading) =>
       set((state) => ({
         forgotPassword: { ...state.forgotPassword, loading },
@@ -112,7 +104,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set((state) => ({
         forgotPassword: {
           ...state.forgotPassword,
-          email: "",
           loading: false,
           submitted: false,
         },
