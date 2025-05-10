@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -15,19 +16,13 @@ import { cn } from "@/lib/utils";
 export default function Register() {
   const router = useRouter();
   const { openSnackbar } = useSnackbar();
-  const { setLoading: setGlobalLoading } = useLoading(); 
+  const { setLoading: setGlobalLoading } = useLoading();
 
   const {
-    firstName,
-    lastName,
-    email,
-    password,
-    confirmPassword,
     loading,
     submitted,
     showPassword,
     showConfirmPassword,
-    setField,
     setLoading,
     setSubmitted,
     toggleShowPassword,
@@ -35,11 +30,13 @@ export default function Register() {
     resetForm,
   } = useAuthStore((state) => state.register);
 
-  const isDisabled = loading || submitted;
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setField(e.target.id, e.target.value);
-  };
+  const isDisabled = loading || submitted;
 
   const handleSubmit = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
@@ -92,23 +89,22 @@ export default function Register() {
       openSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
-      setTimeout(() => setGlobalLoading(false), 2500); 
+      setTimeout(() => setGlobalLoading(false), 2500);
     }
   };
 
   return (
-    
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
-          <AnimatedGridPattern
-      numSquares={30}
-      maxOpacity={0.3}
-      duration={5}
-      repeatDelay={1}
-      className={cn(
-        "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
-        "absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
-      )}
-    />
+      <AnimatedGridPattern
+        numSquares={30}
+        maxOpacity={0.3}
+        duration={5}
+        repeatDelay={1}
+        className={cn(
+          "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
+          "absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
+        )}
+      />
       <h1 className="text-[18px] mb-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
         Trackyly
       </h1>
@@ -120,13 +116,14 @@ export default function Register() {
 
         <form className="pt-5 space-y-5">
           {[ 
-            { id: "firstName", label: "First Name", value: firstName, type: "text" },
-            { id: "lastName", label: "Last Name", value: lastName, type: "text" },
-            { id: "email", label: "Email", value: email, type: "email" },
+            { id: "firstName", label: "First Name", value: firstName, setValue: setFirstName, type: "text" },
+            { id: "lastName", label: "Last Name", value: lastName, setValue: setLastName, type: "text" },
+            { id: "email", label: "Email", value: email, setValue: setEmail, type: "email" },
             {
               id: "password",
               label: "Password",
               value: password,
+              setValue: setPassword,
               type: showPassword ? "text" : "password",
               isPassword: true,
               toggle: toggleShowPassword,
@@ -136,6 +133,7 @@ export default function Register() {
               id: "confirmPassword",
               label: "Confirm Password",
               value: confirmPassword,
+              setValue: setConfirmPassword,
               type: showConfirmPassword ? "text" : "password",
               isPassword: true,
               toggle: toggleShowConfirmPassword,
@@ -150,7 +148,7 @@ export default function Register() {
                 type={field.type}
                 id={field.id}
                 value={field.value}
-                onChange={handleChange}
+                onChange={(e) => field.setValue(e.target.value)}
                 disabled={isDisabled}
                 placeholder={field.id === "email" ? "email@example.com" : "********"}
                 className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"

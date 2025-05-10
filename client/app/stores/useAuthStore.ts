@@ -18,12 +18,7 @@ interface PasswordVisibilityStore {
 }
 
 interface RegisterStore extends FormStore, PasswordVisibilityStore {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  setField: (field: string, value: string) => void;
+  resetForm: () => void;
 }
 
 interface PasswordState extends FormStore, PasswordVisibilityStore {
@@ -111,19 +106,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   register: {
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
     loading: false,
     submitted: false,
     showPassword: false,
     showConfirmPassword: false,
     showCurrent: false,
     showNew: false,
-    setField: (field, value) =>
-      set((state) => ({ register: { ...state.register, [field]: value } })),
     setLoading: (loading) =>
       set((state) => ({ register: { ...state.register, loading } })),
     setSubmitted: (submitted) =>
@@ -150,11 +138,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set((state) => ({
         register: {
           ...state.register,
-          firstName: "",
-          lastName: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
           loading: false,
           submitted: false,
           showPassword: false,
