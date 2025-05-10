@@ -10,7 +10,7 @@ import { useModalStore } from "@/app/stores/useModalStore";
 import { useLoading } from "@/app/context/loaderContext";
 import type { PieValueType } from "@mui/x-charts/models";
 import { useEffect, useState } from "react";
-
+import {buttonStyles} from "@/app/styles/styles";
 interface ProductDistribution {
   outlet: string;
   wine: number;
@@ -88,17 +88,6 @@ export default function AnalyticsBlock() {
   }, [selectedFilter, dateRange, refetch]);
 
   const filterButtons = ["Custom", "Outlet", "Default"];
-
-  const buttonStyles = {
-    backgroundColor: "#fff",
-    color: "#000",
-    borderColor: "rgba(45, 45, 45, 0.1)",
-    textTransform: "none",
-    "&:hover": {
-      backgroundColor: "#f5f5f5",
-      borderColor: "rgba(45, 45, 0.2)",
-    },
-  };
 
   const handleApplyCustomFilter = (
     fromDate: Date | null,
@@ -215,7 +204,12 @@ Juice: ${data.juice}`;
               size="small"
               onClick={() => {
                 handleFilterClick(label as "Custom" | "Outlet" | "Default");
-                if (label === "Default") setSelectedFilter("Default");
+                if (label === "Default") {
+                  setSelectedFilter("Default");
+                  setDateRange({ fromDate: null, toDate: null }); 
+                } else if (label === "Outlet") {
+                  setDateRange({ fromDate: null, toDate: null }); 
+                }
               }}
               sx={{
                 ...buttonStyles,
