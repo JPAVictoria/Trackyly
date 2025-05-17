@@ -68,8 +68,8 @@ export default function CreateForm() {
       }
     };
   
-    fetchData();
-}, [isEditMode, formId, comingFromConforme, searchParams]);
+    fetchData(); 
+}, [isEditMode, formId]);
   
   
   

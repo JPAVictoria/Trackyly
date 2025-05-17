@@ -2,14 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 
-const registerRouter = require("./api/auth/register/auth.route");
-const loginRouter = require("./api/auth/login/auth.route");
-const forgotRouter = require("./api/auth/forgot/auth.route");
-const resetRouter = require("./api/auth/reset/auth.route");
-const statisticsRouter = require("./api/statistics/route");
-const usersRoute = require("./api/configureUser/route");
-const formRoute = require("./api/sosform/route");
-const analyticsRoute = require("./api/analytics/route");
+const registerRouter = require("./api/auth/register/register.route");
+const loginRouter = require("./api/auth/login/login.route");
+const forgotRouter = require("./api/auth/forgot/forgot.route");
+const resetRouter = require("./api/auth/reset/reset.route");
+const statisticsRouter = require("./api/statistics/statistics.route");
+const usersRoute = require("./api/configureUser/configureUser.route");
+const formRoute = require("./api/sosform/sosform.route");
+const analyticsRoute = require("./api/analytics/analytics.route");
 
 const corsOptions = {
   origin: 'http://localhost:3000',

@@ -12,7 +12,6 @@ router.post("/reset", async (req, res) => {
   if (!token || !newPassword) {
     return res.status(400).json({ message: "Token and new password are required" });
   }
-
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const email = decoded.email;
