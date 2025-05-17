@@ -58,28 +58,33 @@ export default function Conforme() {
     if (!outlet) return "";
     return outlet.replace(/_/g, " ").toUpperCase();
   };
-  
-  
 
   const { data: readonlyFormData } = useQuery<SOSFormResponse, Error>({
     queryKey: ["sosForm", formId],
     queryFn: async () => {
       if (!formId) throw new Error("No form ID provided");
-      const response = await axios.get(`http://localhost:5000/user/sosform/${formId}`);
+      const response = await axios.get(
+        `http://localhost:5000/user/sosform/${formId}`
+      );
       return response.data;
     },
     enabled: isReadOnly && !!formId,
   });
-  
+
   useEffect(() => {
     setLoading(false);
-    if (readonlyFormData) {
+    if (readonlyFormData && !isEdit) {
+      // 👈 Add this guard
       setFormData({
         wine: readonlyFormData.wine.toString(),
         beer: readonlyFormData.beer.toString(),
         juice: readonlyFormData.juice.toString(),
         outlet: readonlyFormData.outlet,
-        total: (readonlyFormData.wine + readonlyFormData.beer + readonlyFormData.juice).toString(),
+        total: (
+          readonlyFormData.wine +
+          readonlyFormData.beer +
+          readonlyFormData.juice
+        ).toString(),
         timeIn: new Date(readonlyFormData.createdAt).toLocaleString("en-US", {
           month: "short",
           day: "numeric",
@@ -92,8 +97,8 @@ export default function Conforme() {
       });
       setCheckboxes([true, true, true, true]);
     }
-  }, [readonlyFormData, setLoading]);
-  
+  }, [readonlyFormData, isEdit, setLoading]);
+
   const submitFormMutation = useMutation({
     mutationFn: async (payload: {
       merchandiserId: string | null;
@@ -104,7 +109,10 @@ export default function Conforme() {
       createdAt: string;
     }) => {
       if (isEdit && formId) {
-        return axios.put(`http://localhost:5000/user/sosform/${formId}`, payload);
+        return axios.put(
+          `http://localhost:5000/user/sosform/${formId}`,
+          payload
+        );
       } else {
         return axios.post("http://localhost:5000/user/sosform", payload);
       }
@@ -136,7 +144,11 @@ export default function Conforme() {
     const merchandiserId = user?.id;
     setUserRole(user?.role || null);
 
-    if (!readonly) {
+    if (
+      !readonly ||
+      (queryParams.get("fromConforme") === "true" &&
+        queryParams.get("edit") === "true")
+    ) {
       const data: FormData = {
         wine: queryParams.get("wine"),
         beer: queryParams.get("beer"),
@@ -169,15 +181,14 @@ export default function Conforme() {
       timeIn: formData.timeIn || "",
       fromConforme: "true",
     });
-  
+
     if (isEdit && formId) {
       queryParams.append("edit", "true");
       queryParams.append("id", formId);
     }
-  
+
     router.push(`/pages/createForm?${queryParams.toString()}`);
   };
-  
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -207,7 +218,9 @@ export default function Conforme() {
 
   return (
     <div className="min-h-screen bg-[#f9f9fb] flex flex-col items-center justify-center p-6">
-      <h1 className="text-xl font-bold text-[#2F27CE] mb-10">Summary & Conformé</h1>
+      <h1 className="text-xl font-bold text-[#2F27CE] mb-10">
+        Summary & Conformé
+      </h1>
 
       <div className="rounded-sm border border-gray-200 shadow-sm bg-white w-full max-w-2xl p-10 space-y-4">
         <div className="flex justify-between items-center text-sm font-medium mb-7">
@@ -217,7 +230,9 @@ export default function Conforme() {
           </div>
           <div className="text-center">
             <p className="text-[#2d2d2d] font-semibold mb-2">Outlet</p>
-            <p className="text-[#2d2d2d] font-normal">{formatOutletName(formData.outlet)}</p>
+            <p className="text-[#2d2d2d] font-normal">
+              {formatOutletName(formData.outlet)}
+            </p>
           </div>
         </div>
 
@@ -282,7 +297,11 @@ export default function Conforme() {
               onClick={handleSubmit}
               disabled={!allCheckboxesChecked || submitFormMutation.isPending}
             >
-              {submitFormMutation.isPending ? "Processing..." : isEdit ? "Update" : "Submit"}
+              {submitFormMutation.isPending
+                ? "Processing..."
+                : isEdit
+                ? "Update"
+                : "Submit"}
             </Button>
           </div>
         )}

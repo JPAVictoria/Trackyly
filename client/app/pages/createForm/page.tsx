@@ -71,7 +71,7 @@ export default function CreateForm() {
     };
   
     fetchData(); 
-}, [isEditMode, formId]);
+}, [isEditMode, formId, comingFromConforme,searchParams]);
   
   
   
