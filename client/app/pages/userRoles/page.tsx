@@ -96,7 +96,15 @@ export default function UserRoles() {
   const toggleRole = useToggleRole();
   const softDeleteUser = useSoftDeleteUser();
 
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}") as { email?: string };
+  const [currentUser, setCurrentUser] = React.useState<{ email?: string }>({});
+
+React.useEffect(() => {
+  const userData = localStorage.getItem("user");
+  if (userData) {
+    setCurrentUser(JSON.parse(userData));
+  }
+}, []);
+
 
   const [paginationModel, setPaginationModel] = React.useState({
     pageSize: 5,
