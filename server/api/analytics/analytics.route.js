@@ -1,24 +1,23 @@
 const express = require("express");
 const router = express.Router();
-const {
-  PrismaClient
-} = require("@prisma/client");
+const { PrismaClient } = require("@prisma/client");
+const moment = require("moment");
+
 const prisma = new PrismaClient();
 
 router.get("/quarter", async (req, res) => {
   try {
-    const now = new Date();
-    const quarter = Math.floor(now.getMonth() / 3) + 1;
-    const startMonth = (quarter - 1) * 3;
-    const quarterStart = new Date(now.getFullYear(), startMonth, 1);
-    const quarterEnd = new Date(now.getFullYear(), startMonth + 3, 0);
+    const now = moment();
+    const quarter = now.quarter();
+    const quarterStart = moment().quarter(quarter).startOf("quarter").startOf("day");
+    const quarterEnd = moment().quarter(quarter).endOf("quarter").endOf("day");
 
     const forms = await prisma.sOSForm.findMany({
       where: {
         deleted: false,
         createdAt: {
-          gte: quarterStart,
-          lte: quarterEnd,
+          gte: quarterStart.toDate(),
+          lte: quarterEnd.toDate(),
         },
       },
       select: {
@@ -29,14 +28,9 @@ router.get("/quarter", async (req, res) => {
       },
     });
 
-
     const outletData = forms.reduce((acc, form) => {
       if (!acc[form.outlet]) {
-        acc[form.outlet] = {
-          wine: 0,
-          beer: 0,
-          juice: 0
-        };
+        acc[form.outlet] = { wine: 0, beer: 0, juice: 0 };
       }
       acc[form.outlet].wine += form.wine;
       acc[form.outlet].beer += form.beer;
@@ -44,33 +38,24 @@ router.get("/quarter", async (req, res) => {
       return acc;
     }, {});
 
-
-    const results = Object.keys(outletData).map((outlet) => ({
+    const results = Object.entries(outletData).map(([outlet, totals]) => ({
       outlet,
-      wine: outletData[outlet].wine,
-      beer: outletData[outlet].beer,
-      juice: outletData[outlet].juice,
+      ...totals,
     }));
-
-    console.log(results);
 
     return res.status(200).json(results);
   } catch (err) {
     console.error("Error getting quarterly product distribution:", err);
-    return res.status(500).json({
-      error: "Internal server error",
-      details: err.message,
-    });
+    return res.status(500).json({ error: "Internal server error", details: err.message });
   }
 });
 
+// GET /analytics/outlet
 router.get("/outlet", async (req, res) => {
   const outlet = req.query.outlet;
 
   if (!outlet) {
-    return res.status(400).json({
-      error: "Outlet query parameter is required"
-    });
+    return res.status(400).json({ error: "Outlet query parameter is required" });
   }
 
   try {
@@ -94,12 +79,11 @@ router.get("/outlet", async (req, res) => {
     }]);
   } catch (error) {
     console.error("Error fetching outlet data:", error);
-    res.status(500).json({
-      error: "Failed to fetch outlet data"
-    });
+    res.status(500).json({ error: "Failed to fetch outlet data" });
   }
 });
 
+// GET /analytics/custom
 router.get("/custom", async (req, res) => {
   const { fromDate, toDate } = req.query;
 
@@ -107,13 +91,10 @@ router.get("/custom", async (req, res) => {
     return res.status(400).json({ error: "Both fromDate and toDate are required" });
   }
 
-  const startDate = new Date(fromDate);
-  startDate.setUTCHours(0, 0, 0, 0); 
+  const startDate = moment(fromDate).startOf("day");
+  const endDate = moment(toDate).endOf("day");
 
-  const endDate = new Date(toDate);
-  endDate.setUTCHours(23, 59, 59, 999); 
-
-  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+  if (!startDate.isValid() || !endDate.isValid()) {
     return res.status(400).json({ error: "Invalid date format" });
   }
 
@@ -122,8 +103,8 @@ router.get("/custom", async (req, res) => {
       where: {
         deleted: false,
         createdAt: {
-          gte: startDate,
-          lte: endDate,
+          gte: startDate.toDate(),
+          lte: endDate.toDate(),
         },
       },
       select: {
@@ -144,11 +125,9 @@ router.get("/custom", async (req, res) => {
       return acc;
     }, {});
 
-    const results = Object.keys(outletData).map((outlet) => ({
+    const results = Object.entries(outletData).map(([outlet, totals]) => ({
       outlet,
-      wine: outletData[outlet].wine,
-      beer: outletData[outlet].beer,
-      juice: outletData[outlet].juice,
+      ...totals,
     }));
 
     return res.status(200).json(results);
