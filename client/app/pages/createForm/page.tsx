@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,11 +16,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
 import axios from "axios";
-import { buttonStyles} from "@/app/styles/styles"; 
+import { buttonStyles } from "@/app/styles/styles";
 
-
-
-export default function CreateForm() {
+function CreateForm() {
   useRoleGuard(["MERCHANDISER"]);
 
   const searchParams = useSearchParams();
@@ -34,15 +32,14 @@ export default function CreateForm() {
   const [timeIn, setTimeIn] = useState<string>("");
   const comingFromConforme = searchParams.get("fromConforme") === "true";
 
-
   useEffect(() => {
-    
     const fetchData = async () => {
       try {
         if (isEditMode && !comingFromConforme && formId) {
-          const { data } = await axios.get(`http://localhost:5000/user/sosform/${formId}`, {
-            withCredentials: true,
-          });
+          const { data } = await axios.get(
+            `http://localhost:5000/user/sosform/${formId}`,
+            { withCredentials: true }
+          );
           setWine(data.wine || 0);
           setBeer(data.beer || 0);
           setJuice(data.juice || 0);
@@ -54,7 +51,7 @@ export default function CreateForm() {
           const juiceParam = searchParams.get("juice");
           const outletParam = searchParams.get("outlet");
           const timeInParam = searchParams.get("timeIn");
-  
+
           setWine(wineParam ? Number(wineParam) : 0);
           setBeer(beerParam ? Number(beerParam) : 0);
           setJuice(juiceParam ? Number(juiceParam) : 0);
@@ -69,12 +66,9 @@ export default function CreateForm() {
         console.error("Failed to fetch form data:", error);
       }
     };
-  
-    fetchData(); 
-}, [isEditMode, formId, comingFromConforme,searchParams]);
-  
-  
-  
+
+    fetchData();
+  }, [isEditMode, formId, comingFromConforme, searchParams]);
 
   const router = useRouter();
 
@@ -153,7 +147,6 @@ export default function CreateForm() {
                     value={outletValue}
                     className="cursor-pointer hover:bg-[#2F27CE]/10"
                   >
-                    {" "}
                     {outletValue.replace("_", " ")}
                   </SelectItem>
                 ))}
@@ -183,9 +176,7 @@ export default function CreateForm() {
                 key={label}
                 className="col-span-3 flex items-center justify-center gap-4"
               >
-                <Label className="w-32 text-[#2d2d2d] font-normal">
-                  {label}
-                </Label>
+                <Label className="w-32 text-[#2d2d2d] font-normal">{label}</Label>
                 <Input
                   type="text"
                   value={
@@ -196,9 +187,7 @@ export default function CreateForm() {
                       : juice.toLocaleString()
                   }
                   onChange={(e) => {
-                    const numericValue = Number(
-                      e.target.value.replace(/,/g, "")
-                    );
+                    const numericValue = Number(e.target.value.replace(/,/g, ""));
                     if (isNaN(numericValue)) return;
                     if (label === "Wine") setWine(numericValue);
                     else if (label === "Beer") setBeer(numericValue);
@@ -223,5 +212,13 @@ export default function CreateForm() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreateFormWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateForm />
+    </Suspense>
   );
 }
