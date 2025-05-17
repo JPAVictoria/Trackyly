@@ -12,9 +12,9 @@ import { useSnackbar } from "@/app/context/SnackbarContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useLoading } from "@/app/context/loaderContext";
-import { useState } from "react"; 
+import { useState, Suspense } from "react"; 
 
-export default function ChangePassword() {
+function ChangePassword() {
   const {
     changePassword: {
       showNew,
@@ -169,5 +169,13 @@ export default function ChangePassword() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreateFormWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChangePassword />
+    </Suspense>
   );
 }
