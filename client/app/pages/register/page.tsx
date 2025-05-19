@@ -64,7 +64,7 @@ export default function Register() {
     setGlobalLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/user/register/register", {
+      const res = await axios.post("https://trackyly.onrender.com/user/register/register", {
         firstName,
         lastName,
         email,
