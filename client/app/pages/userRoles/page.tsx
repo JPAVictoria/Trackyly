@@ -32,7 +32,7 @@ const useUsers = () => {
   return useQuery<User[]>({
     queryKey: ["users"],
     queryFn: async () => {
-      const res = await axios.get("http://localhost:5000/user/configureUser");
+      const res = await axios.get("https://trackyly.onrender.com/user/configureUser");
       return res.data;
     },
   });
@@ -45,7 +45,7 @@ const useToggleRole = () => {
     mutationFn: async ({ id, role }) => {
       setLoading(true);
       const res = await axios.patch<ToggleRoleResponse>(
-        `http://localhost:5000/user/configureUser/${id}/role`,
+        `https://trackyly.onrender.com/user/configureUser/${id}/role`,
         { role }
       );
       return res.data;
@@ -71,7 +71,7 @@ const useSoftDeleteUser = () => {
     mutationFn: async (id) => {
       setLoading(true);
       const res = await axios.put(
-        `http://localhost:5000/user/configureUser/${id}/soft-delete`
+        `https://trackyly.onrender.com/user/configureUser/${id}/soft-delete`
       );
       return res.data;
     },

@@ -26,7 +26,7 @@ export default function StatsOverViewBlock() {
 
       try {
         const response = await axios.get(
-          "http://localhost:5000/user/statistics",
+          "https://trackyly.onrender.com/user/statistics",
           {
             withCredentials: true,
           }

@@ -66,7 +66,7 @@ function ChangePassword() {
     setGlobalLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/user/reset/reset", {
+      const res = await axios.post("https://trackyly.onrender.com/user/reset/reset", {
         token,
         newPassword,
       });

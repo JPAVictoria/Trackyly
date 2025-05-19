@@ -64,7 +64,7 @@ export default function Conforme() {
     queryFn: async () => {
       if (!formId) throw new Error("No form ID provided");
       const response = await axios.get(
-        `http://localhost:5000/user/sosform/${formId}`
+        `https://trackyly.onrender.com/user/sosform/${formId}`
       );
       return response.data;
     },
@@ -110,11 +110,11 @@ export default function Conforme() {
     }) => {
       if (isEdit && formId) {
         return axios.put(
-          `http://localhost:5000/user/sosform/${formId}`,
+          `https://trackyly.onrender.com/user/sosform/${formId}`,
           payload
         );
       } else {
-        return axios.post("http://localhost:5000/user/sosform", payload);
+        return axios.post("https://trackyly.onrender.com/user/sosform", payload);
       }
     },
     onSuccess: () => {

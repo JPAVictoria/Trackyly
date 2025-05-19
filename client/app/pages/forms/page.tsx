@@ -49,7 +49,7 @@ export default function AdminForms() {
   } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
-      const res = await axios.get("http://localhost:5000/user/sosform/all", {
+      const res = await axios.get("https://trackyly.onrender.com/user/sosform/all", {
         withCredentials: true,
       });
       return res.data;

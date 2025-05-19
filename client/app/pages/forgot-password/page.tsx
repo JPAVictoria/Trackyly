@@ -30,7 +30,7 @@ export default function ForgotPassword() {
     setSubmitted(false);
 
     try {
-      const res = await axios.post("http://localhost:5000/user/forgot/forgot", { email });
+      const res = await axios.post("https://trackyly.onrender.com/user/forgot/forgot", { email });
 
       if (res.status === 200 || res.status === 201) {
         openSnackbar(res.data.message, "success");

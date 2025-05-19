@@ -55,7 +55,7 @@ export default function MerchandiserDashboard() {
   } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
-      const res = await axios.get("http://localhost:5000/user/sosform", {
+      const res = await axios.get("https://trackyly.onrender.com/user/sosform", {
         withCredentials: true,
         params: { merchandiserId },
       });
@@ -67,7 +67,7 @@ export default function MerchandiserDashboard() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => {
       return axios.put(
-        `http://localhost:5000/user/sosform/softDelete/${id}`,
+        `https://trackyly.onrender.com/user/sosform/softDelete/${id}`,
         {},
         { withCredentials: true }
       );
