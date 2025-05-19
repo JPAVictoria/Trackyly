@@ -12,12 +12,26 @@ const usersRoute = require("./routes/configureUser/configureUser.route");
 const formRoute = require("./routes/sosform/sosform.route");
 const analyticsRoute = require("./routes/analytics/analytics.route");
 
+const allowedOrigins = [
+  'http://localhost:3000',         
+  'https://trackyly.vercel.app',    
+];
+
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true); 
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 };
 
 app.use(cors(corsOptions));
+
 app.use(express.json());
 
 app.use("/user/register", registerRouter);
