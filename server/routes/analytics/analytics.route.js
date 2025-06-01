@@ -50,7 +50,6 @@ router.get("/quarter", async (req, res) => {
   }
 });
 
-// GET /analytics/outlet
 router.get("/outlet", async (req, res) => {
   const outlet = req.query.outlet;
 
@@ -83,7 +82,6 @@ router.get("/outlet", async (req, res) => {
   }
 });
 
-// GET /analytics/custom
 router.get("/custom", async (req, res) => {
   const { fromDate, toDate } = req.query;
 
