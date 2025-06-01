@@ -1,3 +1,4 @@
+"use client";
 import { createContext, useState, useContext, ReactNode } from 'react';
 import { CircularProgress } from '@mui/material'; 
 

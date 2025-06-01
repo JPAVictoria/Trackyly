@@ -30,10 +30,10 @@ export const metadata: Metadata = {
     siteName: "Trackyly",
     images: [
       {
-        url: "https://trackyly.vercel.app/pages/login/og-image.png",
+        url: "https://trackyly.vercel.app/og-image.png",
         width: 1200,
         height: 630,
-        alt: "OpenGraph Preview Image", 
+        alt: "OpenGraph Preview Image",
       },
     ],
     locale: "en_US",
