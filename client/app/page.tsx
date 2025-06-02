@@ -1,3 +1,3 @@
 export default function Home() {
-  return <><h1>Go to http://localhost:3000/pages/login</h1></>
+  return <><h1>Go to https://trackyly.vercel.app/pages/login</h1></>
 }
