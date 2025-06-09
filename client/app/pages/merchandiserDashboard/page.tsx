@@ -12,6 +12,7 @@ import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
 import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles"; 
+import { apiUrl } from "@/app/utils/apiUrl";
 
 export default function MerchandiserDashboard() {
   const router = useRouter();
@@ -55,7 +56,7 @@ export default function MerchandiserDashboard() {
   } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
-      const res = await axios.get("https://trackyly.onrender.com/user/sosform", {
+      const res = await axios.get(apiUrl("/user/sosform"), {
         withCredentials: true,
         params: { merchandiserId },
       });
@@ -66,8 +67,8 @@ export default function MerchandiserDashboard() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => {
-      return axios.put(
-        `https://trackyly.onrender.com/user/sosform/softDelete/${id}`,
+      return axios.put(apiUrl(
+        `/user/sosform/softDelete/${id}`),
         {},
         { withCredentials: true }
       );

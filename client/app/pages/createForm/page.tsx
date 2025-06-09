@@ -17,6 +17,7 @@ import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format } from "date-fns";
 import axios from "axios";
 import { buttonStyles } from "@/app/styles/styles";
+import { apiUrl } from "@/app/utils/apiUrl";
 
 function CreateForm() {
   useRoleGuard(["MERCHANDISER"]);
@@ -36,8 +37,8 @@ function CreateForm() {
     const fetchData = async () => {
       try {
         if (isEditMode && !comingFromConforme && formId) {
-          const { data } = await axios.get(
-            `https://trackyly.onrender.com/user/sosform/${formId}`,
+          const { data } = await axios.get(apiUrl(
+            `/user/sosform/${formId}`),
             { withCredentials: true }
           );
           setWine(data.wine || 0);

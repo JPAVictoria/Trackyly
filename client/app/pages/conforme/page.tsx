@@ -9,6 +9,7 @@ import { useSnackbar } from "@/app/context/SnackbarContext";
 import axios from "axios";
 import { buttonStyles } from "@/app/styles/styles";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiUrl } from "@/app/utils/apiUrl";
 
 interface FormData {
   wine: string | null;
@@ -63,8 +64,8 @@ export default function Conforme() {
     queryKey: ["sosForm", formId],
     queryFn: async () => {
       if (!formId) throw new Error("No form ID provided");
-      const response = await axios.get(
-        `https://trackyly.onrender.com/user/sosform/${formId}`
+      const response = await axios.get(apiUrl(
+        `/user/sosform/${formId}`)
       );
       return response.data;
     },
@@ -109,12 +110,12 @@ export default function Conforme() {
       createdAt: string;
     }) => {
       if (isEdit && formId) {
-        return axios.put(
-          `https://trackyly.onrender.com/user/sosform/${formId}`,
+        return axios.put(apiUrl(
+          `/user/sosform/${formId}`),
           payload
         );
       } else {
-        return axios.post("https://trackyly.onrender.com/user/sosform", payload);
+        return axios.post(apiUrl("/user/sosform"), payload);
       }
     },
     onSuccess: () => {
