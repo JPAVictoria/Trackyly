@@ -6,6 +6,7 @@ import axios from "axios";
 import { useStatisticStore } from "@/app/stores/useStatisticStore";
 import Link from "next/link";
 import { buttonStyles} from "@/app/styles/styles"; 
+import { apiUrl } from "@/app/utils/apiUrl";
 
 export default function StatsOverViewBlock() {
   const {
@@ -25,8 +26,8 @@ export default function StatsOverViewBlock() {
       setError(null);
 
       try {
-        const response = await axios.get(
-          "https://trackyly.onrender.com/user/statistics",
+        const response = await axios.get(apiUrl(
+          "/user/statistics"),
           {
             withCredentials: true,
           }

@@ -22,6 +22,7 @@ import OutletModal from "@/components/frontend/OutletModal";
 import Filters from "@/components/frontend/Filters";
 import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles";
 import { useDateStore } from "@/app/stores/useDateStore";
+import { apiUrl } from "@/app/utils/apiUrl";
 
 type SOSForm = {
   id: string;
@@ -49,7 +50,7 @@ export default function AdminForms() {
   } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
-      const res = await axios.get("https://trackyly.onrender.com/user/sosform/all", {
+      const res = await axios.get(apiUrl("/user/sosform/all"), {
         withCredentials: true,
       });
       return res.data;

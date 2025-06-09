@@ -10,7 +10,8 @@ import { useModalStore } from "@/app/stores/useModalStore";
 import { useLoading } from "@/app/context/loaderContext";
 import type { PieValueType } from "@mui/x-charts/models";
 import { useEffect, useState } from "react";
-import {buttonStyles} from "@/app/styles/styles";
+import { buttonStyles } from "@/app/styles/styles";
+import { apiUrl } from "@/app/utils/apiUrl";
 interface ProductDistribution {
   outlet: string;
   wine: number;
@@ -55,11 +56,11 @@ export default function AnalyticsBlock() {
     queryFn: async () => {
       setLoading(true);
       try {
-        let url = "https://trackyly.onrender.com/user/analytics/quarter";
+        let url = apiUrl("/user/analytics/quarter");
         let params = {};
 
         if (selectedFilter === "Custom") {
-          url = "https://trackyly.onrender.com/user/analytics/custom";
+          url = apiUrl("/user/analytics/custom");
           if (dateRange.fromDate && dateRange.toDate) {
             params = {
               fromDate: dateRange.fromDate.toISOString().split("T")[0],
@@ -68,9 +69,9 @@ export default function AnalyticsBlock() {
           }
         } else if (selectedFilter.startsWith("Outlet:")) {
           const outletName = selectedFilter.replace("Outlet: ", "");
-          url = `https://trackyly.onrender.com/user/analytics/outlet?outlet=${encodeURIComponent(
-            outletName
-          )}`;
+          url = apiUrl(
+            `/user/analytics/outlet?outlet=${encodeURIComponent(outletName)}`
+          );
         }
 
         const res = await axios.get(url, { params });
@@ -206,9 +207,9 @@ Juice: ${data.juice}`;
                 handleFilterClick(label as "Custom" | "Outlet" | "Default");
                 if (label === "Default") {
                   setSelectedFilter("Default");
-                  setDateRange({ fromDate: null, toDate: null }); 
+                  setDateRange({ fromDate: null, toDate: null });
                 } else if (label === "Outlet") {
-                  setDateRange({ fromDate: null, toDate: null }); 
+                  setDateRange({ fromDate: null, toDate: null });
                 }
               }}
               sx={{

@@ -10,6 +10,7 @@ import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import { UserActions } from "@/components/frontend/UserActions"; 
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import {centerAligned } from "@/app/styles/styles";
+import { apiUrl } from "@/app/utils/apiUrl";
 
 interface User {
   id: string;
@@ -32,7 +33,7 @@ const useUsers = () => {
   return useQuery<User[]>({
     queryKey: ["users"],
     queryFn: async () => {
-      const res = await axios.get("https://trackyly.onrender.com/user/configureUser");
+      const res = await axios.get(apiUrl("user/configureUser"));
       return res.data;
     },
   });
@@ -44,8 +45,8 @@ const useToggleRole = () => {
   return useMutation<ToggleRoleResponse, Error, ToggleRoleParams>({
     mutationFn: async ({ id, role }) => {
       setLoading(true);
-      const res = await axios.patch<ToggleRoleResponse>(
-        `https://trackyly.onrender.com/user/configureUser/${id}/role`,
+      const res = await axios.patch<ToggleRoleResponse>(apiUrl(
+        `/user/configureUser/${id}/role`),
         { role }
       );
       return res.data;
@@ -70,8 +71,8 @@ const useSoftDeleteUser = () => {
   return useMutation<{ success: boolean }, Error, string>({
     mutationFn: async (id) => {
       setLoading(true);
-      const res = await axios.put(
-        `https://trackyly.onrender.com/user/configureUser/${id}/soft-delete`
+      const res = await axios.put(apiUrl(
+        `/user/configureUser/${id}/soft-delete`)
       );
       return res.data;
     },
