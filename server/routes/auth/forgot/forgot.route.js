@@ -21,7 +21,7 @@ router.post("/forgot", async (req, res) => {
       { expiresIn: "15m" }
     );
 
-    const resetUrl = `https://trackyly.onrender.com/pages/reset-password?token=${token}`; 
+    const resetUrl = `https://trackyly.vercel.app/pages/reset-password?token=${token}`; 
 
     const transporter = nodemailer.createTransport({
       service: "gmail",

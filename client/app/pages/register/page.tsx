@@ -12,7 +12,9 @@ import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useLoading } from "@/app/context/loaderContext";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
 import { cn } from "@/lib/utils";
-
+import { apiUrl
+  
+ } from "@/app/utils/apiUrl";
 export default function Register() {
   const router = useRouter();
   const { openSnackbar } = useSnackbar();
@@ -64,7 +66,7 @@ export default function Register() {
     setGlobalLoading(true);
 
     try {
-      const res = await axios.post("https://trackyly.onrender.com/user/register/register", {
+      const res = await axios.post(apiUrl("/user/register/register"), {
         firstName,
         lastName,
         email,

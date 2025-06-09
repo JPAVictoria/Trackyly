@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useLoading } from "@/app/context/loaderContext";
 import { useState, Suspense } from "react"; 
+import { apiUrl } from "@/app/utils/apiUrl";
 
 function ChangePassword() {
   const {
@@ -66,7 +67,7 @@ function ChangePassword() {
     setGlobalLoading(true);
 
     try {
-      const res = await axios.post("https://trackyly.onrender.com/user/reset/reset", {
+      const res = await axios.post(apiUrl("/user/reset/reset"), {
         token,
         newPassword,
       });

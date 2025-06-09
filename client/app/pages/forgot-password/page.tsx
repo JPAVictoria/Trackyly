@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import axios from "axios";
+import { apiUrl } from "@/app/utils/apiUrl";
 
 export default function ForgotPassword() {
   const { openSnackbar } = useSnackbar();
@@ -30,7 +31,7 @@ export default function ForgotPassword() {
     setSubmitted(false);
 
     try {
-      const res = await axios.post("https://trackyly.onrender.com/user/forgot/forgot", { email });
+      const res = await axios.post(apiUrl("/user/forgot/forgot"), { email });
 
       if (res.status === 200 || res.status === 201) {
         openSnackbar(res.data.message, "success");
