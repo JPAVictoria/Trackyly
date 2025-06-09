@@ -13,6 +13,7 @@ import { useLoading } from "@/app/context/loaderContext";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { apiUrl } from "@/app/utils/apiUrl";
 
 export default function Login() {
   const router = useRouter();
@@ -47,13 +48,10 @@ export default function Login() {
     }
 
     try {
-      const response = await axios.post(
-        "https://trackyly.onrender.com/user/login/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await axios.post(apiUrl("/user/login/login"), {
+        email,
+        password,
+      });
 
       const { token, user } = response.data;
 
