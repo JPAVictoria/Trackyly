@@ -17,8 +17,6 @@ export const metadata: Metadata = {
   keywords: ["merchandising", "analytics", "SOS", "admin dashboard", "Next.js"],
   authors: [{ name: "Andre Victoria", url: "https://andre-victoria.vercel.app" }],
   creator: "Andre Victoria",
-  themeColor: "#ffffff",
-  viewport: "width=device-width, initial-scale=1",
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",

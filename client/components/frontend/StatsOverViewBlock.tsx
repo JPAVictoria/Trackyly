@@ -39,7 +39,7 @@ export default function StatsOverViewBlock() {
     return (
       <div className="bg-white shadow-md rounded-sm h-64 p-4 w-full flex items-center">
         <div className="w-1/2 flex flex-col items-center justify-center text-center">
-          <Skeleton variant="text" width={120} height={40} sx={{ mb: 2 }} />
+          <Skeleton variant="text" width={110} height={40} sx={{ mb: 2 }} />
           <Skeleton variant="text" width={60} height={32} sx={{ mb: 2 }} />
           <Skeleton variant="rounded" width={100} height={36} />
         </div>
@@ -47,7 +47,7 @@ export default function StatsOverViewBlock() {
         <div className="w-px h-3/4 bg-gray-500/50 mx-4" />
 
         <div className="w-1/2 flex flex-col items-center justify-center text-center">
-          <Skeleton variant="text" width={140} height={40} sx={{ mb: 2 }} />
+          <Skeleton variant="text" width={110} height={40} sx={{ mb: 2 }} />
           <Skeleton variant="text" width={60} height={32} sx={{ mb: 2 }} />
           <Skeleton variant="rounded" width={100} height={36} />
         </div>
