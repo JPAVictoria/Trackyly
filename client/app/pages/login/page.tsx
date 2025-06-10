@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,10 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(false);
+  }, [setLoading]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,10 +67,12 @@ export default function Login() {
         }
       }, 1000);
     } catch (error) {
-      const errorMessage = axios.isAxiosError(error) 
-        ? error.response?.data?.message || error.message || "An unexpected error occurred."
-        : error instanceof Error 
-        ? error.message 
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred."
+        : error instanceof Error
+        ? error.message
         : "An unexpected error occurred.";
 
       openSnackbar(errorMessage, "error");
@@ -98,7 +104,9 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className="pt-5">
           <div>
-            <Label htmlFor="email" className="pb-2 text-[#2d2d2d]">Email</Label>
+            <Label htmlFor="email" className="pb-2 text-[#2d2d2d]">
+              Email
+            </Label>
             <Input
               type="email"
               id="email"
@@ -111,7 +119,9 @@ export default function Login() {
           </div>
 
           <div className="pt-5 relative">
-            <Label htmlFor="password" className="pb-2 text-[#2d2d2d]">Password</Label>
+            <Label htmlFor="password" className="pb-2 text-[#2d2d2d]">
+              Password
+            </Label>
             <Input
               type={showPassword ? "text" : "password"}
               id="password"
@@ -122,10 +132,12 @@ export default function Login() {
               className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
             />
             <div
-              onClick={isLoading ? undefined : () => setShowPassword(!showPassword)}
+              onClick={
+                isLoading ? undefined : () => setShowPassword(!showPassword)
+              }
               className={`absolute inset-y-15 right-3 flex items-center transition ${
-                isLoading 
-                  ? "cursor-not-allowed text-gray-300" 
+                isLoading
+                  ? "cursor-not-allowed text-gray-300"
                   : "cursor-pointer text-gray-500 hover:text-[#2F27CE]"
               }`}
             >

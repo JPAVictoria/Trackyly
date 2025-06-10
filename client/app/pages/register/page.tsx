@@ -8,39 +8,28 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 import { Eye, EyeOff } from "lucide-react";
-import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useLoading } from "@/app/context/loaderContext";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
 import { cn } from "@/lib/utils";
-import { apiUrl
-  
- } from "@/app/utils/apiUrl";
+import { apiUrl } from "@/app/utils/apiUrl";
+
 export default function Register() {
   const router = useRouter();
   const { openSnackbar } = useSnackbar();
-  const { setLoading: setGlobalLoading } = useLoading();
-
-  const {
-    loading,
-    submitted,
-    showPassword,
-    showConfirmPassword,
-    setLoading,
-    setSubmitted,
-    toggleShowPassword,
-    toggleShowConfirmPassword,
-    resetForm,
-  } = useAuthStore((state) => state.register);
+  const { setLoading } = useLoading();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const isDisabled = loading || submitted;
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const handleSubmit = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
       openSnackbar("Please fill in all fields", "error");
       return;
@@ -62,8 +51,7 @@ export default function Register() {
       return;
     }
 
-    setLoading(true);
-    setGlobalLoading(true);
+    setIsLoading(true);
 
     try {
       const res = await axios.post(apiUrl("/user/register/register"), {
@@ -76,22 +64,21 @@ export default function Register() {
 
       if (res.status === 201) {
         openSnackbar("Registration successful!", "success");
-        setSubmitted(true);
+        setLoading(true);
 
         setTimeout(() => {
           router.push("/pages/login");
-          resetForm();
         }, 2000);
       } else {
         openSnackbar(res.data.message || "Something went wrong", "error");
       }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message: string } } };
-      const errorMessage = error?.response?.data?.message || "Something went wrong";
+      const errorMessage =
+        error?.response?.data?.message || "Something went wrong";
       openSnackbar(errorMessage, "error");
     } finally {
-      setLoading(false);
-      setTimeout(() => setGlobalLoading(false), 2500);
+      setIsLoading(false);
     }
   };
 
@@ -106,6 +93,7 @@ export default function Register() {
           "absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
         )}
       />
+
       <h1 className="text-[18px] mb-3 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
         Trackyly
       </h1>
@@ -115,11 +103,29 @@ export default function Register() {
           Register Now
         </h1>
 
-        <form className="pt-5 space-y-5">
-          {[ 
-            { id: "firstName", label: "First Name", value: firstName, setValue: setFirstName, type: "text" },
-            { id: "lastName", label: "Last Name", value: lastName, setValue: setLastName, type: "text" },
-            { id: "email", label: "Email", value: email, setValue: setEmail, type: "email" },
+        <form onSubmit={handleSubmit} className="pt-5 space-y-5">
+          {[
+            {
+              id: "firstName",
+              label: "First Name",
+              value: firstName,
+              setValue: setFirstName,
+              type: "text",
+            },
+            {
+              id: "lastName",
+              label: "Last Name",
+              value: lastName,
+              setValue: setLastName,
+              type: "text",
+            },
+            {
+              id: "email",
+              label: "Email",
+              value: email,
+              setValue: setEmail,
+              type: "email",
+            },
             {
               id: "password",
               label: "Password",
@@ -127,8 +133,8 @@ export default function Register() {
               setValue: setPassword,
               type: showPassword ? "text" : "password",
               isPassword: true,
-              toggle: toggleShowPassword,
-              show: showPassword,
+              showState: showPassword,
+              setShowState: setShowPassword,
             },
             {
               id: "confirmPassword",
@@ -137,51 +143,72 @@ export default function Register() {
               setValue: setConfirmPassword,
               type: showConfirmPassword ? "text" : "password",
               isPassword: true,
-              toggle: toggleShowConfirmPassword,
-              show: showConfirmPassword,
+              showState: showConfirmPassword,
+              setShowState: setShowConfirmPassword,
             },
-          ].map((field) => (
-            <div key={field.id} className="relative">
-              <Label htmlFor={field.id} className="pb-2 text-[#2d2d2d]">
-                {field.label}
-              </Label>
-              <Input
-                type={field.type}
-                id={field.id}
-                value={field.value}
-                onChange={(e) => field.setValue(e.target.value)}
-                disabled={isDisabled}
-                placeholder={field.id === "email" ? "email@example.com" : "********"}
-                className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
-              />
-              {field.isPassword && (
-                <div
-                  onClick={field.toggle}
-                  className="absolute inset-y-10 right-3 flex items-center cursor-pointer text-gray-500 hover:text-[#2F27CE] transition"
-                >
-                  {field.show ? <EyeOff size={18} /> : <Eye size={18} />}
-                </div>
-              )}
-            </div>
-          ))}
+          ].map(
+            ({
+              id,
+              label,
+              value,
+              setValue,
+              type,
+              isPassword,
+              showState,
+              setShowState,
+            }) => (
+              <div key={id} className={isPassword ? "relative" : ""}>
+                <Label htmlFor={id} className="pb-2 text-[#2d2d2d]">
+                  {label}
+                </Label>
+                <Input
+                  type={type}
+                  id={id}
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  disabled={isLoading}
+                  className={`w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 ${
+                    isPassword ? "pr-10" : ""
+                  }`}
+                />
+                {isPassword && (
+                  <div
+                    onClick={
+                      isLoading ? undefined : () => setShowState(!showState)
+                    }
+                    className={`absolute inset-y-10 right-3 flex items-center transition ${
+                      isLoading
+                        ? "cursor-not-allowed text-gray-300"
+                        : "cursor-pointer text-gray-500 hover:text-[#2F27CE]"
+                    }`}
+                  >
+                    {showState ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </div>
+                )}
+              </div>
+            )
+          )}
 
           <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isDisabled}
+            type="submit"
+            disabled={isLoading}
             className={`w-full text-white py-5 px-4 rounded-md transition duration-200 ${
-              isDisabled ? "bg-[#A5D6A7] cursor-not-allowed" : "bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
+              isLoading
+                ? "bg-[#A5A8F0] cursor-not-allowed"
+                : "bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
             }`}
           >
-            {loading ? "Registering..." : submitted ? "Registered" : "Register"}
+            {isLoading ? "Registering..." : "Register"}
           </Button>
 
           <div className="pt-8">
-            <p className="font-light text-sm text-[#2d2d2d]">Already have an account?</p>
+            <p className="font-light text-sm text-[#2d2d2d]">
+              Already have an account?
+            </p>
             <Link href="/pages/login">
               <Button
                 variant="link"
-                disabled={isDisabled}
+                disabled={isLoading}
                 className="cursor-pointer pt-3 text-[#2d2d2d]"
               >
                 Back to Login
