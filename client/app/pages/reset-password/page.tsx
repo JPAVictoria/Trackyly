@@ -7,7 +7,6 @@ import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern"
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
@@ -16,22 +15,11 @@ import { useState, Suspense } from "react";
 import { apiUrl } from "@/app/utils/apiUrl";
 
 function ChangePassword() {
-  const {
-    changePassword: {
-      showNew,
-      showConfirmPassword,
-      toggleShowNew,
-      toggleShowConfirmPassword,
-      loading,
-      submitted,
-      setLoading,
-      setSubmitted,
-      resetForm,
-    },
-  } = useAuthStore();
-
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [showNew, setShowNew] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const { openSnackbar } = useSnackbar();
   const router = useRouter();
@@ -39,6 +27,13 @@ function ChangePassword() {
   const { setLoading: setGlobalLoading } = useLoading();
 
   const token = searchParams.get("token");
+
+  const resetForm = () => {
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowNew(false);
+    setShowConfirmPassword(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +59,6 @@ function ChangePassword() {
     }
 
     setLoading(true);
-    setGlobalLoading(true);
 
     try {
       const res = await axios.post(apiUrl("/user/reset/reset"), {
@@ -74,8 +68,8 @@ function ChangePassword() {
 
       if (res.status === 200 || res.status === 201) {
         openSnackbar(res.data.message || "Password changed successfully", "success");
-        setSubmitted(true);
         resetForm();
+        setGlobalLoading(true);
         setTimeout(() => router.push("/pages/login"), 2000);
       } else {
         openSnackbar(res.data.message || "Something went wrong", "error");
@@ -85,7 +79,6 @@ function ChangePassword() {
       openSnackbar("Something went wrong. Please try again.", "error");
     } finally {
       setLoading(false);
-      setTimeout(() => setGlobalLoading(false), 2500);
     }
   };
 
@@ -120,11 +113,14 @@ function ChangePassword() {
               placeholder="********"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="pr-10 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
+              disabled={loading}
+              className="pr-10 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <div
-              onClick={toggleShowNew}
-              className="absolute top-15 right-3 -translate-y-1/2 flex items-center cursor-pointer text-gray-500 hover:text-[#2F27CE] transition"
+              onClick={loading ? undefined : () => setShowNew(!showNew)}
+              className={`absolute top-15 right-3 -translate-y-1/2 flex items-center text-gray-500 transition ${
+                loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:text-[#2F27CE]'
+              }`}
             >
               {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
             </div>
@@ -140,11 +136,14 @@ function ChangePassword() {
               placeholder="********"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="pr-10 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
+              disabled={loading}
+              className="pr-10 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <div
-              onClick={toggleShowConfirmPassword}
-              className="absolute top-15 right-3 -translate-y-1/2 flex items-center cursor-pointer text-gray-500 hover:text-[#2F27CE] transition"
+              onClick={loading ? undefined : () => setShowConfirmPassword(!showConfirmPassword)}
+              className={`absolute top-15 right-3 -translate-y-1/2 flex items-center text-gray-500 transition ${
+                loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:text-[#2F27CE]'
+              }`}
             >
               {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </div>
@@ -153,17 +152,21 @@ function ChangePassword() {
           <div className="pt-5">
             <Button
               type="submit"
-              disabled={loading || submitted}
-              className="w-full text-white py-5 px-4 rounded-md transition duration-200 bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
+              disabled={loading}
+              className="w-full text-white py-5 px-4 rounded-md transition duration-200 bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#2F27CE]"
             >
-              {loading ? "Changing..." : submitted ? "Submitted" : "Submit"}
+              {loading ? "Changing..." : "Submit"}
             </Button>
           </div>
         </form>
 
         <div className="pt-5">
           <Link href="/pages/login">
-            <Button variant="link" className="cursor-pointer pt-3 text-[#2d2d2d]">
+            <Button 
+              variant="link" 
+              disabled={loading}
+              className="cursor-pointer pt-3 text-[#2d2d2d] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Go back to login
             </Button>
           </Link>

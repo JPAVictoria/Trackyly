@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useSnackbar } from "@/app/context/SnackbarContext";
-import { useAuthStore } from "@/app/stores/useAuthStore";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -15,9 +14,8 @@ import { apiUrl } from "@/app/utils/apiUrl";
 export default function ForgotPassword() {
   const { openSnackbar } = useSnackbar();
   
-  const { loading, setLoading, setSubmitted} = useAuthStore((state) => state.forgotPassword);
-
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,14 +26,12 @@ export default function ForgotPassword() {
     }
 
     setLoading(true);
-    setSubmitted(false);
 
     try {
       const res = await axios.post(apiUrl("/user/forgot/forgot"), { email });
 
       if (res.status === 200 || res.status === 201) {
         openSnackbar(res.data.message, "success");
-        setSubmitted(true);
       } else {
         openSnackbar(res.data.message || "Something went wrong", "error");
       }
@@ -91,7 +87,8 @@ export default function ForgotPassword() {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
+              disabled={loading}
+              className="focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -99,7 +96,7 @@ export default function ForgotPassword() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full text-white py-5 px-4 rounded-md transition duration-200 bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
+              className="w-full text-white py-5 px-4 rounded-md transition duration-200 bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#2F27CE]"
             >
               {loading ? "Sending..." : "Submit"}
             </Button>
@@ -109,7 +106,11 @@ export default function ForgotPassword() {
         <div className="pt-8">
           <p className="font-light text-sm text-[#2d2d2d]">Remember your password?</p>
           <Link href="/pages/login">
-            <Button variant="link" className="cursor-pointer pt-3 text-[#2d2d2d]">
+            <Button 
+              variant="link" 
+              disabled={loading}
+              className="cursor-pointer pt-3 text-[#2d2d2d] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Back to login
             </Button>
           </Link>
