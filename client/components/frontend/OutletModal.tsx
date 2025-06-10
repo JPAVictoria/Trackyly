@@ -27,7 +27,6 @@ interface OutletModalProps {
   selectedOutlet: string | null;
 }
 
-
 export default function OutletModal({
   open,
   onClose,
@@ -42,10 +41,8 @@ export default function OutletModal({
     }
   }, [open, selectedOutletProp]);
 
-
   const handleApply = () => {
     onSelectOutlet(selectedOutlet);
-    setSelectedOutlet(null);
     onClose();
   };
 
@@ -53,6 +50,11 @@ export default function OutletModal({
     setSelectedOutlet(null);
   };
 
+  // Reset state when modal closes
+  const handleClose = () => {
+    setSelectedOutlet(selectedOutletProp); // Reset to original value
+    onClose();
+  };
 
   const formatOutletName = (outlet: string) => {
     return outlet
@@ -62,7 +64,7 @@ export default function OutletModal({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle className="font-bold text-[#433BFF]">
         Select Outlet
       </DialogTitle>
@@ -99,7 +101,7 @@ export default function OutletModal({
         </Box>
       </DialogContent>
       <DialogActions className="p-4 gap-2">
-        <Button onClick={onClose} {...buttonStylesFilter}>
+        <Button onClick={handleClose} {...buttonStylesFilter}>
           Cancel
         </Button>
         <Button onClick={handleClear} {...buttonStylesFilter}>

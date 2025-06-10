@@ -3,10 +3,9 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { PieChart } from "@mui/x-charts/PieChart";
-import { Button } from "@mui/material";
+import { Button, Skeleton, Box } from "@mui/material";
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
-import { useLoading } from "@/app/context/loaderContext";
 import type { PieValueType } from "@mui/x-charts/models";
 import { useEffect, useState } from "react";
 import { buttonStyles } from "@/app/styles/styles";
@@ -41,9 +40,6 @@ export default function AnalyticsBlock() {
     toDate: Date | null;
   }>({ fromDate: null, toDate: null });
 
-  const { setLoading } = useLoading();
-
-  
   const handleFilterClick = (label: FilterType) => {
     switch (label) {
       case 'Custom':
@@ -62,34 +58,31 @@ export default function AnalyticsBlock() {
     isError,
     error,
     refetch,
+    isLoading,
+    isFetching,
   } = useQuery<ProductDistribution[]>({
     queryKey: ["productDistribution", selectedFilter, dateRange],
     queryFn: async () => {
-      setLoading(true);
-      try {
-        let url = apiUrl("/user/analytics/quarter");
-        let params = {};
+      let url = apiUrl("/user/analytics/quarter");
+      let params = {};
 
-        if (selectedFilter === "Custom") {
-          url = apiUrl("/user/analytics/custom");
-          if (dateRange.fromDate && dateRange.toDate) {
-            params = {
-              fromDate: dateRange.fromDate.toISOString().split("T")[0],
-              toDate: dateRange.toDate.toISOString().split("T")[0],
-            };
-          }
-        } else if (selectedFilter.startsWith("Outlet:")) {
-          const outletName = selectedFilter.replace("Outlet: ", "");
-          url = apiUrl(
-            `/user/analytics/outlet?outlet=${encodeURIComponent(outletName)}`
-          );
+      if (selectedFilter === "Custom") {
+        url = apiUrl("/user/analytics/custom");
+        if (dateRange.fromDate && dateRange.toDate) {
+          params = {
+            fromDate: dateRange.fromDate.toISOString().split("T")[0],
+            toDate: dateRange.toDate.toISOString().split("T")[0],
+          };
         }
-
-        const res = await axios.get(url, { params });
-        return res.data;
-      } finally {
-        setLoading(false);
+      } else if (selectedFilter.startsWith("Outlet:")) {
+        const outletName = selectedFilter.replace("Outlet: ", "");
+        url = apiUrl(
+          `/user/analytics/outlet?outlet=${encodeURIComponent(outletName)}`
+        );
       }
+
+      const res = await axios.get(url, { params });
+      return res.data;
     },
     staleTime: 0,
     refetchOnMount: true,
@@ -201,6 +194,30 @@ Juice: ${data.juice}`;
     return `${labelStr}: ${data.value}`;
   };
 
+  
+  const renderSkeleton = () => (
+    <Box className="flex flex-col items-center gap-4">
+      <Skeleton 
+        variant="circular" 
+        width={200} 
+        height={200}
+        sx={{ 
+          bgcolor: 'rgba(67, 59, 255, 0.1)',
+          '&::after': {
+            background: 'linear-gradient(90deg, transparent, rgba(67, 59, 255, 0.2), transparent)'
+          }
+        }}
+      />
+      <Box className="flex gap-4">
+        <Skeleton variant="rectangular" width={60} height={16} />
+        <Skeleton variant="rectangular" width={60} height={16} />
+        <Skeleton variant="rectangular" width={60} height={16} />
+      </Box>
+    </Box>
+  );
+
+  const isLoadingData = isLoading || isFetching;
+
   return (
     <div className="bg-white shadow-md rounded-sm p-6 max-w-md w-full">
       <div className="flex flex-col">
@@ -214,13 +231,13 @@ Juice: ${data.juice}`;
               key={label}
               variant="outlined"
               size="small"
+              disabled={isLoadingData}
               onClick={() => {
-                handleFilterClick(label as FilterType);
                 if (label === "Default") {
                   setSelectedFilter("Default");
                   setDateRange({ fromDate: null, toDate: null });
-                } else if (label === "Outlet") {
-                  setDateRange({ fromDate: null, toDate: null });
+                } else {
+                  handleFilterClick(label as FilterType);
                 }
               }}
               sx={{
@@ -231,6 +248,7 @@ Juice: ${data.juice}`;
                 color: selectedFilter.startsWith(label)
                   ? "#433BFF"
                   : buttonStyles.color,
+                opacity: isLoadingData ? 0.6 : 1,
               }}
             >
               {label}
@@ -239,7 +257,9 @@ Juice: ${data.juice}`;
         </div>
 
         <div className="flex-1 flex justify-center items-center min-h-[250px]">
-          {isError ? (
+          {isLoadingData ? (
+            renderSkeleton()
+          ) : isError ? (
             <p className="text-red-500">
               Error loading chart data:{" "}
               {error instanceof Error ? error.message : "Unknown error"}
