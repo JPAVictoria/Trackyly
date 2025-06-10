@@ -208,11 +208,6 @@ Juice: ${data.juice}`;
           }
         }}
       />
-      <Box className="flex gap-4">
-        <Skeleton variant="rectangular" width={60} height={16} />
-        <Skeleton variant="rectangular" width={60} height={16} />
-        <Skeleton variant="rectangular" width={60} height={16} />
-      </Box>
     </Box>
   );
 
