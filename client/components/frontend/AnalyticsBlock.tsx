@@ -12,6 +12,7 @@ import type { PieValueType } from "@mui/x-charts/models";
 import { useEffect, useState } from "react";
 import { buttonStyles } from "@/app/styles/styles";
 import { apiUrl } from "@/app/utils/apiUrl";
+
 interface ProductDistribution {
   outlet: string;
   wine: number;
@@ -260,6 +261,8 @@ Juice: ${data.juice}`;
         open={isDateModalOpen}
         onClose={() => setIsDateModalOpen(false)}
         onApply={handleApplyCustomFilter}
+        initialFromDate={dateRange.fromDate}
+        initialToDate={dateRange.toDate}
       />
 
       <OutletModal

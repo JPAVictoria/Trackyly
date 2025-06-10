@@ -65,9 +65,7 @@ const iconButtons = [
   {
     icon: <LayoutDashboard size={18} />,
     label: "Forms",
-    onClick: () => {
-      window.location.href = "/pages/forms";
-    },
+    onClick: () =>  router.push("/pages/forms"),
     yOffset: -150,
   },
   {

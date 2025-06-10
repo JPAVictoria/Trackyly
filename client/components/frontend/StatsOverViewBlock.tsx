@@ -5,12 +5,14 @@ import axios from "axios";
 import Link from "next/link";
 import { buttonStyles } from "@/app/styles/styles";
 import { apiUrl } from "@/app/utils/apiUrl";
+import { useRouter } from "next/navigation";
 
 export default function StatsOverViewBlock() {
   const [sosCount, setSosCount] = useState(0);
   const [merchCount, setMerchCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchStatistics() {
@@ -33,7 +35,7 @@ export default function StatsOverViewBlock() {
     }
 
     fetchStatistics();
-  }, []); 
+  }, []);
 
   if (loading) {
     return (
@@ -74,7 +76,7 @@ export default function StatsOverViewBlock() {
           <Button
             sx={buttonStyles}
             variant="outlined"
-            onClick={() => (window.location.href = "/pages/forms")}
+            onClick={() => router.push("/pages/forms")}
           >
             View All
           </Button>

@@ -17,7 +17,7 @@ import {
 import { useLoading } from "@/app/context/loaderContext";
 import { useRouter } from "next/navigation";
 import { useModalStore } from "@/app/stores/useModalStore";
-import DateFilterModal from "@/components/frontend/DateModal";
+import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Filters from "@/components/frontend/Filters";
 import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles";
@@ -216,7 +216,7 @@ export default function AdminForms() {
         </Box>
       </div>
 
-      <DateFilterModal
+      <DateModal
         open={isDateModalOpen}
         onClose={() => setIsDateModalOpen(false)}
         onApply={() => {}}

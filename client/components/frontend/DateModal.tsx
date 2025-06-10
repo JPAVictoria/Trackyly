@@ -1,5 +1,5 @@
 "use client";
-
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,21 +10,33 @@ import {
 } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { useDateStore } from "@/app/stores/useDateStore";
-import { buttonStylesFilter} from "@/app/styles/styles"; 
+import { buttonStylesFilter } from "@/app/styles/styles";
 
 interface DateFilterModal {
   open: boolean;
   onClose: () => void;
   onApply: (fromDate: Date | null, toDate: Date | null) => void;
+  initialFromDate?: Date | null;
+  initialToDate?: Date | null;
 }
 
 export default function DateFilterModal({
   open,
   onClose,
   onApply,
+  initialFromDate = null,
+  initialToDate = null,
 }: DateFilterModal) {
-  const { fromDate, toDate, setFromDate, setToDate, resetDates } = useDateStore();
+  const [fromDate, setFromDate] = useState<Date | null>(initialFromDate);
+  const [toDate, setToDate] = useState<Date | null>(initialToDate);
+
+  
+  useEffect(() => {
+    if (open) {
+      setFromDate(initialFromDate);
+      setToDate(initialToDate);
+    }
+  }, [open, initialFromDate, initialToDate]);
 
   const handleApply = () => {
     onApply(fromDate, toDate);
@@ -32,12 +44,19 @@ export default function DateFilterModal({
   };
 
   const handleClear = () => {
-    resetDates();
+    setFromDate(null);
+    setToDate(null);
   };
 
+  const handleClose = () => {
+    
+    setFromDate(initialFromDate);
+    setToDate(initialToDate);
+    onClose();
+  };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle className="font-bold text-[#433BFF]">
         Custom Date Range
       </DialogTitle>
@@ -70,7 +89,7 @@ export default function DateFilterModal({
                       },
                     },
                   },
-                } 
+                }
               }}
             />
             <DatePicker
@@ -107,7 +126,7 @@ export default function DateFilterModal({
         </LocalizationProvider>
       </DialogContent>
       <DialogActions className="p-4 gap-2">
-        <Button onClick={onClose} {...buttonStylesFilter}>
+        <Button onClick={handleClose} {...buttonStylesFilter}>
           Cancel
         </Button>
         <Button onClick={handleClear} {...buttonStylesFilter}>
