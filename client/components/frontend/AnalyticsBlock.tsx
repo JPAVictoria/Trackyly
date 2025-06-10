@@ -6,7 +6,6 @@ import { PieChart } from "@mui/x-charts/PieChart";
 import { Button } from "@mui/material";
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
-import { useModalStore } from "@/app/stores/useModalStore";
 import { useLoading } from "@/app/context/loaderContext";
 import type { PieValueType } from "@mui/x-charts/models";
 import { useEffect, useState } from "react";
@@ -30,22 +29,33 @@ interface PieChartDataItem {
   juice: number;
 }
 
-export default function AnalyticsBlock() {
-  const {
-    selectedFilter,
-    isDateModalOpen,
-    isOutletModalOpen,
-    setSelectedFilter,
-    setIsDateModalOpen,
-    setIsOutletModalOpen,
-    handleFilterClick,
-  } = useModalStore();
+type FilterType = 'Custom' | 'Outlet' | 'Default';
 
-  const { setLoading } = useLoading();
+export default function AnalyticsBlock() {
+  
+  const [selectedFilter, setSelectedFilter] = useState<FilterType | string>('Default');
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [isOutletModalOpen, setIsOutletModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{
     fromDate: Date | null;
     toDate: Date | null;
   }>({ fromDate: null, toDate: null });
+
+  const { setLoading } = useLoading();
+
+  
+  const handleFilterClick = (label: FilterType) => {
+    switch (label) {
+      case 'Custom':
+        setIsDateModalOpen(true);
+        break;
+      case 'Outlet':
+        setIsOutletModalOpen(true);
+        break;
+      default:
+        setSelectedFilter(label);
+    }
+  };
 
   const {
     data: distribution,
@@ -205,7 +215,7 @@ Juice: ${data.juice}`;
               variant="outlined"
               size="small"
               onClick={() => {
-                handleFilterClick(label as "Custom" | "Outlet" | "Default");
+                handleFilterClick(label as FilterType);
                 if (label === "Default") {
                   setSelectedFilter("Default");
                   setDateRange({ fromDate: null, toDate: null });

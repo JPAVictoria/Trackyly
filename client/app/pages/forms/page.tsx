@@ -10,7 +10,6 @@ import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { useLoading } from "@/app/context/loaderContext";
 import { useRouter } from "next/navigation";
-import { useModalStore } from "@/app/stores/useModalStore";
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Filters from "@/components/frontend/Filters";
@@ -27,27 +26,36 @@ type SOSForm = {
   email: string;
 };
 
+type FilterType = 'Custom' | 'Outlet' | 'Default';
+
 export default function AdminForms() {
   useRoleGuard(["ADMIN"]);
   const { setLoading } = useLoading();
   const router = useRouter();
   
-  // Replace date store with local state
+  
+  const [selectedFilter, setSelectedFilter] = useState<FilterType>('Default');
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [isOutletModalOpen, setIsOutletModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{
     fromDate: Date | null;
     toDate: Date | null;
   }>({ fromDate: null, toDate: null });
-  
   const [selectedOutlet, setSelectedOutlet] = useState<string | null>(null);
 
-  const {
-    selectedFilter,
-    isDateModalOpen,
-    isOutletModalOpen,
-    setIsDateModalOpen,
-    setIsOutletModalOpen,
-    handleFilterClick,
-  } = useModalStore();
+  
+  const handleFilterClick = (label: FilterType) => {
+    switch (label) {
+      case 'Custom':
+        setIsDateModalOpen(true);
+        break;
+      case 'Outlet':
+        setIsOutletModalOpen(true);
+        break;
+      default:
+        setSelectedFilter(label);
+    }
+  };
 
   useEffect(() => {
     setLoading(false);
@@ -77,20 +85,23 @@ export default function AdminForms() {
 
   const handleApplyDateFilter = (fromDate: Date | null, toDate: Date | null) => {
     setDateRange({ fromDate, toDate });
+    setSelectedFilter('Custom');
+    setIsDateModalOpen(false);
   };
 
   const handleSelectOutlet = (outlet: string | null) => {
     setSelectedOutlet(outlet);
+    setSelectedFilter('Outlet');
     setIsOutletModalOpen(false);
   };
 
-  // Filter and process rows
+  
   const rows = sosForms
     .filter((form) => {
-      // Outlet filter
+      
       if (selectedOutlet && form.outlet !== selectedOutlet) return false;
 
-      // Date filter
+      
       if (dateRange.fromDate && dateRange.toDate) {
         const formDate = parseISO(form.createdAt);
         return isWithinInterval(formDate, {
