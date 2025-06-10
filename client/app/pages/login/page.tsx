@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { useAuthStore } from "@/app/stores/useAuthStore";
 import { useSnackbar } from "@/app/context/SnackbarContext";
 import { useLoading } from "@/app/context/loaderContext";
 import { useRouter } from "next/navigation";
@@ -18,26 +17,11 @@ import { apiUrl } from "@/app/utils/apiUrl";
 export default function Login() {
   const router = useRouter();
   const { openSnackbar } = useSnackbar();
-  const { loading: globalLoading, setLoading } = useLoading();
-
-  const {
-    login: {
-      loading: formLoading,
-      showPassword,
-      toggleShowPassword,
-      resetForm,
-      setLoading: setLoginLoading,
-    },
-  } = useAuthStore();
-
+  const { setLoading } = useLoading();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  useEffect(() => {
-    return () => {
-      resetForm();
-    };
-  }, [resetForm]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,6 +30,8 @@ export default function Login() {
       openSnackbar("Email and password are required.", "error");
       return;
     }
+
+    setIsLoading(true);
 
     try {
       const response = await axios.post(apiUrl("/user/login/login"), {
@@ -62,39 +48,32 @@ export default function Login() {
       Cookies.set("token", token, { expires: 1 });
       localStorage.setItem("user", JSON.stringify(user));
       openSnackbar("Login successful!", "success");
-
-      if (user.role === "ADMIN") {
-        router.push("/pages/adminDashboard");
-      } else if (user.role === "MERCHANDISER") {
-        router.push("/pages/merchandiserDashboard");
-      } else {
-        openSnackbar("Login failed, please try again.", "error");
-        Cookies.remove("token");
-        localStorage.removeItem("user");
-      }
-
       setLoading(true);
-      setLoginLoading(true);
-    } catch (error) {
-      let errorMessage = "An unexpected error occurred.";
 
-      if (axios.isAxiosError(error)) {
-        if (error.response?.data?.message) {
-          errorMessage = error.response.data.message;
-        } else if (error.message) {
-          errorMessage = error.message;
+      setTimeout(() => {
+        if (user.role === "ADMIN") {
+          router.push("/pages/adminDashboard");
+        } else if (user.role === "MERCHANDISER") {
+          router.push("/pages/merchandiserDashboard");
+        } else {
+          openSnackbar("Login failed, please try again.", "error");
+          Cookies.remove("token");
+          localStorage.removeItem("user");
+          setLoading(false);
         }
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
+      }, 1000);
+    } catch (error) {
+      const errorMessage = axios.isAxiosError(error) 
+        ? error.response?.data?.message || error.message || "An unexpected error occurred."
+        : error instanceof Error 
+        ? error.message 
+        : "An unexpected error occurred.";
 
       openSnackbar(errorMessage, "error");
     } finally {
-      setLoginLoading(false);
+      setIsLoading(false);
     }
   };
-
-  const isLoading = globalLoading || formLoading;
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
@@ -119,9 +98,7 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className="pt-5">
           <div>
-            <Label htmlFor="email" className="pb-2 text-[#2d2d2d]">
-              Email
-            </Label>
+            <Label htmlFor="email" className="pb-2 text-[#2d2d2d]">Email</Label>
             <Input
               type="email"
               id="email"
@@ -134,9 +111,7 @@ export default function Login() {
           </div>
 
           <div className="pt-5 relative">
-            <Label htmlFor="password" className="pb-2 text-[#2d2d2d]">
-              Password
-            </Label>
+            <Label htmlFor="password" className="pb-2 text-[#2d2d2d]">Password</Label>
             <Input
               type={showPassword ? "text" : "password"}
               id="password"
@@ -147,8 +122,12 @@ export default function Login() {
               className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
             />
             <div
-              onClick={toggleShowPassword}
-              className="absolute inset-y-15 right-3 flex items-center cursor-pointer text-gray-500 hover:text-[#2F27CE] transition"
+              onClick={isLoading ? undefined : () => setShowPassword(!showPassword)}
+              className={`absolute inset-y-15 right-3 flex items-center transition ${
+                isLoading 
+                  ? "cursor-not-allowed text-gray-300" 
+                  : "cursor-pointer text-gray-500 hover:text-[#2F27CE]"
+              }`}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </div>
@@ -176,7 +155,7 @@ export default function Login() {
                   : "bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
               }`}
             >
-              {isLoading ? "Processing..." : "Login"}
+              {isLoading ? "Logging in..." : "Login"}
             </Button>
           </div>
 
