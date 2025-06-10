@@ -7,13 +7,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Eye } from "lucide-react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
-import {
-  format,
-  parseISO,
-  isWithinInterval,
-  startOfDay,
-  endOfDay,
-} from "date-fns";
+import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { useLoading } from "@/app/context/loaderContext";
 import { useRouter } from "next/navigation";
 import { useModalStore } from "@/app/stores/useModalStore";
@@ -21,7 +15,6 @@ import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import Filters from "@/components/frontend/Filters";
 import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles";
-import { useDateStore } from "@/app/stores/useDateStore";
 import { apiUrl } from "@/app/utils/apiUrl";
 
 type SOSForm = {
@@ -38,16 +31,29 @@ export default function AdminForms() {
   useRoleGuard(["ADMIN"]);
   const { setLoading } = useLoading();
   const router = useRouter();
-  const { fromDate, toDate } = useDateStore();
+  
+  // Replace date store with local state
+  const [dateRange, setDateRange] = useState<{
+    fromDate: Date | null;
+    toDate: Date | null;
+  }>({ fromDate: null, toDate: null });
+  
+  const [selectedOutlet, setSelectedOutlet] = useState<string | null>(null);
+
+  const {
+    selectedFilter,
+    isDateModalOpen,
+    isOutletModalOpen,
+    setIsDateModalOpen,
+    setIsOutletModalOpen,
+    handleFilterClick,
+  } = useModalStore();
 
   useEffect(() => {
     setLoading(false);
   }, [setLoading]);
 
-  const {
-    data: sosForms = [],
-    isLoading,
-  } = useQuery<SOSForm[]>({
+  const { data: sosForms = [], isLoading } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
       const res = await axios.get(apiUrl("/user/sosform/all"), {
@@ -57,8 +63,6 @@ export default function AdminForms() {
     },
   });
 
-  const [selectedOutlet, setSelectedOutlet] = useState<string | null>(null);
-
   const formatOutletName = (outlet: string) => {
     return outlet
       .split("_")
@@ -66,27 +70,38 @@ export default function AdminForms() {
       .join(" ");
   };
 
+  const handleRead = (id: string) => {
+    setLoading(true);
+    router.push(`/pages/conforme?id=${id}&readonly=true`);
+  };
+
+  const handleApplyDateFilter = (fromDate: Date | null, toDate: Date | null) => {
+    setDateRange({ fromDate, toDate });
+  };
+
+  const handleSelectOutlet = (outlet: string | null) => {
+    setSelectedOutlet(outlet);
+    setIsOutletModalOpen(false);
+  };
+
+  // Filter and process rows
   const rows = sosForms
     .filter((form) => {
+      // Outlet filter
       if (selectedOutlet && form.outlet !== selectedOutlet) return false;
 
-      if (fromDate && toDate) {
+      // Date filter
+      if (dateRange.fromDate && dateRange.toDate) {
         const formDate = parseISO(form.createdAt);
-        const startDate = startOfDay(fromDate);
-        const endDate = endOfDay(toDate);
-
         return isWithinInterval(formDate, {
-          start: startDate,
-          end: endDate,
+          start: startOfDay(dateRange.fromDate),
+          end: endOfDay(dateRange.toDate),
         });
       }
 
       return true;
     })
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .map((form) => ({
       id: form.id,
       outlet: formatOutletName(form.outlet),
@@ -96,12 +111,6 @@ export default function AdminForms() {
       juice: form.juice,
       email: form.email,
     }));
-
-  const handleRead = (id: string) => {
-    setLoading(true);
-    console.log("Navigating to form ID:", id);
-    router.push(`/pages/conforme?id=${id}&readonly=true`);
-  };
 
   const columns: GridColDef[] = [
     { field: "outlet", headerName: "Outlet", flex: 1, ...centerAligned },
@@ -130,21 +139,6 @@ export default function AdminForms() {
       ),
     },
   ];
-  
-
-  const {
-    selectedFilter,
-    isDateModalOpen,
-    isOutletModalOpen,
-    setIsDateModalOpen,
-    setIsOutletModalOpen,
-    handleFilterClick,
-  } = useModalStore();
-
-  const handleSelectOutlet = (outlet: string | null) => {
-    setSelectedOutlet(outlet);
-    setIsOutletModalOpen(false);
-  };
 
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center relative">
@@ -154,33 +148,16 @@ export default function AdminForms() {
           User Roles and Permissions
         </h1>
 
-        <Box
-          sx={{
-            width: "80%",
-            maxWidth: "90vw",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            marginBottom: "8px",
-          }}
-        >
+        <Box sx={{ width: "80%", maxWidth: "90vw", display: "flex", flexDirection: "column", alignItems: "flex-end", marginBottom: "8px" }}>
           <Filters
             selectedFilter={selectedFilter}
             handleFilterClick={handleFilterClick}
-            isDateFilterActive={!!fromDate && !!toDate}
+            isDateFilterActive={!!(dateRange.fromDate && dateRange.toDate)}
             isOutletFilterActive={!!selectedOutlet}
           />
         </Box>
 
-        <Box
-          sx={{
-            height: 500,
-            width: "80%",
-            maxWidth: "90vw",
-            backgroundColor: "white",
-            borderRadius: "8px",
-          }}
-        >
+        <Box sx={{ height: 500, width: "80%", maxWidth: "90vw", backgroundColor: "white", borderRadius: "8px" }}>
           <DataGrid
             getRowId={(row) => row.id}
             rows={rows}
@@ -219,7 +196,9 @@ export default function AdminForms() {
       <DateModal
         open={isDateModalOpen}
         onClose={() => setIsDateModalOpen(false)}
-        onApply={() => {}}
+        onApply={handleApplyDateFilter}
+        initialFromDate={dateRange.fromDate}
+        initialToDate={dateRange.toDate}
       />
 
       <OutletModal
