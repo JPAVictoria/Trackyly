@@ -52,6 +52,10 @@ export default function AdminForms() {
         break;
       default:
         setSelectedFilter(label);
+        
+        if (label === 'Default') {
+          setDateRange({ fromDate: null, toDate: null });
+        }
     }
   };
 
@@ -68,11 +72,11 @@ export default function AdminForms() {
     }
     
     if (dateRange.fromDate) {
-      params.fromDate = dateRange.fromDate.toISOString();
+      params.fromDate = moment(dateRange.fromDate).format('YYYY-MM-DD');
     }
     
     if (dateRange.toDate) {
-      params.toDate = dateRange.toDate.toISOString();
+      params.toDate = moment(dateRange.toDate).format('YYYY-MM-DD');
     }
     
     return params;
@@ -104,8 +108,16 @@ export default function AdminForms() {
     router.push(`/pages/conforme?id=${id}&readonly=true`);
   };
 
+  
   const handleApplyDateFilter = (fromDate: Date | null, toDate: Date | null) => {
-    setDateRange({ fromDate, toDate });
+    if (fromDate && toDate) {
+      setDateRange({ 
+        fromDate: moment(fromDate).utc().startOf('day').toDate(),
+        toDate: moment(toDate).utc().endOf('day').toDate()
+      });
+    } else {
+      setDateRange({ fromDate, toDate });
+    }
     setSelectedFilter('Custom');
     setIsDateModalOpen(false);
   };
@@ -116,7 +128,6 @@ export default function AdminForms() {
     setIsOutletModalOpen(false);
   };
 
-  
   const rows = sosForms.map((form) => ({
     id: form.id,
     outlet: formatOutletName(form.outlet),
@@ -167,7 +178,7 @@ export default function AdminForms() {
           <Filters
             selectedFilter={selectedFilter}
             handleFilterClick={handleFilterClick}
-            isDateFilterActive={!!(dateRange.fromDate && dateRange.toDate)}
+            isDateFilterActive={!!(dateRange.fromDate)}
             isOutletFilterActive={!!selectedOutlet}
           />
         </Box>
