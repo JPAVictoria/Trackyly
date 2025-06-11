@@ -7,9 +7,10 @@ import { Button, Skeleton, Box } from "@mui/material";
 import DateModal from "@/components/frontend/DateModal";
 import OutletModal from "@/components/frontend/OutletModal";
 import type { PieValueType } from "@mui/x-charts/models";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { buttonStyles } from "@/app/styles/styles";
 import { apiUrl } from "@/app/utils/apiUrl";
+import moment from "moment";
 
 interface ProductDistribution {
   outlet: string;
@@ -18,20 +19,9 @@ interface ProductDistribution {
   juice: number;
 }
 
-interface PieChartDataItem {
-  id: string;
-  value: number;
-  label: string;
-  color: string;
-  wine: number;
-  beer: number;
-  juice: number;
-}
-
 type FilterType = 'Custom' | 'Outlet' | 'Default';
 
 export default function AnalyticsBlock() {
-  
   const [selectedFilter, setSelectedFilter] = useState<FilterType | string>('Default');
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [isOutletModalOpen, setIsOutletModalOpen] = useState(false);
@@ -40,46 +30,20 @@ export default function AnalyticsBlock() {
     toDate: Date | null;
   }>({ fromDate: null, toDate: null });
 
-  const handleFilterClick = (label: FilterType) => {
-    switch (label) {
-      case 'Custom':
-        setIsDateModalOpen(true);
-        break;
-      case 'Outlet':
-        setIsOutletModalOpen(true);
-        break;
-      default:
-        setSelectedFilter(label);
-    }
-  };
-
-  const {
-    data: distribution,
-    isError,
-    error,
-    refetch,
-    isLoading,
-    isFetching,
-  } = useQuery<ProductDistribution[]>({
+  const { data: distribution, isError, error, refetch, isLoading, isFetching } = useQuery<ProductDistribution[]>({
     queryKey: ["productDistribution", selectedFilter, dateRange],
     queryFn: async () => {
-      let url = apiUrl("/user/analytics/quarter");
-      let params = {};
-
-      if (selectedFilter === "Custom") {
-        url = apiUrl("/user/analytics/custom");
-        if (dateRange.fromDate && dateRange.toDate) {
-          params = {
-            fromDate: dateRange.fromDate.toISOString().split("T")[0],
-            toDate: dateRange.toDate.toISOString().split("T")[0],
-          };
-        }
-      } else if (selectedFilter.startsWith("Outlet:")) {
-        const outletName = selectedFilter.replace("Outlet: ", "");
-        url = apiUrl(
-          `/user/analytics/outlet?outlet=${encodeURIComponent(outletName)}`
-        );
-      }
+      const isOutletFilter = selectedFilter.startsWith("Outlet:");
+      const url = isOutletFilter 
+        ? apiUrl(`/user/analytics/outlet?outlet=${encodeURIComponent(selectedFilter.replace("Outlet: ", ""))}`)
+        : apiUrl("/user/analytics/summary");
+      
+      const params = selectedFilter === "Custom" && dateRange.fromDate && dateRange.toDate 
+        ? {
+            fromDate: moment(dateRange.fromDate).format('YYYY-MM-DD'),
+            toDate: moment(dateRange.toDate).format('YYYY-MM-DD'),
+          }
+        : {};
 
       const res = await axios.get(url, { params });
       return res.data;
@@ -88,89 +52,51 @@ export default function AnalyticsBlock() {
     refetchOnMount: true,
   });
 
-  useEffect(() => {
-    refetch();
-  }, [selectedFilter, dateRange, refetch]);
+  const handleFilterClick = (label: FilterType) => {
+    if (label === 'Custom') setIsDateModalOpen(true);
+    else if (label === 'Outlet') setIsOutletModalOpen(true);
+    else setSelectedFilter(label);
+  };
 
-  const filterButtons = ["Custom", "Outlet", "Default"];
-
-  const handleApplyCustomFilter = (
-    fromDate: Date | null,
-    toDate: Date | null
-  ) => {
+  const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
     if (fromDate && toDate) {
-      const fromUtc = new Date(
-        Date.UTC(
-          fromDate.getFullYear(),
-          fromDate.getMonth(),
-          fromDate.getDate()
-        )
-      );
-      const toUtc = new Date(
-        Date.UTC(
-          toDate.getFullYear(),
-          toDate.getMonth(),
-          toDate.getDate(),
-          23,
-          59,
-          59
-        )
-      );
-
-      setDateRange({ fromDate: fromUtc, toDate: toUtc });
+      setDateRange({ 
+        fromDate: moment(fromDate).utc().startOf('day').toDate(),
+        toDate: moment(toDate).utc().endOf('day').toDate()
+      });
       setSelectedFilter("Custom");
       setIsDateModalOpen(false);
     }
   };
 
   const handleApplyOutletFilter = (outlet: string | null) => {
-    if (outlet) {
-      setSelectedFilter(`Outlet: ${outlet}`);
-    }
+    if (outlet) setSelectedFilter(`Outlet: ${outlet}`);
     setIsOutletModalOpen(false);
   };
 
-  const getPieChartData = (): PieChartDataItem[] => {
-    if (!distribution || distribution.length === 0) return [];
+  const getPieChartData = () => {
+    if (!distribution?.length) return [];
 
+    const colors = ["#06b6d4", "#a855f7", "#14b8a6"];
+    
     if (selectedFilter.startsWith("Outlet:")) {
       const data = distribution[0];
-      return [
-        {
-          id: "wine",
-          value: data.wine,
-          label: "Wine",
-          color: "#06b6d4",
-          wine: data.wine,
-          beer: 0,
-          juice: 0,
-        },
-        {
-          id: "beer",
-          value: data.beer,
-          label: "Beer",
-          color: "#a855f7",
-          wine: 0,
-          beer: data.beer,
-          juice: 0,
-        },
-        {
-          id: "juice",
-          value: data.juice,
-          label: "Juice",
-          color: "#14b8a6",
-          wine: 0,
-          beer: 0,
-          juice: data.juice,
-        },
-      ];
+      return ['wine', 'beer', 'juice'].map((product, index) => ({
+        id: product,
+        value: data[product as keyof ProductDistribution] as number,
+        label: product.charAt(0).toUpperCase() + product.slice(1),
+        color: colors[index],
+        wine: product === 'wine' ? data.wine : 0,
+        beer: product === 'beer' ? data.beer : 0,
+        juice: product === 'juice' ? data.juice : 0,
+      }));
     }
 
     return distribution.map((outletData, index) => ({
       id: outletData.outlet,
       value: outletData.wine + outletData.beer + outletData.juice,
       label: outletData.outlet,
-      color: ["#06b6d4", "#a855f7", "#14b8a6"][index % 3],
+      color: colors[index % 3],
       wine: outletData.wine,
       beer: outletData.beer,
       juice: outletData.juice,
@@ -178,38 +104,23 @@ export default function AnalyticsBlock() {
   };
 
   const valueFormatter = (slice: PieValueType) => {
-    const labelStr = typeof slice.label === "string" ? slice.label : undefined;
-    if (!labelStr) return `${slice.value}`;
+    const data = getPieChartData().find(d => d.label === slice.label);
+    if (!data) return `${slice.value}`;
 
-    const data = getPieChartData().find((d) => d.label === labelStr);
-    if (!data) return `${labelStr}: ${slice.value}`;
-
-    if (!selectedFilter.startsWith("Outlet:")) {
-      return `${labelStr}
-Wine: ${data.wine}
-Beer: ${data.beer}
-Juice: ${data.juice}`;
-    }
-
-    return `${labelStr}: ${data.value}`;
+    return selectedFilter.startsWith("Outlet:")
+      ? `${slice.label}: ${data.value}`
+      : `${slice.label}\nWine: ${data.wine}\nBeer: ${data.beer}\nJuice: ${data.juice}`;
   };
 
-  
-  const renderSkeleton = () => (
-    <Box className="flex flex-col items-center gap-4">
-      <Skeleton 
-        variant="circular" 
-        width={200} 
-        height={200}
-        sx={{ 
-          bgcolor: 'rgba(67, 59, 255, 0.1)',
-          '&::after': {
-            background: 'linear-gradient(90deg, transparent, rgba(67, 59, 255, 0.2), transparent)'
-          }
-        }}
-      />
-    </Box>
-  );
+  const getNoDataMessage = () => {
+    if (selectedFilter === 'Custom' && dateRange.fromDate && dateRange.toDate) {
+      return `for ${moment(dateRange.fromDate).format('MMM DD')} - ${moment(dateRange.toDate).format('MMM DD, YYYY')}`;
+    }
+    if (selectedFilter.startsWith('Outlet:')) {
+      return `for ${selectedFilter.replace('Outlet: ', '')}`;
+    }
+    return `for Q${moment().quarter()} ${moment().year()}`;
+  };
 
   const isLoadingData = isLoading || isFetching;
 
@@ -221,7 +132,7 @@ Juice: ${data.juice}`;
         </h2>
 
         <div className="flex justify-center gap-2 mb-6">
-          {filterButtons.map((label) => (
+          {(['Custom', 'Outlet', 'Default'] as FilterType[]).map((label) => (
             <Button
               key={label}
               variant="outlined"
@@ -232,17 +143,13 @@ Juice: ${data.juice}`;
                   setSelectedFilter("Default");
                   setDateRange({ fromDate: null, toDate: null });
                 } else {
-                  handleFilterClick(label as FilterType);
+                  handleFilterClick(label);
                 }
               }}
               sx={{
                 ...buttonStyles,
-                borderColor: selectedFilter.startsWith(label)
-                  ? "#433BFF"
-                  : buttonStyles.borderColor,
-                color: selectedFilter.startsWith(label)
-                  ? "#433BFF"
-                  : buttonStyles.color,
+                borderColor: selectedFilter.startsWith(label) ? "#433BFF" : buttonStyles.borderColor,
+                color: selectedFilter.startsWith(label) ? "#433BFF" : buttonStyles.color,
                 opacity: isLoadingData ? 0.6 : 1,
               }}
             >
@@ -253,28 +160,47 @@ Juice: ${data.juice}`;
 
         <div className="flex-1 flex justify-center items-center min-h-[250px]">
           {isLoadingData ? (
-            renderSkeleton()
+            <Box className="flex flex-col items-center gap-4">
+              <Skeleton 
+                variant="circular" 
+                width={200} 
+                height={200}
+                sx={{ 
+                  bgcolor: 'rgba(67, 59, 255, 0.1)',
+                  '&::after': {
+                    background: 'linear-gradient(90deg, transparent, rgba(67, 59, 255, 0.2), transparent)'
+                  }
+                }}
+              />
+            </Box>
           ) : isError ? (
-            <p className="text-red-500">
-              Error loading chart data:{" "}
-              {error instanceof Error ? error.message : "Unknown error"}
-            </p>
-          ) : !distribution || distribution.length === 0 ? (
-            <p>No data available for this period.</p>
+            <div className="text-center">
+              <p className="text-red-500 mb-2">Error loading chart data</p>
+              <p className="text-sm text-gray-600 mb-2">
+                {error instanceof Error ? error.message : "Unknown error"}
+              </p>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => refetch()}
+                sx={buttonStyles}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : !distribution?.length ? (
+            <div className="text-center">
+              <p className="text-gray-600 mb-2">No data available</p>
+              <p className="text-sm text-gray-500">{getNoDataMessage()}</p>
+            </div>
           ) : (
             <PieChart
-              series={[
-                {
-                  data: getPieChartData(),
-                  highlightScope: { fade: "global", highlight: "item" },
-                  faded: {
-                    innerRadius: 30,
-                    additionalRadius: -30,
-                    color: "gray",
-                  },
-                  valueFormatter,
-                },
-              ]}
+              series={[{
+                data: getPieChartData(),
+                highlightScope: { fade: "global", highlight: "item" },
+                faded: { innerRadius: 30, additionalRadius: -30, color: "gray" },
+                valueFormatter,
+              }]}
               height={250}
               hideLegend={true}
             />
@@ -294,11 +220,7 @@ Juice: ${data.juice}`;
         open={isOutletModalOpen}
         onClose={() => setIsOutletModalOpen(false)}
         onSelectOutlet={handleApplyOutletFilter}
-        selectedOutlet={
-          selectedFilter.startsWith("Outlet:")
-            ? selectedFilter.replace("Outlet: ", "")
-            : null
-        }
+        selectedOutlet={selectedFilter.startsWith("Outlet:") ? selectedFilter.replace("Outlet: ", "") : null}
       />
     </div>
   );
