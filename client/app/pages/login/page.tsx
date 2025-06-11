@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { apiUrl } from "@/app/utils/apiUrl";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 
 export default function Login() {
   const router = useRouter();
@@ -51,6 +52,7 @@ export default function Login() {
 
       Cookies.set("token", token, { expires: 1 });
       localStorage.setItem("user", JSON.stringify(user));
+      useAuthStore.getState().setRole(user.role); 
       openSnackbar("Login successful!", "success");
       setLoading(true);
 

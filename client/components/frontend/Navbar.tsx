@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import Tooltip from "@mui/material/Tooltip";
 import { useSnackbar } from "@/app/context/SnackbarContext";
+import { useAuthStore } from "@/app/stores/useAuthStore"; 
 import { useLoading } from "@/app/context/loaderContext";
 import Cookies from "js-cookie";
 
@@ -88,6 +89,7 @@ const iconButtons = [
     try {
       Cookies.remove("token");
       localStorage.removeItem("user");
+      useAuthStore.getState().clearRole();
       openSnackbar("Logged out successfully!", "success");
       router.push("/pages/login");
     } catch (error) {

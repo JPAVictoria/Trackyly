@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
 import { DotPattern } from "@/components/magicui/dot-pattern";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 
 export default function Unauthorized() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function Unauthorized() {
   const handleLoginRedirect = () => {
     Cookies.remove("token");
     localStorage.removeItem("user");
+    useAuthStore.getState().clearRole();
     router.push("/pages/login");
   };
 

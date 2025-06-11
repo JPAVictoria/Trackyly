@@ -1,23 +1,16 @@
-"use client";
-
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 
 export default function useRoleGuard(allowedRoles: string[]) {
   const router = useRouter();
+  const role = useAuthStore((state) => state.role);
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      router.push("/pages/login"); 
-      return;
+    if (!role) {
+      router.push("/pages/login");
+    } else if (!allowedRoles.includes(role)) {
+      router.push("/pages/unauthorized");
     }
-
-    const user = JSON.parse(userData);
-    const userRole = user?.role;
-
-    if (!allowedRoles.includes(userRole)) {
-      router.push("/pages/unauthorized"); 
-    }
-  }, [router, allowedRoles]);
+  }, [role, allowedRoles, router]);
 }
