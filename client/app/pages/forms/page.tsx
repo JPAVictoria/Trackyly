@@ -7,7 +7,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Eye } from "lucide-react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
-import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import moment from "moment";
 import { useLoading } from "@/app/context/loaderContext";
 import { useRouter } from "next/navigation";
 import DateModal from "@/components/frontend/DateModal";
@@ -33,7 +33,6 @@ export default function AdminForms() {
   const { setLoading } = useLoading();
   const router = useRouter();
   
-  
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('Default');
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [isOutletModalOpen, setIsOutletModalOpen] = useState(false);
@@ -43,7 +42,6 @@ export default function AdminForms() {
   }>({ fromDate: null, toDate: null });
   const [selectedOutlet, setSelectedOutlet] = useState<string | null>(null);
 
-  
   const handleFilterClick = (label: FilterType) => {
     switch (label) {
       case 'Custom':
@@ -61,10 +59,33 @@ export default function AdminForms() {
     setLoading(false);
   }, [setLoading]);
 
+  
+  const buildQueryParams = () => {
+    const params: Record<string, string> = {};
+    
+    if (selectedOutlet) {
+      params.outlet = selectedOutlet;
+    }
+    
+    if (dateRange.fromDate) {
+      params.fromDate = dateRange.fromDate.toISOString();
+    }
+    
+    if (dateRange.toDate) {
+      params.toDate = dateRange.toDate.toISOString();
+    }
+    
+    return params;
+  };
+
   const { data: sosForms = [], isLoading } = useQuery<SOSForm[]>({
-    queryKey: ["sosForms"],
+    queryKey: ["sosForms", selectedOutlet, dateRange.fromDate, dateRange.toDate],
     queryFn: async () => {
-      const res = await axios.get(apiUrl("/user/sosform/all"), {
+      const params = buildQueryParams();
+      const queryString = new URLSearchParams(params).toString();
+      const url = queryString ? `${apiUrl("/user/sosform/all")}?${queryString}` : apiUrl("/user/sosform/all");
+      
+      const res = await axios.get(url, {
         withCredentials: true,
       });
       return res.data;
@@ -96,32 +117,15 @@ export default function AdminForms() {
   };
 
   
-  const rows = sosForms
-    .filter((form) => {
-      
-      if (selectedOutlet && form.outlet !== selectedOutlet) return false;
-
-      
-      if (dateRange.fromDate && dateRange.toDate) {
-        const formDate = parseISO(form.createdAt);
-        return isWithinInterval(formDate, {
-          start: startOfDay(dateRange.fromDate),
-          end: endOfDay(dateRange.toDate),
-        });
-      }
-
-      return true;
-    })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .map((form) => ({
-      id: form.id,
-      outlet: formatOutletName(form.outlet),
-      createdAt: format(new Date(form.createdAt), "MMMM d, yyyy h:mm a"),
-      wine: form.wine,
-      beer: form.beer,
-      juice: form.juice,
-      email: form.email,
-    }));
+  const rows = sosForms.map((form) => ({
+    id: form.id,
+    outlet: formatOutletName(form.outlet),
+    createdAt: moment(form.createdAt).format("MMMM D, YYYY h:mm A"),
+    wine: form.wine,
+    beer: form.beer,
+    juice: form.juice,
+    email: form.email,
+  }));
 
   const columns: GridColDef[] = [
     { field: "outlet", headerName: "Outlet", flex: 1, ...centerAligned },

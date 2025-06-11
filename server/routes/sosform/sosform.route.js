@@ -2,13 +2,40 @@ const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const moment = require("moment");
 
 router.get("/all", async (req, res) => {
   try {
+    const { outlet, fromDate, toDate } = req.query;
+
+    
+    const whereClause = {
+      deleted: false,
+    };
+
+    
+    if (outlet) {
+      whereClause.outlet = outlet;
+    }
+
+    
+    if (fromDate && toDate) {
+      whereClause.createdAt = {
+        gte: moment(fromDate).startOf('day').toDate(),
+        lte: moment(toDate).endOf('day').toDate(),
+      };
+    } else if (fromDate) {
+      whereClause.createdAt = {
+        gte: moment(fromDate).startOf('day').toDate(),
+      };
+    } else if (toDate) {
+      whereClause.createdAt = {
+        lte: moment(toDate).endOf('day').toDate(),
+      };
+    }
+
     const forms = await prisma.sOSForm.findMany({
-      where: {
-        deleted: false,
-      },
+      where: whereClause,
       include: {
         merchandiser: {
           select: {
@@ -16,6 +43,7 @@ router.get("/all", async (req, res) => {
           },
         },
       },
+      orderBy: { createdAt: "desc" }, 
     });
 
     const formsWithEmail = forms.map(form => ({
