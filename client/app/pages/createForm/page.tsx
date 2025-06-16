@@ -14,7 +14,7 @@ import Navbar from "@/components/frontend/Navbar";
 import { Button } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
-import { format } from "date-fns";
+import moment from "moment";
 import axios from "axios";
 import { buttonStyles } from "@/app/styles/styles";
 import { apiUrl } from "@/app/utils/apiUrl";
@@ -37,15 +37,14 @@ function CreateForm() {
     const fetchData = async () => {
       try {
         if (isEditMode && !comingFromConforme && formId) {
-          const { data } = await axios.get(apiUrl(
-            `/user/sosform/${formId}`),
-            { withCredentials: true }
-          );
+          const { data } = await axios.get(apiUrl(`/user/sosform/${formId}`), {
+            withCredentials: true,
+          });
           setWine(data.wine || 0);
           setBeer(data.beer || 0);
           setJuice(data.juice || 0);
           setOutlet(data.outlet || "");
-          setTimeIn(format(new Date(data.createdAt), "MMMM dd, yyyy hh:mm a"));
+          setTimeIn(moment(data.createdAt).format("MMMM DD, YYYY hh:mm A"));
         } else {
           const wineParam = searchParams.get("wine");
           const beerParam = searchParams.get("beer");
@@ -58,9 +57,7 @@ function CreateForm() {
           setJuice(juiceParam ? Number(juiceParam) : 0);
           setOutlet(outletParam || "");
           setTimeIn(
-            timeInParam
-              ? timeInParam
-              : format(new Date(), "MMMM dd, yyyy hh:mm a")
+            timeInParam ? timeInParam : moment().format("MMMM DD, YYYY hh:mm A")
           );
         }
       } catch (error) {
@@ -177,7 +174,9 @@ function CreateForm() {
                 key={label}
                 className="col-span-3 flex items-center justify-center gap-4"
               >
-                <Label className="w-32 text-[#2d2d2d] font-normal">{label}</Label>
+                <Label className="w-32 text-[#2d2d2d] font-normal">
+                  {label}
+                </Label>
                 <Input
                   type="text"
                   value={
@@ -188,7 +187,9 @@ function CreateForm() {
                       : juice.toLocaleString()
                   }
                   onChange={(e) => {
-                    const numericValue = Number(e.target.value.replace(/,/g, ""));
+                    const numericValue = Number(
+                      e.target.value.replace(/,/g, "")
+                    );
                     if (isNaN(numericValue)) return;
                     if (label === "Wine") setWine(numericValue);
                     else if (label === "Beer") setBeer(numericValue);

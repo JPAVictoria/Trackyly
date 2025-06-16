@@ -8,7 +8,6 @@ export default function useRoleGuard(allowedRoles: string[]) {
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   useEffect(() => {
-    // Don't run guard logic until store has hydrated
     if (!hasHydrated) return;
 
     if (!role) {
