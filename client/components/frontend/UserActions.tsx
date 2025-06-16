@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import { Button, Stack, Typography} from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { Shield, Trash2 } from "lucide-react";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import Cookies from "js-cookie";
-import { buttonStyle, captionStyle} from "@/app/styles/styles"; 
-
+import { buttonStyle, captionStyle } from "@/app/styles/styles";
+import { useAuthStore } from "@/app/stores/useAuthStore";
 interface UserActionButtonsProps {
   user: {
     id: string;
@@ -17,7 +17,6 @@ interface UserActionButtonsProps {
   onRoleToggle: (id: string, newRole: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
-
 
 export const UserActions: React.FC<UserActionButtonsProps> = ({
   user,
@@ -37,6 +36,8 @@ export const UserActions: React.FC<UserActionButtonsProps> = ({
         setLoading(true);
         Cookies.remove("token");
         localStorage.removeItem("user");
+        useAuthStore.getState().clearRole();
+
         setTimeout(() => {
           window.location.href = "/pages/login";
         }, 1000);
