@@ -10,6 +10,7 @@ import axios from "axios";
 import { buttonStyles } from "@/app/styles/styles";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiUrl } from "@/app/utils/apiUrl";
+import moment from "moment";
 
 interface FormData {
   wine: string | null;
@@ -64,9 +65,7 @@ export default function Conforme() {
     queryKey: ["sosForm", formId],
     queryFn: async () => {
       if (!formId) throw new Error("No form ID provided");
-      const response = await axios.get(apiUrl(
-        `/user/sosform/${formId}`)
-      );
+      const response = await axios.get(apiUrl(`/user/sosform/${formId}`));
       return response.data;
     },
     enabled: isReadOnly && !!formId,
@@ -85,14 +84,8 @@ export default function Conforme() {
           readonlyFormData.beer +
           readonlyFormData.juice
         ).toString(),
-        timeIn: new Date(readonlyFormData.createdAt).toLocaleString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
+        timeIn: moment(readonlyFormData.createdAt).format("MMM D, YYYY h:mm A"),
+
         merchandiserId: readonlyFormData.merchandiserId,
       });
       setCheckboxes([true, true, true, true]);
@@ -109,10 +102,7 @@ export default function Conforme() {
       createdAt: string;
     }) => {
       if (isEdit && formId) {
-        return axios.put(apiUrl(
-          `/user/sosform/${formId}`),
-          payload
-        );
+        return axios.put(apiUrl(`/user/sosform/${formId}`), payload);
       } else {
         return axios.post(apiUrl("/user/sosform"), payload);
       }
@@ -199,7 +189,7 @@ export default function Conforme() {
         wine: Number(formData.wine),
         beer: Number(formData.beer),
         juice: Number(formData.juice),
-        createdAt: new Date().toISOString(),
+        createdAt: moment().toISOString(),
       };
 
       await submitFormMutation.mutateAsync(payload);
