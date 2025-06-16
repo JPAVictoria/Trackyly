@@ -14,6 +14,15 @@ import { format } from "date-fns";
 import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles"; 
 import { apiUrl } from "@/app/utils/apiUrl";
 
+  type SOSForm = {
+    id: string;
+    outlet: string;
+    wine: number;
+    beer: number;
+    juice: number;
+    createdAt: string;
+  };
+
 export default function MerchandiserDashboard() {
   const router = useRouter();
   useRoleGuard(["MERCHANDISER"]);
@@ -33,14 +42,6 @@ export default function MerchandiserDashboard() {
     }
   }, []);
 
-  type SOSForm = {
-    id: string;
-    outlet: string;
-    wine: number;
-    beer: number;
-    juice: number;
-    createdAt: string;
-  };
 
   const formatOutletName = (outlet: string) => {
     return outlet

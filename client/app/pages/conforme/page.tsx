@@ -75,7 +75,6 @@ export default function Conforme() {
   useEffect(() => {
     setLoading(false);
     if (readonlyFormData && !isEdit) {
-      // 👈 Add this guard
       setFormData({
         wine: readonlyFormData.wine.toString(),
         beer: readonlyFormData.beer.toString(),

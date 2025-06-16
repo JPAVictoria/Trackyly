@@ -50,9 +50,9 @@ export default function OutletModal({
     setSelectedOutlet(null);
   };
 
-  // Reset state when modal closes
+  
   const handleClose = () => {
-    setSelectedOutlet(selectedOutletProp); // Reset to original value
+    setSelectedOutlet(selectedOutletProp); 
     onClose();
   };
 
