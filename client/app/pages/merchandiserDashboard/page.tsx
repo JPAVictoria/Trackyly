@@ -1,8 +1,9 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import moment from "moment";
 import Navbar from "@/components/frontend/Navbar";
 import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -10,18 +11,30 @@ import { Pencil, Eye, Trash2 } from "lucide-react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
-import { format } from "date-fns";
-import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles"; 
+import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles";
 import { apiUrl } from "@/app/utils/apiUrl";
 
-  type SOSForm = {
-    id: string;
-    outlet: string;
-    wine: number;
-    beer: number;
-    juice: number;
-    createdAt: string;
-  };
+type SOSForm = {
+  id: string;
+  outlet: string;
+  wine: number;
+  beer: number;
+  juice: number;
+  createdAt: string;
+};
+
+const getMerchandiserId = () => {
+  if (typeof window === "undefined") return null;
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  return user.id || null;
+};
+
+const formatOutletName = (outlet: string) => {
+  return outlet
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
 
 export default function MerchandiserDashboard() {
   const router = useRouter();
@@ -33,23 +46,6 @@ export default function MerchandiserDashboard() {
     setLoading(false);
   }, [setLoading]);
 
-  const [merchandiserId, setMerchandiserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      setMerchandiserId(user.id || null);
-    }
-  }, []);
-
-
-  const formatOutletName = (outlet: string) => {
-    return outlet
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
-  };
-
   const {
     data: sosForms = [],
     isLoading,
@@ -57,23 +53,23 @@ export default function MerchandiserDashboard() {
   } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
+      const merchandiserId = getMerchandiserId();
       const res = await axios.get(apiUrl("/user/sosform"), {
         withCredentials: true,
         params: { merchandiserId },
       });
       return res.data;
     },
-    enabled: !!merchandiserId,
+    enabled: typeof window !== "undefined" && !!getMerchandiserId(),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => {
-      return axios.put(apiUrl(
-        `/user/sosform/softDelete/${id}`),
+    mutationFn: (id: string) =>
+      axios.put(
+        apiUrl(`/user/sosform/softDelete/${id}`),
         {},
         { withCredentials: true }
-      );
-    },
+      ),
     onSuccess: (_, id) => {
       queryClient.setQueryData<SOSForm[]>(
         ["sosForms"],
@@ -86,23 +82,14 @@ export default function MerchandiserDashboard() {
     },
   });
 
-  const handleSoftDelete = (id: string) => {
-    deleteMutation.mutate(id);
-  };
-
-  const handleRead = (id: string) => {
-    router.push(`/pages/conforme?id=${id}&readonly=true`);
-  };
-
-  
-  const handleEdit = (id: string) => {
-    router.push(`/pages/createForm?id=${id}&edit=true`);
-  };
+  const handleSoftDelete = (id: string) => deleteMutation.mutate(id);
+  const handleRead = (id: string) => router.push(`/pages/conforme?id=${id}&readonly=true`);
+  const handleEdit = (id: string) => router.push(`/pages/createForm?id=${id}&edit=true`);
 
   const rows = sosForms.map((form) => ({
     id: form.id,
     outlet: formatOutletName(form.outlet),
-    createdAt: format(new Date(form.createdAt), "MMMM d, yyyy h:mm a"),
+    createdAt: moment(form.createdAt).format("MMMM D, YYYY h:mm A"),
     wine: form.wine,
     beer: form.beer,
     juice: form.juice,
@@ -124,30 +111,15 @@ export default function MerchandiserDashboard() {
       ...centerAligned,
       renderCell: (params) => (
         <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ height: "100%" }}>
-          <Button
-            size="medium"
-            variant="text"
-            sx={buttonStyle}
-            onClick={() => handleEdit(params.row.id)}
-          >
+          <Button size="medium" variant="text" sx={buttonStyle} onClick={() => handleEdit(params.row.id)}>
             <Pencil className="w-4 h-4" />
             <Typography variant="caption" sx={captionStyle}>Edit</Typography>
           </Button>
-          <Button
-            size="medium"
-            variant="text"
-            sx={buttonStyle}
-            onClick={() => handleRead(params.row.id)}
-          >
+          <Button size="medium" variant="text" sx={buttonStyle} onClick={() => handleRead(params.row.id)}>
             <Eye className="w-4 h-4" />
             <Typography variant="caption" sx={captionStyle}>Read</Typography>
           </Button>
-          <Button
-            size="medium"
-            variant="text"
-            sx={buttonStyle}
-            onClick={() => handleSoftDelete(params.row.id)}
-          >
+          <Button size="medium" variant="text" sx={buttonStyle} onClick={() => handleSoftDelete(params.row.id)}>
             <Trash2 className="w-4 h-4" />
             <Typography variant="caption" sx={captionStyle}>Delete</Typography>
           </Button>
@@ -216,5 +188,3 @@ export default function MerchandiserDashboard() {
     </div>
   );
 }
-
-
