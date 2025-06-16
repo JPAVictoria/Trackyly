@@ -21,56 +21,84 @@ interface ProductDistribution {
 
 type FilterType = 'Custom' | 'Outlet' | 'Default';
 
+interface FilterState {
+  type: FilterType;
+  fromDate: Date | null;
+  toDate: Date | null;
+  outlet: string | null;
+}
+
 export default function AnalyticsBlock() {
-  const [selectedFilter, setSelectedFilter] = useState<FilterType | string>('Default');
+  const [filter, setFilter] = useState<FilterState>({
+    type: 'Default',
+    fromDate: null,
+    toDate: null,
+    outlet: null,
+  });
+  
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [isOutletModalOpen, setIsOutletModalOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<{
-    fromDate: Date | null;
-    toDate: Date | null;
-  }>({ fromDate: null, toDate: null });
 
   const { data: distribution, isError, error, refetch, isLoading, isFetching } = useQuery<ProductDistribution[]>({
-    queryKey: ["productDistribution", selectedFilter, dateRange],
+    queryKey: ["productDistribution", filter],
     queryFn: async () => {
-      const isOutletFilter = selectedFilter.startsWith("Outlet:");
-      const url = isOutletFilter 
-        ? apiUrl(`/user/analytics/outlet?outlet=${encodeURIComponent(selectedFilter.replace("Outlet: ", ""))}`)
-        : apiUrl("/user/analytics/summary");
+      const params: Record<string, string> = {};
       
-      const params = selectedFilter === "Custom" && dateRange.fromDate && dateRange.toDate 
-        ? {
-            fromDate: moment(dateRange.fromDate).format('YYYY-MM-DD'),
-            toDate: moment(dateRange.toDate).format('YYYY-MM-DD'),
-          }
-        : {};
+      
+      if (filter.type === "Custom" && filter.fromDate && filter.toDate) {
+        params.fromDate = moment(filter.fromDate).format('YYYY-MM-DD');
+        params.toDate = moment(filter.toDate).format('YYYY-MM-DD');
+      }
+      
+      
+      if (filter.type === "Outlet" && filter.outlet) {
+        params.outlet = filter.outlet;
+      }
 
-      const res = await axios.get(url, { params });
+      const res = await axios.get(apiUrl("/user/analytics/distribution"), { params });
       return res.data;
     },
     staleTime: 0,
     refetchOnMount: true,
   });
 
-  const handleFilterClick = (label: FilterType) => {
-    if (label === 'Custom') setIsDateModalOpen(true);
-    else if (label === 'Outlet') setIsOutletModalOpen(true);
-    else setSelectedFilter(label);
+  const handleFilterClick = (filterType: FilterType) => {
+    if (filterType === 'Custom') {
+      setIsDateModalOpen(true);
+    } else if (filterType === 'Outlet') {
+      setIsOutletModalOpen(true);
+    } else {
+      
+      setFilter({
+        type: 'Default',
+        fromDate: null,
+        toDate: null,
+        outlet: null,
+      });
+    }
   };
 
   const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
     if (fromDate && toDate) {
-      setDateRange({ 
+      setFilter({
+        type: 'Custom',
         fromDate: moment(fromDate).utc().startOf('day').toDate(),
-        toDate: moment(toDate).utc().endOf('day').toDate()
+        toDate: moment(toDate).utc().endOf('day').toDate(),
+        outlet: null,
       });
-      setSelectedFilter("Custom");
       setIsDateModalOpen(false);
     }
   };
 
   const handleApplyOutletFilter = (outlet: string | null) => {
-    if (outlet) setSelectedFilter(`Outlet: ${outlet}`);
+    if (outlet) {
+      setFilter({
+        type: 'Outlet',
+        fromDate: null,
+        toDate: null,
+        outlet,
+      });
+    }
     setIsOutletModalOpen(false);
   };
 
@@ -79,19 +107,6 @@ export default function AnalyticsBlock() {
 
     const colors = ["#06b6d4", "#a855f7", "#14b8a6"];
     
-    if (selectedFilter.startsWith("Outlet:")) {
-      const data = distribution[0];
-      return ['wine', 'beer', 'juice'].map((product, index) => ({
-        id: product,
-        value: data[product as keyof ProductDistribution] as number,
-        label: product.charAt(0).toUpperCase() + product.slice(1),
-        color: colors[index],
-        wine: product === 'wine' ? data.wine : 0,
-        beer: product === 'beer' ? data.beer : 0,
-        juice: product === 'juice' ? data.juice : 0,
-      }));
-    }
-
     return distribution.map((outletData, index) => ({
       id: outletData.outlet,
       value: outletData.wine + outletData.beer + outletData.juice,
@@ -107,19 +122,28 @@ export default function AnalyticsBlock() {
     const data = getPieChartData().find(d => d.label === slice.label);
     if (!data) return `${slice.value}`;
 
-    return selectedFilter.startsWith("Outlet:")
-      ? `${slice.label}: ${data.value}`
-      : `${slice.label}\nWine: ${data.wine}\nBeer: ${data.beer}\nJuice: ${data.juice}`;
+    if (filter.type === "Outlet") {
+      return `${slice.label}: ${slice.value}`;
+    }
+    
+    
+    return `${slice.label}\nWine: ${data.wine}\nBeer: ${data.beer}\nJuice: ${data.juice}`;
   };
 
   const getNoDataMessage = () => {
-    if (selectedFilter === 'Custom' && dateRange.fromDate && dateRange.toDate) {
-      return `for ${moment(dateRange.fromDate).format('MMM DD')} - ${moment(dateRange.toDate).format('MMM DD, YYYY')}`;
+    if (filter.type === 'Custom' && filter.fromDate && filter.toDate) {
+      return `for ${moment(filter.fromDate).format('MMM DD')} - ${moment(filter.toDate).format('MMM DD, YYYY')}`;
     }
-    if (selectedFilter.startsWith('Outlet:')) {
-      return `for ${selectedFilter.replace('Outlet: ', '')}`;
+    if (filter.type === 'Outlet' && filter.outlet) {
+      return `for ${filter.outlet}`;
     }
     return `for Q${moment().quarter()} ${moment().year()}`;
+  };
+
+  const getSelectedFilterLabel = () => {
+    if (filter.type === 'Custom') return 'Custom';
+    if (filter.type === 'Outlet') return 'Outlet';
+    return 'Default';
   };
 
   const isLoadingData = isLoading || isFetching;
@@ -138,18 +162,11 @@ export default function AnalyticsBlock() {
               variant="outlined"
               size="small"
               disabled={isLoadingData}
-              onClick={() => {
-                if (label === "Default") {
-                  setSelectedFilter("Default");
-                  setDateRange({ fromDate: null, toDate: null });
-                } else {
-                  handleFilterClick(label);
-                }
-              }}
+              onClick={() => handleFilterClick(label)}
               sx={{
                 ...buttonStyles,
-                borderColor: selectedFilter.startsWith(label) ? "#433BFF" : buttonStyles.borderColor,
-                color: selectedFilter.startsWith(label) ? "#433BFF" : buttonStyles.color,
+                borderColor: getSelectedFilterLabel() === label ? "#433BFF" : buttonStyles.borderColor,
+                color: getSelectedFilterLabel() === label ? "#433BFF" : buttonStyles.color,
                 opacity: isLoadingData ? 0.6 : 1,
               }}
             >
@@ -212,15 +229,15 @@ export default function AnalyticsBlock() {
         open={isDateModalOpen}
         onClose={() => setIsDateModalOpen(false)}
         onApply={handleApplyCustomFilter}
-        initialFromDate={dateRange.fromDate}
-        initialToDate={dateRange.toDate}
+        initialFromDate={filter.fromDate}
+        initialToDate={filter.toDate}
       />
 
       <OutletModal
         open={isOutletModalOpen}
         onClose={() => setIsOutletModalOpen(false)}
         onSelectOutlet={handleApplyOutletFilter}
-        selectedOutlet={selectedFilter.startsWith("Outlet:") ? selectedFilter.replace("Outlet: ", "") : null}
+        selectedOutlet={filter.outlet}
       />
     </div>
   );

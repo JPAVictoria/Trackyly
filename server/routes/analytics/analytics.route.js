@@ -5,9 +5,9 @@ const moment = require("moment");
 
 const prisma = new PrismaClient();
 
-router.get("/summary", async (req, res) => {
-  const { fromDate, toDate } = req.query;
-  
+router.get("/distribution", async (req, res) => {
+  const { fromDate, toDate, outlet } = req.query;
+
   try {
     let startDate, endDate;
 
@@ -25,76 +25,59 @@ router.get("/summary", async (req, res) => {
       }
     }
 
-    const forms = await prisma.sOSForm.findMany({
-      where: {
-        deleted: false,
-        createdAt: {
-          gte: startDate.toDate(),
-          lte: endDate.toDate(),
+    const commonFilter = {
+      deleted: false,
+      createdAt: {
+        gte: startDate.toDate(),
+        lte: endDate.toDate(),
+      },
+    };
+
+    if (outlet) {
+      // Single outlet - return product breakdown as separate entries
+      const result = await prisma.sOSForm.aggregate({
+        where: {
+          ...commonFilter,
+          outlet,
         },
-      },
-      select: {
-        outlet: true,
-        wine: true,
-        beer: true,
-        juice: true,
-      },
-    });
+        _sum: {
+          wine: true,
+          beer: true,
+          juice: true,
+        },
+      });
 
-    const outletData = forms.reduce((acc, form) => {
-      if (!acc[form.outlet]) {
-        acc[form.outlet] = { wine: 0, beer: 0, juice: 0 };
-      }
-      acc[form.outlet].wine += form.wine;
-      acc[form.outlet].beer += form.beer;
-      acc[form.outlet].juice += form.juice;
-      return acc;
-    }, {});
+      return res.json([
+        { outlet: "Wine", wine: result._sum.wine || 0, beer: 0, juice: 0 },
+        { outlet: "Beer", wine: 0, beer: result._sum.beer || 0, juice: 0 },
+        { outlet: "Juice", wine: 0, beer: 0, juice: result._sum.juice || 0 },
+      ]);
+    } else {
+      const grouped = await prisma.sOSForm.groupBy({
+        by: ["outlet"],
+        where: commonFilter,
+        _sum: {
+          wine: true,
+          beer: true,
+          juice: true,
+        },
+      });
 
-    const results = Object.entries(outletData).map(([outlet, totals]) => ({
-      outlet,
-      ...totals,
-    }));
+      const formatted = grouped.map((group) => ({
+        outlet: group.outlet,
+        wine: group._sum.wine || 0,
+        beer: group._sum.beer || 0,
+        juice: group._sum.juice || 0,
+      }));
 
-    return res.status(200).json(results);
-  } catch (err) {
-    console.error("Error getting product distribution summary:", err);
-    return res.status(500).json({ 
-      error: "Internal server error", 
-      details: err.message 
-    });
-  }
-});
-
-router.get("/outlet", async (req, res) => {
-  const outlet = req.query.outlet;
-
-  if (!outlet) {
-    return res.status(400).json({ error: "Outlet query parameter is required" });
-  }
-
-  try {
-    const totals = await prisma.sOSForm.aggregate({
-      where: {
-        outlet,
-        deleted: false,
-      },
-      _sum: {
-        wine: true,
-        beer: true,
-        juice: true,
-      },
-    });
-
-    res.json([{
-      outlet,
-      wine: totals._sum.wine || 0,
-      beer: totals._sum.beer || 0,
-      juice: totals._sum.juice || 0,
-    }]);
+      return res.json(formatted);
+    }
   } catch (error) {
-    console.error("Error fetching outlet data:", error);
-    res.status(500).json({ error: "Failed to fetch outlet data" });
+    console.error("Error fetching distribution data:", error);
+    return res.status(500).json({
+      error: "Internal server error",
+      details: error.message,
+    });
   }
 });
 
