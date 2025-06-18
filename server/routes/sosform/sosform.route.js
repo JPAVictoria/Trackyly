@@ -8,29 +8,26 @@ router.get("/all", async (req, res) => {
   try {
     const { outlet, fromDate, toDate } = req.query;
 
-    
     const whereClause = {
       deleted: false,
     };
 
-    
     if (outlet) {
       whereClause.outlet = outlet;
     }
 
-    
     if (fromDate && toDate) {
       whereClause.createdAt = {
-        gte: moment(fromDate).startOf('day').toDate(),
-        lte: moment(toDate).endOf('day').toDate(),
+        gte: moment(fromDate).startOf("day").toDate(),
+        lte: moment(toDate).endOf("day").toDate(),
       };
     } else if (fromDate) {
       whereClause.createdAt = {
-        gte: moment(fromDate).startOf('day').toDate(),
+        gte: moment(fromDate).startOf("day").toDate(),
       };
     } else if (toDate) {
       whereClause.createdAt = {
-        lte: moment(toDate).endOf('day').toDate(),
+        lte: moment(toDate).endOf("day").toDate(),
       };
     }
 
@@ -39,14 +36,14 @@ router.get("/all", async (req, res) => {
       include: {
         merchandiser: {
           select: {
-            email: true, 
+            email: true,
           },
         },
       },
-      orderBy: { createdAt: "desc" }, 
+      orderBy: { createdAt: "desc" },
     });
 
-    const formsWithEmail = forms.map(form => ({
+    const formsWithEmail = forms.map((form) => ({
       ...form,
       email: form.merchandiser?.email || "",
     }));
@@ -63,7 +60,7 @@ router.get("/all", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { merchandiserId } = req.query; 
+    const { merchandiserId } = req.query;
 
     if (!merchandiserId) {
       return res.status(400).json({ error: "merchandiserId is required" });
@@ -72,15 +69,17 @@ router.get("/", async (req, res) => {
     const forms = await prisma.sOSForm.findMany({
       where: {
         deleted: false,
-        merchandiserId: merchandiserId, 
+        merchandiserId: merchandiserId,
       },
       orderBy: { createdAt: "desc" },
     });
-    
+
     return res.status(200).json(forms);
   } catch (err) {
     console.error("Error fetching SOSForms:", err);
-    return res.status(500).json({ error: "Internal server error", details: err.message });
+    return res
+      .status(500)
+      .json({ error: "Internal server error", details: err.message });
   }
 });
 
@@ -95,7 +94,7 @@ router.get("/:id", async (req, res) => {
     }
 
     const form = await prisma.sOSForm.findUnique({
-      where: { id: formId },  
+      where: { id: formId },
     });
 
     if (!form) {
@@ -108,9 +107,6 @@ router.get("/:id", async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 });
-
-
-
 
 router.post("/", async (req, res) => {
   try {
@@ -126,16 +122,18 @@ router.post("/", async (req, res) => {
         wine: Number(wine),
         beer: Number(beer),
         juice: Number(juice),
-        createdAt: createdAt ? new Date(createdAt) : new Date(),
+        createdAt: createdAt ? moment(createdAt).toDate() : moment().toDate(),
         merchandiserId,
-        deleted: false, 
+        deleted: false,
       },
     });
 
     return res.status(201).json({ message: "Form created", data: newForm });
   } catch (err) {
     console.error("Error creating SOSForm:", err);
-    return res.status(500).json({ error: "Internal server error", details: err.message });
+    return res
+      .status(500)
+      .json({ error: "Internal server error", details: err.message });
   }
 });
 
@@ -157,10 +155,11 @@ router.put("/:id", async (req, res) => {
     return res.status(200).json({ message: "Form updated", data: updatedForm });
   } catch (err) {
     console.error("Error updating SOSForm:", err);
-    return res.status(500).json({ error: "Internal server error", details: err.message });
+    return res
+      .status(500)
+      .json({ error: "Internal server error", details: err.message });
   }
 });
-
 
 router.put("/softDelete/:id", async (req, res) => {
   const { id } = req.params;
@@ -168,21 +167,20 @@ router.put("/softDelete/:id", async (req, res) => {
   try {
     const updatedForm = await prisma.sOSForm.update({
       where: { id },
-      data: { 
+      data: {
         deleted: true,
       },
     });
 
-    return res.status(200).json({ message: "Form soft deleted", data: updatedForm });
+    return res
+      .status(200)
+      .json({ message: "Form soft deleted", data: updatedForm });
   } catch (err) {
     console.error("Error soft deleting SOSForm:", err);
-    return res.status(500).json({ error: "Internal server error", details: err.message });
+    return res
+      .status(500)
+      .json({ error: "Internal server error", details: err.message });
   }
 });
 
-
-
-
 module.exports = router;
-
-

@@ -34,7 +34,6 @@ router.get("/distribution", async (req, res) => {
     };
 
     if (outlet) {
-      // Single outlet - return product breakdown as separate entries
       const result = await prisma.sOSForm.aggregate({
         where: {
           ...commonFilter,
