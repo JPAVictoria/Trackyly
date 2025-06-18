@@ -46,6 +46,8 @@ export default function DateFilterModal({
   const handleClear = () => {
     setFromDate(null);
     setToDate(null);
+    onApply(null, null);
+    onClose();
   };
 
   const handleClose = () => {
@@ -53,6 +55,8 @@ export default function DateFilterModal({
     setToDate(initialToDate);
     onClose();
   };
+
+  const isApplyDisabled = !fromDate || !toDate;
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
@@ -131,7 +135,7 @@ export default function DateFilterModal({
         <Button onClick={handleClear} {...buttonStylesFilter}>
           Clear
         </Button>
-        <Button onClick={handleApply} {...buttonStylesFilter}>
+        <Button onClick={handleApply} {...buttonStylesFilter}disabled={isApplyDisabled}>
           Apply
         </Button>
       </DialogActions>

@@ -46,11 +46,6 @@ export default function OutletModal({
     onClose();
   };
 
-  const handleClear = () => {
-    setSelectedOutlet(null);
-  };
-
-  
   const handleClose = () => {
     setSelectedOutlet(selectedOutletProp); 
     onClose();
@@ -103,9 +98,6 @@ export default function OutletModal({
       <DialogActions className="p-4 gap-2">
         <Button onClick={handleClose} {...buttonStylesFilter}>
           Cancel
-        </Button>
-        <Button onClick={handleClear} {...buttonStylesFilter}>
-          Clear
         </Button>
         <Button onClick={handleApply} {...buttonStylesFilter}>
           Apply
