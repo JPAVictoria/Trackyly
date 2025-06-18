@@ -10,7 +10,7 @@ import type { PieValueType } from "@mui/x-charts/models";
 import { useState } from "react";
 import { buttonStyles } from "@/app/styles/styles";
 import { apiUrl } from "@/app/utils/apiUrl";
-import moment from "moment";
+import moment, { Moment } from "moment";
 
 interface ProductDistribution {
   outlet: string;
@@ -23,8 +23,8 @@ type FilterType = 'Custom' | 'Outlet' | 'Default';
 
 interface FilterState {
   type: FilterType;
-  fromDate: Date | null;
-  toDate: Date | null;
+  fromDate: Moment | null;
+  toDate: Moment | null;
   outlet: string | null;
 }
 
@@ -35,7 +35,7 @@ export default function AnalyticsBlock() {
     toDate: null,
     outlet: null,
   });
-  
+
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [isOutletModalOpen, setIsOutletModalOpen] = useState(false);
 
@@ -43,18 +43,13 @@ export default function AnalyticsBlock() {
     queryKey: ["productDistribution", filter],
     queryFn: async () => {
       const params: Record<string, string> = {};
-      
-      
       if (filter.type === "Custom" && filter.fromDate && filter.toDate) {
-        params.fromDate = moment(filter.fromDate).format('YYYY-MM-DD');
-        params.toDate = moment(filter.toDate).format('YYYY-MM-DD');
+        params.fromDate = filter.fromDate.format("YYYY-MM-DD");
+        params.toDate = filter.toDate.format("YYYY-MM-DD");
       }
-      
-      
       if (filter.type === "Outlet" && filter.outlet) {
         params.outlet = filter.outlet;
       }
-
       const res = await axios.get(apiUrl("/user/analytics/distribution"), { params });
       return res.data;
     },
@@ -78,12 +73,12 @@ export default function AnalyticsBlock() {
     }
   };
 
-  const handleApplyCustomFilter = (fromDate: Date | null, toDate: Date | null) => {
+  const handleApplyCustomFilter = (fromDate: Moment | null, toDate: Moment | null) => {
     if (fromDate && toDate) {
       setFilter({
-        type: 'Custom',
-        fromDate: moment(fromDate).utc().startOf('day').toDate(),
-        toDate: moment(toDate).utc().endOf('day').toDate(),
+        type: "Custom",
+        fromDate: fromDate.clone().startOf("day"),
+        toDate: toDate.clone().endOf("day"),
         outlet: null,
       });
       setIsDateModalOpen(false);
@@ -106,7 +101,7 @@ export default function AnalyticsBlock() {
     if (!distribution?.length) return [];
 
     const colors = ["#06b6d4", "#a855f7", "#14b8a6"];
-    
+
     return distribution.map((outletData, index) => ({
       id: outletData.outlet,
       value: outletData.wine + outletData.beer + outletData.juice,
@@ -119,22 +114,20 @@ export default function AnalyticsBlock() {
   };
 
   const valueFormatter = (slice: PieValueType) => {
-    const data = getPieChartData().find(d => d.label === slice.label);
+    const data = getPieChartData().find((d) => d.label === slice.label);
     if (!data) return `${slice.value}`;
 
     if (filter.type === "Outlet") {
       return `${slice.label}: ${slice.value}`;
     }
-    
-    
     return `${slice.label}\nWine: ${data.wine}\nBeer: ${data.beer}\nJuice: ${data.juice}`;
   };
 
   const getNoDataMessage = () => {
-    if (filter.type === 'Custom' && filter.fromDate && filter.toDate) {
-      return `for ${moment(filter.fromDate).format('MMM DD')} - ${moment(filter.toDate).format('MMM DD, YYYY')}`;
+    if (filter.type === "Custom" && filter.fromDate && filter.toDate) {
+      return `for ${filter.fromDate.format("MMM DD")} - ${filter.toDate.format("MMM DD, YYYY")}`;
     }
-    if (filter.type === 'Outlet' && filter.outlet) {
+    if (filter.type === "Outlet" && filter.outlet) {
       return `for ${filter.outlet}`;
     }
     return `for Q${moment().quarter()} ${moment().year()}`;
@@ -178,9 +171,9 @@ export default function AnalyticsBlock() {
         <div className="flex-1 flex justify-center items-center min-h-[250px]">
           {isLoadingData ? (
             <Box className="flex flex-col items-center gap-4">
-              <Skeleton 
-                variant="circular" 
-                width={200} 
+              <Skeleton
+                variant="circular"
+                width={200}
                 height={200}
                 sx={{ 
                   bgcolor: 'rgba(67, 59, 255, 0.1)',

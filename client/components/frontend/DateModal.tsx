@@ -9,15 +9,16 @@ import {
   Box,
 } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
+import { Moment } from "moment";
 import { buttonStylesFilter } from "@/app/styles/styles";
 
 interface DateFilterModal {
   open: boolean;
   onClose: () => void;
-  onApply: (fromDate: Date | null, toDate: Date | null) => void;
-  initialFromDate?: Date | null;
-  initialToDate?: Date | null;
+  onApply: (fromDate: Moment | null, toDate: Moment | null) => void;
+  initialFromDate?: Moment | null;
+  initialToDate?: Moment | null;
 }
 
 export default function DateFilterModal({
@@ -27,10 +28,9 @@ export default function DateFilterModal({
   initialFromDate = null,
   initialToDate = null,
 }: DateFilterModal) {
-  const [fromDate, setFromDate] = useState<Date | null>(initialFromDate);
-  const [toDate, setToDate] = useState<Date | null>(initialToDate);
+  const [fromDate, setFromDate] = useState<Moment | null>(initialFromDate);
+  const [toDate, setToDate] = useState<Moment | null>(initialToDate);
 
-  
   useEffect(() => {
     if (open) {
       setFromDate(initialFromDate);
@@ -49,7 +49,6 @@ export default function DateFilterModal({
   };
 
   const handleClose = () => {
-    
     setFromDate(initialFromDate);
     setToDate(initialToDate);
     onClose();
@@ -61,7 +60,7 @@ export default function DateFilterModal({
         Custom Date Range
       </DialogTitle>
       <DialogContent className="p-6">
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <LocalizationProvider dateAdapter={AdapterMoment}>
           <Box className="flex flex-col gap-6 mt-4">
             <DatePicker
               label="From Date"

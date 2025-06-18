@@ -7,7 +7,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Eye } from "lucide-react";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
-import moment from "moment";
+import moment, { Moment } from "moment";
 import { useLoading } from "@/app/context/loaderContext";
 import { useRouter } from "next/navigation";
 import DateModal from "@/components/frontend/DateModal";
@@ -37,8 +37,8 @@ export default function AdminForms() {
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [isOutletModalOpen, setIsOutletModalOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{
-    fromDate: Date | null;
-    toDate: Date | null;
+    fromDate: Moment | null;
+    toDate: Moment | null;
   }>({ fromDate: null, toDate: null });
   const [selectedOutlet, setSelectedOutlet] = useState<string | null>(null);
 
@@ -109,11 +109,11 @@ export default function AdminForms() {
   };
 
   
-  const handleApplyDateFilter = (fromDate: Date | null, toDate: Date | null) => {
+  const handleApplyDateFilter = (fromDate: Moment | null, toDate: Moment | null) => {
     if (fromDate && toDate) {
       setDateRange({ 
-        fromDate: moment(fromDate).utc().startOf('day').toDate(),
-        toDate: moment(toDate).utc().endOf('day').toDate()
+        fromDate: fromDate.clone().startOf("day"),
+        toDate: toDate.clone().endOf("day"),
       });
     } else {
       setDateRange({ fromDate, toDate });
