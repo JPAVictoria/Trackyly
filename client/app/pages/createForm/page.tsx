@@ -44,7 +44,7 @@ function CreateForm() {
           setBeer(data.beer || 0);
           setJuice(data.juice || 0);
           setOutlet(data.outlet || "");
-          setTimeIn(moment(data.createdAt).format("MMMM DD, YYYY hh:mm A"));
+          setTimeIn(moment(data.createdAt).format("MMMM DD, YYYY h:mm A"));
         } else {
           const wineParam = searchParams.get("wine");
           const beerParam = searchParams.get("beer");
@@ -57,7 +57,7 @@ function CreateForm() {
           setJuice(juiceParam ? Number(juiceParam) : 0);
           setOutlet(outletParam || "");
           setTimeIn(
-            timeInParam ? timeInParam : moment().format("MMMM DD, YYYY hh:mm A")
+            timeInParam ? timeInParam : moment().format("MMMM DD, YYYY h:mm A")
           );
         }
       } catch (error) {
