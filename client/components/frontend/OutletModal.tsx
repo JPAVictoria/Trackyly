@@ -48,6 +48,8 @@ export default function OutletModal({
 
   const handleClear = () => {
     setSelectedOutlet(null);
+    onSelectOutlet(null);
+    onClose();
   };
 
   
