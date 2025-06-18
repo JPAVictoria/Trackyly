@@ -104,90 +104,95 @@ export default function Register() {
         </h1>
 
         <form onSubmit={handleSubmit} className="pt-5 space-y-5">
-          {[
-            {
-              id: "firstName",
-              label: "First Name",
-              value: firstName,
-              setValue: setFirstName,
-              type: "text",
-            },
-            {
-              id: "lastName",
-              label: "Last Name",
-              value: lastName,
-              setValue: setLastName,
-              type: "text",
-            },
-            {
-              id: "email",
-              label: "Email",
-              value: email,
-              setValue: setEmail,
-              type: "email",
-            },
-            {
-              id: "password",
-              label: "Password",
-              value: password,
-              setValue: setPassword,
-              type: showPassword ? "text" : "password",
-              isPassword: true,
-              showState: showPassword,
-              setShowState: setShowPassword,
-            },
-            {
-              id: "confirmPassword",
-              label: "Confirm Password",
-              value: confirmPassword,
-              setValue: setConfirmPassword,
-              type: showConfirmPassword ? "text" : "password",
-              isPassword: true,
-              showState: showConfirmPassword,
-              setShowState: setShowConfirmPassword,
-            },
-          ].map(
-            ({
-              id,
-              label,
-              value,
-              setValue,
-              type,
-              isPassword,
-              showState,
-              setShowState,
-            }) => (
-              <div key={id} className={isPassword ? "relative" : ""}>
-                <Label htmlFor={id} className="pb-2 text-[#2d2d2d]">
-                  {label}
-                </Label>
-                <Input
-                  type={type}
-                  id={id}
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  disabled={isLoading}
-                  className={`w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 ${
-                    isPassword ? "pr-10" : ""
-                  }`}
-                />
-                {isPassword && (
-                  <div
-                    onClick={
-                      isLoading ? undefined : () => setShowState(!showState)
-                    }
-                    className={`absolute inset-y-10 right-3 flex items-center transition ${
-                      isLoading
-                        ? "cursor-not-allowed text-gray-300"
-                        : "cursor-pointer text-gray-500 hover:text-[#2F27CE]"
-                    }`}
-                  >
-                    {showState ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </div>
-                )}
-              </div>
-            )
-          )}
+          <div>
+            <Label htmlFor="firstName" className="pb-2 text-[#2d2d2d]">
+              First Name
+            </Label>
+            <Input
+              type="text"
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              disabled={isLoading}
+              className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="lastName" className="pb-2 text-[#2d2d2d]">
+              Last Name
+            </Label>
+            <Input
+              type="text"
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              disabled={isLoading}
+              className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="email" className="pb-2 text-[#2d2d2d]">
+              Email
+            </Label>
+            <Input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
+              className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
+            />
+          </div>
+
+          <div className="relative">
+            <Label htmlFor="password" className="pb-2 text-[#2d2d2d]">
+              Password
+            </Label>
+            <Input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
+              className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
+            />
+            <div
+              onClick={isLoading ? undefined : () => setShowPassword(!showPassword)}
+              className={`absolute inset-y-10 right-3 flex items-center transition ${
+                isLoading
+                  ? "cursor-not-allowed text-gray-300"
+                  : "cursor-pointer text-gray-500 hover:text-[#2F27CE]"
+              }`}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </div>
+          </div>
+
+          <div className="relative">
+            <Label htmlFor="confirmPassword" className="pb-2 text-[#2d2d2d]">
+              Confirm Password
+            </Label>
+            <Input
+              type={showConfirmPassword ? "text" : "password"}
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isLoading}
+              className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
+            />
+            <div
+              onClick={isLoading ? undefined : () => setShowConfirmPassword(!showConfirmPassword)}
+              className={`absolute inset-y-10 right-3 flex items-center transition ${
+                isLoading
+                  ? "cursor-not-allowed text-gray-300"
+                  : "cursor-pointer text-gray-500 hover:text-[#2F27CE]"
+              }`}
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </div>
+          </div>
 
           <Button
             type="submit"
