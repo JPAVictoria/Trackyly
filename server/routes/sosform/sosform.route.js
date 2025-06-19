@@ -112,7 +112,7 @@ router.post("/", async (req, res) => {
   try {
     const { outlet, wine, beer, juice, createdAt, merchandiserId } = req.body;
 
-    if (!outlet || !wine || !beer || !juice || !merchandiserId) {
+    if (!outlet || wine === undefined || beer === undefined || juice === undefined || !merchandiserId) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -142,6 +142,10 @@ router.put("/:id", async (req, res) => {
   const { outlet, wine, beer, juice } = req.body;
 
   try {
+    if (!outlet || wine === undefined || beer === undefined || juice === undefined) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
     const updatedForm = await prisma.sOSForm.update({
       where: { id },
       data: {

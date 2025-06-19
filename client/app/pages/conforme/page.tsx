@@ -6,13 +6,13 @@ import { Button } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { useLoading } from "@/app/context/loaderContext";
 import { useSnackbar } from "@/app/context/SnackbarContext";
-import { useAuthStore } from "@/app/stores/useAuthStore"
+import { useAuthStore } from "@/app/stores/useAuthStore";
 import axios from "axios";
 import { buttonStyles } from "@/app/styles/styles";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiUrl } from "@/app/utils/apiUrl";
 import moment from "moment";
-import {formatNumber, formatOutletName} from "@/app/utils/format";
+import { formatNumber, formatOutletName } from "@/app/utils/format";
 
 interface FormData {
   wine: number;
@@ -41,8 +41,8 @@ const parseQueryParams = () => {
       juice: Number(queryParams.get("juice") || 0),
       outlet: queryParams.get("outlet") || "",
       timeIn: queryParams.get("timeIn") || "",
-      merchandiserId: queryParams.get("merchandiserId") || ""
-    }
+      merchandiserId: queryParams.get("merchandiserId") || "",
+    },
   };
 };
 
@@ -53,7 +53,7 @@ export default function Conforme() {
   const { setLoading } = useLoading();
   const { openSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
-  
+
   const { role: userRole, _hasHydrated } = useAuthStore();
 
   const [formData, setFormData] = useState<FormData>({
@@ -62,7 +62,7 @@ export default function Conforme() {
     juice: 0,
     outlet: "",
     timeIn: "",
-    merchandiserId: ""
+    merchandiserId: "",
   });
 
   const [pageState, setPageState] = useState({
@@ -73,13 +73,13 @@ export default function Conforme() {
 
   const [checkboxes, setCheckboxes] = useState([false, false, false, false]);
 
-  const totalBeverages = useMemo(() => 
-    formData.wine + formData.beer + formData.juice, 
+  const totalBeverages = useMemo(
+    () => formData.wine + formData.beer + formData.juice,
     [formData.wine, formData.beer, formData.juice]
   );
 
-  const allCheckboxesChecked = useMemo(() => 
-    checkboxes.every(Boolean), 
+  const allCheckboxesChecked = useMemo(
+    () => checkboxes.every(Boolean),
     [checkboxes]
   );
 
@@ -87,29 +87,29 @@ export default function Conforme() {
     queryKey: ["sosForm", pageState.formId],
     queryFn: async () => {
       if (!pageState.formId) throw new Error("No form ID provided");
-      const response = await axios.get(apiUrl(`/user/sosform/${pageState.formId}`));
+      const response = await axios.get(
+        apiUrl(`/user/sosform/${pageState.formId}`)
+      );
       return response.data;
     },
     enabled: (pageState.isReadOnly || pageState.isEdit) && !!pageState.formId,
   });
 
   useEffect(() => {
-    
     if (!_hasHydrated) return;
 
     setLoading(false);
-    
+
     const params = parseQueryParams();
-    
+
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    
+
     setPageState({
       isEdit: params.isEdit,
       isReadOnly: params.isReadOnly,
       formId: params.id,
     });
 
-    
     if (params.isReadOnly && existingFormData) {
       setFormData({
         wine: existingFormData.wine,
@@ -117,31 +117,35 @@ export default function Conforme() {
         juice: existingFormData.juice,
         outlet: existingFormData.outlet,
         timeIn: moment(existingFormData.createdAt).format("MMM D, YYYY h:mm A"),
-        merchandiserId: existingFormData.merchandiserId
+        merchandiserId: existingFormData.merchandiserId,
       });
       setCheckboxes([true, true, true, true]);
     } else if (!params.isReadOnly) {
       setFormData({
         ...params.formData,
-        merchandiserId: params.formData.merchandiserId || user?.id || ""
+        merchandiserId: params.formData.merchandiserId || user?.id || "",
       });
     }
   }, [existingFormData, setLoading, _hasHydrated]);
 
-  
   const submitFormMutation = useMutation({
-    mutationFn: async (payload: Omit<FormData, 'timeIn'> & { createdAt: string }) => {
-      const endpoint = pageState.isEdit && pageState.formId 
-        ? `/user/sosform/${pageState.formId}` 
-        : "/user/sosform";
-      
+    mutationFn: async (
+      payload: Omit<FormData, "timeIn"> & { createdAt: string }
+    ) => {
+      const endpoint =
+        pageState.isEdit && pageState.formId
+          ? `/user/sosform/${pageState.formId}`
+          : "/user/sosform";
+
       const method = pageState.isEdit ? axios.put : axios.post;
       return method(apiUrl(endpoint), payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sosForms"] });
       openSnackbar(
-        pageState.isEdit ? "Form updated successfully!" : "Form submitted successfully!",
+        pageState.isEdit
+          ? "Form updated successfully!"
+          : "Form submitted successfully!",
         "success"
       );
       router.push("/pages/merchandiserDashboard");
@@ -154,7 +158,9 @@ export default function Conforme() {
 
   const handleCheckboxChange = (index: number) => {
     if (pageState.isReadOnly) return;
-    setCheckboxes(prev => prev.map((checked, i) => i === index ? !checked : checked));
+    setCheckboxes((prev) =>
+      prev.map((checked, i) => (i === index ? !checked : checked))
+    );
   };
 
   const handleGoBack = () => {
@@ -195,9 +201,8 @@ export default function Conforme() {
   };
 
   const handleBackToDashboard = () => {
-    const destination = userRole === "ADMIN" 
-      ? "/pages/forms" 
-      : "/pages/merchandiserDashboard";
+    const destination =
+      userRole === "ADMIN" ? "/pages/forms" : "/pages/merchandiserDashboard";
     router.push(destination);
   };
 
@@ -229,7 +234,9 @@ export default function Conforme() {
         </div>
         <div className="text-center mt-6 mb-5 space-y-4 text-[#2d2d2d]">
           <p className="font-semibold text-sm">Input Details</p>
-          <p className="text-sm">Total Beverages - {formatNumber(totalBeverages)}</p>
+          <p className="text-sm">
+            Total Beverages - {formatNumber(totalBeverages)}
+          </p>
           <p className="text-sm">Wine - {formatNumber(formData.wine)}</p>
           <p className="text-sm">Beer - {formatNumber(formData.beer)}</p>
           <p className="text-sm">Juice - {formatNumber(formData.juice)}</p>
