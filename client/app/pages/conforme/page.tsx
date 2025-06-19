@@ -1,36 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@mui/material";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { useLoading } from "@/app/context/loaderContext";
 import { useSnackbar } from "@/app/context/SnackbarContext";
+import { useAuthStore } from "@/app/stores/useAuthStore"
 import axios from "axios";
 import { buttonStyles } from "@/app/styles/styles";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiUrl } from "@/app/utils/apiUrl";
 import moment from "moment";
+import {formatNumber, formatOutletName} from "@/app/utils/format";
 
 interface FormData {
-  wine: string | null;
-  beer: string | null;
-  juice: string | null;
-  outlet: string | null;
-  total: string | null;
-  timeIn: string | null;
-  merchandiserId: string | null;
-}
-
-interface SOSFormResponse {
-  id: string;
   wine: number;
   beer: number;
   juice: number;
   outlet: string;
-  createdAt: string;
+  timeIn: string;
   merchandiserId: string;
 }
+
+interface SOSFormResponse extends FormData {
+  id: string;
+  createdAt: string;
+}
+
+const parseQueryParams = () => {
+  const queryParams = new URLSearchParams(window.location.search);
+  return {
+    id: queryParams.get("id"),
+    isReadOnly: queryParams.get("readonly") === "true",
+    isEdit: queryParams.get("edit") === "true",
+    fromConforme: queryParams.get("fromConforme") === "true",
+    formData: {
+      wine: Number(queryParams.get("wine") || 0),
+      beer: Number(queryParams.get("beer") || 0),
+      juice: Number(queryParams.get("juice") || 0),
+      outlet: queryParams.get("outlet") || "",
+      timeIn: queryParams.get("timeIn") || "",
+      merchandiserId: queryParams.get("merchandiserId") || ""
+    }
+  };
+};
 
 export default function Conforme() {
   useRoleGuard(["MERCHANDISER", "ADMIN"]);
@@ -39,78 +53,95 @@ export default function Conforme() {
   const { setLoading } = useLoading();
   const { openSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
+  
+  const { role: userRole, _hasHydrated } = useAuthStore();
 
   const [formData, setFormData] = useState<FormData>({
-    wine: null,
-    beer: null,
-    juice: null,
-    outlet: null,
-    total: null,
-    timeIn: null,
-    merchandiserId: null,
+    wine: 0,
+    beer: 0,
+    juice: 0,
+    outlet: "",
+    timeIn: "",
+    merchandiserId: ""
   });
 
-  const [isEdit, setIsEdit] = useState(false);
-  const [isReadOnly, setIsReadOnly] = useState(false);
-  const [formId, setFormId] = useState<string | null>(null);
+  const [pageState, setPageState] = useState({
+    isEdit: false,
+    isReadOnly: false,
+    formId: null as string | null,
+  });
+
   const [checkboxes, setCheckboxes] = useState([false, false, false, false]);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
-  const formatOutletName = (outlet: string | null): string => {
-    if (!outlet) return "";
-    return outlet.replace(/_/g, " ").toUpperCase();
-  };
+  const totalBeverages = useMemo(() => 
+    formData.wine + formData.beer + formData.juice, 
+    [formData.wine, formData.beer, formData.juice]
+  );
 
-  const { data: readonlyFormData } = useQuery<SOSFormResponse, Error>({
-    queryKey: ["sosForm", formId],
+  const allCheckboxesChecked = useMemo(() => 
+    checkboxes.every(Boolean), 
+    [checkboxes]
+  );
+
+  const { data: existingFormData } = useQuery<SOSFormResponse, Error>({
+    queryKey: ["sosForm", pageState.formId],
     queryFn: async () => {
-      if (!formId) throw new Error("No form ID provided");
-      const response = await axios.get(apiUrl(`/user/sosform/${formId}`));
+      if (!pageState.formId) throw new Error("No form ID provided");
+      const response = await axios.get(apiUrl(`/user/sosform/${pageState.formId}`));
       return response.data;
     },
-    enabled: isReadOnly && !!formId,
+    enabled: (pageState.isReadOnly || pageState.isEdit) && !!pageState.formId,
   });
 
   useEffect(() => {
-    setLoading(false);
-    if (readonlyFormData && !isEdit) {
-      setFormData({
-        wine: readonlyFormData.wine.toString(),
-        beer: readonlyFormData.beer.toString(),
-        juice: readonlyFormData.juice.toString(),
-        outlet: readonlyFormData.outlet,
-        total: (
-          readonlyFormData.wine +
-          readonlyFormData.beer +
-          readonlyFormData.juice
-        ).toString(),
-        timeIn: moment(readonlyFormData.createdAt).format("MMM D, YYYY h:mm A"),
+    
+    if (!_hasHydrated) return;
 
-        merchandiserId: readonlyFormData.merchandiserId,
+    setLoading(false);
+    
+    const params = parseQueryParams();
+    
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    setPageState({
+      isEdit: params.isEdit,
+      isReadOnly: params.isReadOnly,
+      formId: params.id,
+    });
+
+    
+    if (params.isReadOnly && existingFormData) {
+      setFormData({
+        wine: existingFormData.wine,
+        beer: existingFormData.beer,
+        juice: existingFormData.juice,
+        outlet: existingFormData.outlet,
+        timeIn: moment(existingFormData.createdAt).format("MMM D, YYYY h:mm A"),
+        merchandiserId: existingFormData.merchandiserId
       });
       setCheckboxes([true, true, true, true]);
+    } else if (!params.isReadOnly) {
+      setFormData({
+        ...params.formData,
+        merchandiserId: params.formData.merchandiserId || user?.id || ""
+      });
     }
-  }, [readonlyFormData, isEdit, setLoading]);
+  }, [existingFormData, setLoading, _hasHydrated]);
 
+  
   const submitFormMutation = useMutation({
-    mutationFn: async (payload: {
-      merchandiserId: string | null;
-      outlet: string | null;
-      wine: number;
-      beer: number;
-      juice: number;
-      createdAt: string;
-    }) => {
-      if (isEdit && formId) {
-        return axios.put(apiUrl(`/user/sosform/${formId}`), payload);
-      } else {
-        return axios.post(apiUrl("/user/sosform"), payload);
-      }
+    mutationFn: async (payload: Omit<FormData, 'timeIn'> & { createdAt: string }) => {
+      const endpoint = pageState.isEdit && pageState.formId 
+        ? `/user/sosform/${pageState.formId}` 
+        : "/user/sosform";
+      
+      const method = pageState.isEdit ? axios.put : axios.post;
+      return method(apiUrl(endpoint), payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sosForms"] });
       openSnackbar(
-        isEdit ? "Form updated successfully!" : "Form submitted successfully!",
+        pageState.isEdit ? "Form updated successfully!" : "Form submitted successfully!",
         "success"
       );
       router.push("/pages/merchandiserDashboard");
@@ -121,60 +152,25 @@ export default function Conforme() {
     },
   });
 
-  useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const id = queryParams.get("id");
-    const readonly = queryParams.get("readonly") === "true";
-
-    setIsReadOnly(readonly);
-    setIsEdit(queryParams.get("edit") === "true");
-    setFormId(id);
-
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const merchandiserId = user?.id;
-    setUserRole(user?.role || null);
-
-    if (
-      !readonly ||
-      (queryParams.get("fromConforme") === "true" &&
-        queryParams.get("edit") === "true")
-    ) {
-      const data: FormData = {
-        wine: queryParams.get("wine"),
-        beer: queryParams.get("beer"),
-        juice: queryParams.get("juice"),
-        outlet: queryParams.get("outlet"),
-        total: queryParams.get("total"),
-        timeIn: queryParams.get("timeIn"),
-        merchandiserId,
-      };
-      setFormData(data);
-    }
-  }, [router]);
-
   const handleCheckboxChange = (index: number) => {
-    if (isReadOnly) return;
-    const updated = [...checkboxes];
-    updated[index] = !updated[index];
-    setCheckboxes(updated);
+    if (pageState.isReadOnly) return;
+    setCheckboxes(prev => prev.map((checked, i) => i === index ? !checked : checked));
   };
-
-  const allCheckboxesChecked = checkboxes.every((checkbox) => checkbox);
 
   const handleGoBack = () => {
     const queryParams = new URLSearchParams({
-      wine: formData.wine || "",
-      beer: formData.beer || "",
-      juice: formData.juice || "",
-      outlet: formData.outlet || "",
-      total: formData.total || "",
-      timeIn: formData.timeIn || "",
+      wine: formData.wine.toString(),
+      beer: formData.beer.toString(),
+      juice: formData.juice.toString(),
+      outlet: formData.outlet,
+      total: totalBeverages.toString(),
+      timeIn: formData.timeIn,
       fromConforme: "true",
     });
 
-    if (isEdit && formId) {
+    if (pageState.isEdit && pageState.formId) {
       queryParams.append("edit", "true");
-      queryParams.append("id", formId);
+      queryParams.append("id", pageState.formId);
     }
 
     router.push(`/pages/createForm?${queryParams.toString()}`);
@@ -186,9 +182,9 @@ export default function Conforme() {
       const payload = {
         merchandiserId: formData.merchandiserId,
         outlet: formData.outlet,
-        wine: Number(formData.wine),
-        beer: Number(formData.beer),
-        juice: Number(formData.juice),
+        wine: formData.wine,
+        beer: formData.beer,
+        juice: formData.juice,
         createdAt: moment().toISOString(),
       };
 
@@ -199,12 +195,18 @@ export default function Conforme() {
   };
 
   const handleBackToDashboard = () => {
-    if (userRole === "ADMIN") {
-      router.push("/pages/forms");
-    } else {
-      router.push("/pages/merchandiserDashboard");
-    }
+    const destination = userRole === "ADMIN" 
+      ? "/pages/forms" 
+      : "/pages/merchandiserDashboard";
+    router.push(destination);
   };
+
+  const checkboxTexts = [
+    "All information provided in this form is complete, true, and correct to the best of my knowledge",
+    "All reimbursement regarding transportation and other valid expenses are accurate",
+    "I understand that any false information provided might lead to the disapproval of any related reimbursement and that it may be grounds for demerit, suspension, or even termination of employment",
+    "All information provided in this form was reviewed before submission.",
+  ];
 
   return (
     <div className="min-h-screen bg-[#f9f9fb] flex flex-col items-center justify-center p-6">
@@ -225,50 +227,24 @@ export default function Conforme() {
             </p>
           </div>
         </div>
-
         <div className="text-center mt-6 mb-5 space-y-4 text-[#2d2d2d]">
           <p className="font-semibold text-sm">Input Details</p>
-          <p className="text-sm">
-            Total Beverages -{" "}
-            {formData.total && !isNaN(Number(formData.total))
-              ? Number(formData.total).toLocaleString()
-              : "0"}
-          </p>
-          <p className="text-sm">
-            Wine -{" "}
-            {formData.wine && !isNaN(Number(formData.wine))
-              ? Number(formData.wine).toLocaleString()
-              : "0"}
-          </p>
-          <p className="text-sm">
-            Beer -{" "}
-            {formData.beer && !isNaN(Number(formData.beer))
-              ? Number(formData.beer).toLocaleString()
-              : "0"}
-          </p>
-          <p className="text-sm">
-            Juice -{" "}
-            {formData.juice && !isNaN(Number(formData.juice))
-              ? Number(formData.juice).toLocaleString()
-              : "0"}
-          </p>
+          <p className="text-sm">Total Beverages - {formatNumber(totalBeverages)}</p>
+          <p className="text-sm">Wine - {formatNumber(formData.wine)}</p>
+          <p className="text-sm">Beer - {formatNumber(formData.beer)}</p>
+          <p className="text-sm">Juice - {formatNumber(formData.juice)}</p>
         </div>
 
         <hr className="my-4 opacity-20" />
 
         <div className="space-y-4 text-[12px]">
-          {[
-            "All information provided in this form is complete, true, and correct to the best of my knowledge",
-            "All reimbursement regarding transportation and other valid expenses are accurate",
-            "I understand that any false information provided might lead to the disapproval of any related reimbursement and that it may be grounds for demerit, suspension, or even termination of employment",
-            "All information provided in this form was reviewed before submission.",
-          ].map((text, idx) => (
+          {checkboxTexts.map((text, idx) => (
             <div key={idx} className="flex items-start space-x-2">
               <input
                 type="checkbox"
                 className="mt-1 cursor-pointer"
                 checked={checkboxes[idx]}
-                disabled={isReadOnly}
+                disabled={pageState.isReadOnly}
                 onChange={() => handleCheckboxChange(idx)}
               />
               <label className="text-[#2d2d2d]">{text}</label>
@@ -276,7 +252,7 @@ export default function Conforme() {
           ))}
         </div>
 
-        {!isReadOnly && (
+        {!pageState.isReadOnly && (
           <div className="flex justify-between items-center pt-6">
             <Button sx={buttonStyles} variant="outlined" onClick={handleGoBack}>
               ← Go back
@@ -289,14 +265,14 @@ export default function Conforme() {
             >
               {submitFormMutation.isPending
                 ? "Processing..."
-                : isEdit
+                : pageState.isEdit
                 ? "Update"
                 : "Submit"}
             </Button>
           </div>
         )}
 
-        {isReadOnly && (
+        {pageState.isReadOnly && (
           <div className="flex justify-end pt-6">
             <Button
               sx={buttonStyles}
