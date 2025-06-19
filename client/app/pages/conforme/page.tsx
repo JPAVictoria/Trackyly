@@ -116,7 +116,7 @@ export default function Conforme() {
         beer: existingFormData.beer,
         juice: existingFormData.juice,
         outlet: existingFormData.outlet,
-        timeIn: moment(existingFormData.createdAt).format("MMM D, YYYY h:mm A"),
+        timeIn: moment(existingFormData.createdAt).format("MMMM D, YYYY h:mm A"),
         merchandiserId: existingFormData.merchandiserId,
       });
       setCheckboxes([true, true, true, true]);
