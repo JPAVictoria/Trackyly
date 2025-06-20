@@ -115,12 +115,12 @@ export default function AnalyticsBlock() {
 
   const valueFormatter = (slice: PieValueType) => {
     const data = getPieChartData().find((d) => d.label === slice.label);
-    if (!data) return `${slice.value}`;
+    if (!data) return `${slice.value.toLocaleString()}`;
 
     if (filter.type === "Outlet") {
-      return `${slice.label}: ${slice.value}`;
+      return `${slice.label}: ${slice.value.toLocaleString()}`;
     }
-    return `${slice.label}\nWine: ${data.wine}\nBeer: ${data.beer}\nJuice: ${data.juice}`;
+    return `${slice.label}\nWine: ${data.wine.toLocaleString()}\nBeer: ${data.beer.toLocaleString()}\nJuice: ${data.juice.toLocaleString()}`;
   };
 
   const getNoDataMessage = () => {
