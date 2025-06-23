@@ -83,7 +83,7 @@ function ChangePassword() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-4 max-[368px]:px-3">
       <AnimatedGridPattern
         numSquares={30}
         maxOpacity={0.3}
@@ -93,18 +93,18 @@ function ChangePassword() {
           "absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
         )}
       />
-      <h1 className="text-[18px] mb-30 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
+      <h1 className="text-[18px] mb-30 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7] max-[368px]:text-[16px] max-[368px]:mb-20">
         Trackyly
       </h1>
 
-      <div className="grid w-full max-w-sm items-center text-center mb-20">
-        <h1 className="font-bold text-[32px] text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
+      <div className="grid w-full max-w-sm items-center text-center mb-20 max-[368px]:max-w-full max-[368px]:mb-12">
+        <h1 className="font-bold text-[32px] text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7] max-[368px]:text-[24px] max-[368px]:leading-tight">
           Change your password
         </h1>
 
-        <form onSubmit={handleSubmit} className="pt-5">
-          <div className="relative pt-5">
-            <Label htmlFor="new-password" className="pb-2 text-[#2d2d2d]">
+        <form onSubmit={handleSubmit} className="pt-5 max-[368px]:pt-4">
+          <div className="relative pt-5 max-[368px]:pt-4">
+            <Label htmlFor="new-password" className="pb-2 text-[#2d2d2d] max-[368px]:text-sm">
               New Password
             </Label>
             <Input
@@ -114,20 +114,20 @@ function ChangePassword() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               disabled={loading}
-              className="pr-10 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="pr-10 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed max-[368px]:text-sm max-[368px]:h-10"
             />
             <div
               onClick={loading ? undefined : () => setShowNew(!showNew)}
-              className={`absolute top-15 right-3 -translate-y-1/2 flex items-center text-gray-500 transition ${
+              className={`absolute top-15 right-3 -translate-y-1/2 flex items-center text-gray-500 transition max-[368px]:top-14 ${
                 loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:text-[#2F27CE]'
               }`}
             >
-              {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showNew ? <EyeOff size={18} className="max-[368px]:w-4 max-[368px]:h-4" /> : <Eye size={18} className="max-[368px]:w-4 max-[368px]:h-4" />}
             </div>
           </div>
 
-          <div className="relative pt-5">
-            <Label htmlFor="confirm-password" className="pb-2 text-[#2d2d2d]">
+          <div className="relative pt-5 max-[368px]:pt-4">
+            <Label htmlFor="confirm-password" className="pb-2 text-[#2d2d2d] max-[368px]:text-sm">
               Confirm New Password
             </Label>
             <Input
@@ -137,35 +137,35 @@ function ChangePassword() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}
-              className="pr-10 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="pr-10 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed max-[368px]:text-sm max-[368px]:h-10"
             />
             <div
               onClick={loading ? undefined : () => setShowConfirmPassword(!showConfirmPassword)}
-              className={`absolute top-15 right-3 -translate-y-1/2 flex items-center text-gray-500 transition ${
+              className={`absolute top-15 right-3 -translate-y-1/2 flex items-center text-gray-500 transition max-[368px]:top-14 ${
                 loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:text-[#2F27CE]'
               }`}
             >
-              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showConfirmPassword ? <EyeOff size={18} className="max-[368px]:w-4 max-[368px]:h-4" /> : <Eye size={18} className="max-[368px]:w-4 max-[368px]:h-4" />}
             </div>
           </div>
 
-          <div className="pt-5">
+          <div className="pt-5 max-[368px]:pt-4">
             <Button
               type="submit"
               disabled={loading}
-              className="w-full text-white py-5 px-4 rounded-md transition duration-200 bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#2F27CE]"
+              className="w-full text-white py-5 px-4 rounded-md transition duration-200 bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#2F27CE] max-[368px]:py-3 max-[368px]:text-sm"
             >
               {loading ? "Changing..." : "Submit"}
             </Button>
           </div>
         </form>
 
-        <div className="pt-5">
+        <div className="pt-5 max-[368px]:pt-4">
           <Link href="/pages/login">
             <Button 
               variant="link" 
               disabled={loading}
-              className="cursor-pointer pt-3 text-[#2d2d2d] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cursor-pointer pt-3 text-[#2d2d2d] disabled:opacity-50 disabled:cursor-not-allowed max-[368px]:pt-2 max-[368px]:text-sm"
             >
               Go back to login
             </Button>
