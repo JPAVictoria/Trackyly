@@ -84,7 +84,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background max-[480px]:px-4">
       <AnimatedGridPattern
         numSquares={30}
         maxOpacity={0.3}
@@ -95,18 +95,18 @@ export default function Login() {
         )}
       />
 
-      <h1 className="text-[18px] mb-30 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
+      <h1 className="text-[18px] max-[480px]:text-base mb-30 max-[480px]:mb-6 font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
         Trackyly
       </h1>
 
-      <div className="grid w-full max-w-sm items-center text-center mb-20">
-        <h1 className="font-bold text-[32px] text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
+      <div className="grid w-full max-w-sm max-[480px]:max-w-[320px] items-center text-center mb-20 max-[480px]:mb-0 max-[480px]:space-y-6">
+        <h1 className="font-bold text-[32px] max-[480px]:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-[#2F27CE] via-[#8681E7] to-[#8681E7]">
           Welcome back
         </h1>
 
-        <form onSubmit={handleLogin} className="pt-5">
-          <div>
-            <Label htmlFor="email" className="pb-2 text-[#2d2d2d]">
+        <form onSubmit={handleLogin} className="pt-5 max-[480px]:pt-0 max-[480px]:space-y-5">
+          <div className="max-[480px]:space-y-2">
+            <Label htmlFor="email" className="pb-2 max-[480px]:pb-0 max-[480px]:block max-[480px]:text-left text-[#2d2d2d]">
               Email
             </Label>
             <Input
@@ -116,12 +116,12 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
-              className="focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
+              className="max-[480px]:h-11 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300"
             />
           </div>
 
-          <div className="pt-5 relative">
-            <Label htmlFor="password" className="pb-2 text-[#2d2d2d]">
+          <div className="pt-5 max-[480px]:pt-0 max-[480px]:space-y-2 relative">
+            <Label htmlFor="password" className="pb-2 max-[480px]:pb-0 max-[480px]:block max-[480px]:text-left text-[#2d2d2d]">
               Password
             </Label>
             <Input
@@ -131,13 +131,13 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
-              className="w-full focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
+              className="w-full max-[480px]:h-11 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 pr-10"
             />
             <div
               onClick={
                 isLoading ? undefined : () => setShowPassword(!showPassword)
               }
-              className={`absolute inset-y-15 right-3 flex items-center transition ${
+              className={`absolute inset-y-15 max-[480px]:top-1/2 max-[480px]:-translate-y-1/1 max-[480px]:inset-y-auto right-3 flex items-center transition ${
                 isLoading
                   ? "cursor-not-allowed text-gray-300"
                   : "cursor-pointer text-gray-500 hover:text-[#2F27CE]"
@@ -159,11 +159,11 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="pt-5">
+          <div className="pt-5 max-[480px]:pt-0">
             <Button
               type="submit"
               disabled={isLoading}
-              className={`w-full text-white py-5 px-4 rounded-md transition duration-200 ${
+              className={`w-full text-white py-5 px-4 max-[480px]:h-12 max-[480px]:py-0 rounded-md transition duration-200 ${
                 isLoading
                   ? "bg-[#A5A8F0] cursor-not-allowed"
                   : "bg-[#2F27CE] hover:bg-[#433BFF] cursor-pointer"
@@ -173,14 +173,14 @@ export default function Login() {
             </Button>
           </div>
 
-          <div className="pt-8">
+          <div className="pt-8 max-[480px]:pt-4 max-[480px]:space-y-2">
             <p className="font-light text-sm text-[#2d2d2d]">
               Don&apos;t have an account yet?
             </p>
             <Link href="/pages/register">
               <Button
                 variant="link"
-                className="cursor-pointer pt-3 text-[#2d2d2d]"
+                className="cursor-pointer pt-3 max-[480px]:pt-0 max-[480px]:h-auto max-[480px]:p-0 text-[#2d2d2d]"
                 disabled={isLoading}
               >
                 Get Started here
