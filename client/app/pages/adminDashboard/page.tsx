@@ -8,30 +8,36 @@ import Navbar from "@/components/frontend/Navbar";
 import { useLoading } from "@/app/context/loaderContext";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 
-
 export default function Dashboard() {
   const { setLoading } = useLoading();
   useRoleGuard(["ADMIN"]);
-  
-  
+
   useEffect(() => {
     setLoading(false);
   }, [setLoading]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 relative">
-      <div className="flex flex-col items-center -mt-20">
-        <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-20">
+      <div className="flex flex-col items-center  md:-mt-20 mt-8">
+        <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-8 md:mb-20">
           Share of Shelf Dashboard
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 max-w-4xl w-full">
-          <div className="md:col-span-2 flex justify-center">
+        
+        {/* Layout for desktop (768px and above) */}
+        <div className="hidden md:grid grid-cols-3 max-w-4xl w-full">
+          <div className="col-span-2 flex justify-center">
             <AnalyticsBlock />
           </div>
           <div className="flex flex-col gap-4">
             <NameBlock />
             <StatsOverViewBlock />
           </div>
+        </div>
+
+        <div className="flex md:hidden flex-col gap-4 w-full max-w-4xl">
+          <NameBlock />
+          <StatsOverViewBlock />
+          <AnalyticsBlock />
         </div>
       </div>
 
