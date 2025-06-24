@@ -220,7 +220,7 @@ export default function Conforme() {
       </h1>
 
       <div className="rounded-sm border border-gray-200 shadow-sm bg-white w-full max-w-2xl p-10 space-y-4">
-        <div className="flex justify-between items-center text-sm font-medium mb-7">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-sm font-medium mb-7 space-y-4 sm:space-y-0">
           <div className="text-center">
             <p className="text-[#2d2d2d] font-semibold mb-2">Actual Time-in</p>
             <p className="text-[#2d2d2d] font-normal">{formData.timeIn}</p>
