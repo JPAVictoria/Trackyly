@@ -15,6 +15,10 @@ router.get("/", async (req, res) => {
         role: true,
         createdAt: true,
       },
+
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
 
     const formattedUsers = users.map(user => ({

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Navbar from "@/components/frontend/Navbar";
-import { Box, Chip } from "@mui/material";
+import { Box, Chip, useMediaQuery, useTheme } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import axios from "axios";
@@ -90,8 +90,10 @@ const useSoftDeleteUser = () => {
 };
 
 export default function UserRoles() {
-
   useRoleGuard(["ADMIN"]);
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const { data: users = [], isLoading } = useUsers();
   const toggleRole = useToggleRole();
@@ -99,13 +101,12 @@ export default function UserRoles() {
 
   const [currentUser, setCurrentUser] = React.useState<{ email?: string }>({});
 
-React.useEffect(() => {
-  const userData = localStorage.getItem("user");
-  if (userData) {
-    setCurrentUser(JSON.parse(userData));
-  }
-}, []);
-
+  React.useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setCurrentUser(JSON.parse(userData));
+    }
+  }, []);
 
   const [paginationModel, setPaginationModel] = React.useState({
     pageSize: 5,
@@ -190,6 +191,71 @@ React.useEffect(() => {
       },
     },
   ];
+
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFF]">
+        <Navbar />
+        <div className="p-4">
+          <h1 className="text-xl font-bold text-[#2F27CE] text-center mb-6 mt-20">
+            User Roles
+          </h1>
+          
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-lg p-4 shadow-sm animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {users.map((user) => (
+                <div key={user.id} className="bg-white rounded-lg p-4 shadow-sm">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 text-sm truncate">
+                        {user.email}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {user.createdAt}
+                      </p>
+                    </div>
+                    <Chip
+                      label={user.role === "ADMIN" ? "Admin" : "Merchandiser"}
+                      size="small"
+                      sx={{
+                        backgroundColor: user.role === "ADMIN" ? "#E8F5E9" : "#FFF8E1",
+                        color: user.role === "ADMIN" ? "#4CAF50" : "#FBC02D",
+                        fontWeight: 500,
+                        fontSize: "0.7rem",
+                        ml: 2,
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="mt-5">
+                    <UserActions
+                      user={user}
+                      currentUserEmail={currentUser.email}
+                      onRoleToggle={async (id, newRole) => {
+                        await toggleRole.mutateAsync({ id, role: newRole });
+                      }}
+                      onDelete={async (id) => {
+                        await softDeleteUser.mutateAsync(id);
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center">
