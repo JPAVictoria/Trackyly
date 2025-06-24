@@ -34,7 +34,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="flex md:hidden flex-col gap-4 w-full max-w-4xl">
+        <div className="flex md:hidden flex-col gap-4 w-full max-w-4xl mb-10">
           <NameBlock />
           <StatsOverViewBlock />
           <AnalyticsBlock />

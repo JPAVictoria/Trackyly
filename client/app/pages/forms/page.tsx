@@ -171,7 +171,7 @@ export default function AdminForms() {
       <Navbar />
       <div className="flex flex-col items-center justify-center p-10 w-full text-center">
         <h1 className="text-[24px] font-bold text-[#2F27CE] text-center mb-10">
-          User Roles and Permissions
+          Overall SOS Forms
         </h1>
 
         <Box sx={{ width: "80%", maxWidth: "90vw", display: "flex", flexDirection: "column", alignItems: "flex-end", marginBottom: "8px" }}>
