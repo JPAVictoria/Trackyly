@@ -231,7 +231,7 @@ export default function MerchandiserDashboard() {
           isMobile ? "p-4" : "p-10"
         }`}
       >
-        <div className={`mb-6 w-full ${isMobile ? "max-w-sm" : "max-w-md"}`}>
+        <div className={`mb-6 w-full ${isMobile ? "max-w-sm mt-20" : "max-w-md"}`}>
           <NameBlock />
         </div>
 

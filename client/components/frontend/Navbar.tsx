@@ -176,7 +176,7 @@ export default function Navbar() {
         <div className="bg-white shadow-lg border-b border-gray-200">
           <div className="flex items-center justify-between px-4 py-3">
             <h1 className="text-lg font-semibold text-[#2F27CE]">
-              Share of Shelf
+              Trackyly
             </h1>
             <button
               onClick={() => setIsOpen(!isOpen)}

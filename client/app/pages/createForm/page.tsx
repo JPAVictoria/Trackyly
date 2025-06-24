@@ -2,9 +2,14 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { Input } from "@/components/ui/input";
-import {Select, SelectTrigger, SelectValue, SelectContent, SelectItem,} from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import Navbar from "@/components/frontend/Navbar";
 import { Button } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
@@ -31,7 +36,8 @@ const parseQueryParams = (searchParams: URLSearchParams) => {
       beer: Number(searchParams.get("beer") || 0),
       juice: Number(searchParams.get("juice") || 0),
       outlet: searchParams.get("outlet") || "",
-      timeIn: searchParams.get("timeIn") || moment().format("MMMM DD, YYYY h:mm A"),
+      timeIn:
+        searchParams.get("timeIn") || moment().format("MMMM DD, YYYY h:mm A"),
     },
   };
 };
@@ -67,9 +73,12 @@ function CreateForm() {
     const initializeForm = async () => {
       try {
         if (params.isEdit && !params.fromConforme && params.formId) {
-          const { data } = await axios.get(apiUrl(`/user/sosform/${params.formId}`), {
-            withCredentials: true,
-          });
+          const { data } = await axios.get(
+            apiUrl(`/user/sosform/${params.formId}`),
+            {
+              withCredentials: true,
+            }
+          );
 
           setFormData({
             wine: data.wine || 0,
@@ -133,14 +142,16 @@ function CreateForm() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f9f9fc] px-4 sm:px-4 py-10">
-      <Navbar />
       <h2 className="text-lg sm:text-xl font-bold text-[#2F27CE] mb-6 sm:mb-10 text-center px-2">
         {pageState.isEdit ? "Update SOS Form" : "Create SOS Form"}
       </h2>
 
       <div className="w-full max-w-xl rounded-sm border border-gray-200 shadow-sm bg-white p-4 sm:p-8 space-y-4 sm:space-y-6">
         <div>
-          <Label htmlFor="time-in" className="text-[#2d2d2d] mb-2 font-medium text-sm sm:text-base">
+          <Label
+            htmlFor="time-in"
+            className="text-[#2d2d2d] mb-2 font-medium text-sm sm:text-base"
+          >
             Actual Time-in
           </Label>
           <Input
@@ -153,10 +164,16 @@ function CreateForm() {
         </div>
 
         <div>
-          <Label htmlFor="outlet" className="text-[#2d2d2d] mb-2 font-medium text-sm sm:text-base">
+          <Label
+            htmlFor="outlet"
+            className="text-[#2d2d2d] mb-2 font-medium text-sm sm:text-base"
+          >
             Outlet
           </Label>
-          <Select value={formData.outlet} onValueChange={(val) => handleInputChange("outlet", val)}>
+          <Select
+            value={formData.outlet}
+            onValueChange={(val) => handleInputChange("outlet", val)}
+          >
             <SelectTrigger
               id="outlet"
               className="mt-1 w-full cursor-pointer focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 transition-all duration-300 data-[state=open]:ring-1 data-[state=open]:ring-[#2F27CE] text-sm sm:text-base"
@@ -165,7 +182,11 @@ function CreateForm() {
             </SelectTrigger>
             <SelectContent className="bg-white border border-[#2d2d2d]/50 shadow-md">
               {outlets.map((outletVal) => (
-                <SelectItem key={outletVal} value={outletVal} className="cursor-pointer hover:bg-[#2F27CE]/10 text-sm sm:text-base">
+                <SelectItem
+                  key={outletVal}
+                  value={outletVal}
+                  className="cursor-pointer hover:bg-[#2F27CE]/10 text-sm sm:text-base"
+                >
                   {outletVal.replace("_", " ")}
                 </SelectItem>
               ))}
@@ -179,7 +200,9 @@ function CreateForm() {
           </p>
 
           <div className="col-span-3 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4">
-            <Label className="w-full sm:w-32 text-[#2d2d2d] font-semibold text-sm sm:text-base">Total Beverages</Label>
+            <Label className="w-full sm:w-32 text-[#2d2d2d] font-semibold text-sm sm:text-base">
+              Total Beverages
+            </Label>
             <Input
               type="text"
               value={totalBeverages.toLocaleString()}
@@ -189,14 +212,20 @@ function CreateForm() {
           </div>
 
           {["wine", "beer", "juice"].map((type) => (
-            <div key={type} className="col-span-3 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4">
-              <Label className="w-full sm:w-32 text-[#2d2d2d] font-normal text-sm sm:text-base">{type.charAt(0).toUpperCase() + type.slice(1)}</Label>
+            <div
+              key={type}
+              className="col-span-3 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-2 sm:gap-4"
+            >
+              <Label className="w-full sm:w-32 text-[#2d2d2d] font-normal text-sm sm:text-base">
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Label>
               <Input
                 type="text"
                 value={formData[type as keyof FormData].toLocaleString()}
                 onChange={(e) => {
                   const num = Number(e.target.value.replace(/,/g, ""));
-                  if (!isNaN(num)) handleInputChange(type as keyof FormData, num);
+                  if (!isNaN(num))
+                    handleInputChange(type as keyof FormData, num);
                 }}
                 className="w-full sm:flex-1 sm:max-w-sm transition-all duration-300 focus:outline-none focus:border-[#2F27CE] focus:shadow-sm focus:shadow-[#2F27CE]/30 text-center text-sm sm:text-base"
               />
@@ -204,7 +233,15 @@ function CreateForm() {
           ))}
         </div>
 
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-between pt-4">
+          <Button
+            sx={buttonStyles}
+            variant="outlined"
+            onClick={() => router.push("/pages/merchandiserDashboard")}
+          >
+            ← Back to Dashboard
+          </Button>
+
           <Button
             sx={buttonStyles}
             variant="outlined"

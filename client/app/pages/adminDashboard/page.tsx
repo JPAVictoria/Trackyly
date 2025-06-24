@@ -23,7 +23,6 @@ export default function Dashboard() {
           Share of Shelf Dashboard
         </h1>
         
-        {/* Layout for desktop (768px and above) */}
         <div className="hidden md:grid grid-cols-3 max-w-4xl w-full">
           <div className="col-span-2 flex justify-center">
             <AnalyticsBlock />
