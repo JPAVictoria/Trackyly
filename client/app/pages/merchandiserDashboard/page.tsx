@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -7,12 +7,13 @@ import moment from "moment";
 import Navbar from "@/components/frontend/Navbar";
 import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Pencil, Eye, Trash2 } from "lucide-react";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Pencil, Eye, Trash2, Menu } from "lucide-react";
+import {Box, Button, Stack, Typography, Card, CardContent, CardActions, useMediaQuery, useTheme, Collapse, IconButton,} from "@mui/material";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles";
 import { apiUrl } from "@/app/utils/apiUrl";
+import { formatOutletName } from "@/app/utils/format";
 
 type SOSForm = {
   id: string;
@@ -29,15 +30,109 @@ const getMerchandiserId = () => {
   return user.id || null;
 };
 
-const formatOutletName = (outlet: string) => {
-  return outlet
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+const MobileFormCard = ({form,onEdit,onRead,onDelete,}: {
+  form: SOSForm;
+  onEdit: (id: string) => void;
+  onRead: (id: string) => void;
+  onDelete: (id: string) => void;
+}) => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <Card sx={{ mb: 2, boxShadow: 2 }}>
+      <CardContent sx={{ pb: 1 }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
+            {formatOutletName(form.outlet)}
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={() => setExpanded(!expanded)}
+            sx={{
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s",
+            }}
+          >
+            <Menu size={18} />
+          </IconButton>
+        </Stack>
+
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {moment(form.createdAt).format("MMMM D, YYYY h:mm A")}
+        </Typography>
+
+        <Collapse in={expanded}>
+          <Stack direction="row" spacing={3} sx={{ mt: 2 }}>
+            <Box textAlign="center">
+              <Typography variant="body2" color="text.secondary">
+                Wine
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                {form.wine}
+              </Typography>
+            </Box>
+            <Box textAlign="center">
+              <Typography variant="body2" color="text.secondary">
+                Beer
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                {form.beer}
+              </Typography>
+            </Box>
+            <Box textAlign="center">
+              <Typography variant="body2" color="text.secondary">
+                Juice
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                {form.juice}
+              </Typography>
+            </Box>
+          </Stack>
+        </Collapse>
+      </CardContent>
+
+      <CardActions sx={{ justifyContent: "space-around", pb: 2 }}>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<Pencil size={16} />}
+          onClick={() => onEdit(form.id)}
+          sx={{ minWidth: 80 }}
+        >
+          Edit
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<Eye size={16} />}
+          onClick={() => onRead(form.id)}
+          sx={{ minWidth: 80 }}
+        >
+          Read
+        </Button>
+        <Button
+          size="small"
+          variant="outlined"
+          color="error"
+          startIcon={<Trash2 size={16} />}
+          onClick={() => onDelete(form.id)}
+          sx={{ minWidth: 80 }}
+        >
+          Delete
+        </Button>
+      </CardActions>
+    </Card>
+  );
 };
 
 export default function MerchandiserDashboard() {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   useRoleGuard(["MERCHANDISER"]);
   const { openSnackbar, setLoading } = useCommonUtils();
   const queryClient = useQueryClient();
@@ -131,8 +226,12 @@ export default function MerchandiserDashboard() {
   return (
     <div className="min-h-screen bg-[#FAFAFF] flex flex-col items-center justify-center relative">
       <Navbar />
-      <div className="flex flex-col items-center justify-center p-10 w-full text-center">
-        <div className="mb-6 w-full max-w-md">
+      <div
+        className={`flex flex-col items-center justify-center w-full text-center ${
+          isMobile ? "p-4" : "p-10"
+        }`}
+      >
+        <div className={`mb-6 w-full ${isMobile ? "max-w-sm" : "max-w-md"}`}>
           <NameBlock />
         </div>
 
@@ -142,48 +241,68 @@ export default function MerchandiserDashboard() {
           </Typography>
         )}
 
-        <Box
-          sx={{
-            height: 500,
-            width: "80%",
-            maxWidth: "90vw",
-            backgroundColor: "white",
-            borderRadius: "8px",
-          }}
-        >
-          <DataGrid
-            getRowId={(row) => row.id}
-            rows={rows}
-            columns={columns}
-            loading={isLoading}
-            pagination
-            pageSizeOptions={[5, 10, 20]}
-            disableColumnMenu
-            disableColumnResize
-            disableRowSelectionOnClick
-            initialState={{
-              pagination: {
-                paginationModel: { pageSize: 5, page: 0 },
-              },
-            }}
-            rowHeight={80}
+        {isMobile ? (
+          <Box sx={{ width: "100%", maxWidth: "500px", px: 2 }}>
+            {isLoading ? (
+              <Typography>Loading...</Typography>
+            ) : sosForms.length === 0 ? (
+              <Typography>No SOS forms found</Typography>
+            ) : (
+              sosForms.map((form) => (
+                <MobileFormCard
+                  key={form.id}
+                  form={form}
+                  onEdit={handleEdit}
+                  onRead={handleRead}
+                  onDelete={handleSoftDelete}
+                />
+              ))
+            )}
+          </Box>
+        ) : (
+          <Box
             sx={{
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#fff",
-                fontWeight: "bold",
-              },
-              "& .MuiDataGrid-columnSeparator": {
-                display: "none !important",
-              },
-              "& .MuiDataGrid-virtualScroller": {
-                overflowX: "hidden !important",
-              },
-              "& .MuiDataGrid-row": {
-                ":hover": { backgroundColor: "transparent" },
-              },
+              height: 500,
+              width: "80%",
+              maxWidth: "90vw",
+              backgroundColor: "white",
+              borderRadius: "8px",
             }}
-          />
-        </Box>
+          >
+            <DataGrid
+              getRowId={(row) => row.id}
+              rows={rows}
+              columns={columns}
+              loading={isLoading}
+              pagination
+              pageSizeOptions={[5, 10, 20]}
+              disableColumnMenu
+              disableColumnResize
+              disableRowSelectionOnClick
+              initialState={{
+                pagination: {
+                  paginationModel: { pageSize: 5, page: 0 },
+                },
+              }}
+              rowHeight={80}
+              sx={{
+                "& .MuiDataGrid-columnHeaders": {
+                  backgroundColor: "#fff",
+                  fontWeight: "bold",
+                },
+                "& .MuiDataGrid-columnSeparator": {
+                  display: "none !important",
+                },
+                "& .MuiDataGrid-virtualScroller": {
+                  overflowX: "hidden !important",
+                },
+                "& .MuiDataGrid-row": {
+                  ":hover": { backgroundColor: "transparent" },
+                },
+              }}
+            />
+          </Box>
+        )}
       </div>
     </div>
   );
