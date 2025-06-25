@@ -61,9 +61,13 @@ const MobileFormCard = ({form,onEdit,onRead,onDelete,}: {
           </IconButton>
         </Stack>
 
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          {moment(form.createdAt).format("MMMM D, YYYY h:mm A")}
-        </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ textAlign: "left", mt: 1 }}
+          >
+            {moment(form.createdAt).format("MMMM D, YYYY h:mm A")}
+          </Typography>
 
         <Collapse in={expanded}>
           <Stack direction="row" spacing={3} sx={{ mt: 2 }}>
