@@ -8,7 +8,7 @@ import Navbar from "@/components/frontend/Navbar";
 import NameBlock from "@/components/frontend/NameBlock";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Pencil, Eye, Trash2, Menu } from "lucide-react";
-import {Box, Button, Stack, Typography, Card, CardContent, CardActions, useMediaQuery, useTheme, Collapse, IconButton,} from "@mui/material";
+import {Box, Button, Stack, Typography, Card, CardContent, CardActions, useMediaQuery, useTheme, Collapse, IconButton, Skeleton,} from "@mui/material";
 import { useCommonUtils } from "@/app/hooks/useCommonUtils";
 import useRoleGuard from "@/app/hooks/useRoleGuard";
 import { buttonStyle, captionStyle, centerAligned } from "@/app/styles/styles";
@@ -129,6 +129,29 @@ const MobileFormCard = ({form,onEdit,onRead,onDelete,}: {
   );
 };
 
+const MobileSkeletonCard = () => (
+  <Card sx={{ mb: 2, boxShadow: 2 }}>
+    <CardContent sx={{ pb: 1 }}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+      >
+        <Skeleton variant="text" width="50%" height={32} />
+        <Skeleton variant="circular" width={24} height={24} />
+      </Stack>
+
+      <Skeleton variant="text" width="70%" height={20} sx={{ mt: 1 }} />
+    </CardContent>
+
+    <CardActions sx={{ justifyContent: "space-around", pb: 2 }}>
+      <Skeleton variant="rectangular" width={80} height={32} />
+      <Skeleton variant="rectangular" width={80} height={32} />
+      <Skeleton variant="rectangular" width={80} height={32} />
+    </CardActions>
+  </Card>
+);
+
 export default function MerchandiserDashboard() {
   const router = useRouter();
   const theme = useTheme();
@@ -144,7 +167,6 @@ export default function MerchandiserDashboard() {
   const {
     data: sosForms = [],
     isLoading,
-    error,
   } = useQuery<SOSForm[]>({
     queryKey: ["sosForms"],
     queryFn: async () => {
@@ -235,16 +257,12 @@ export default function MerchandiserDashboard() {
           <NameBlock />
         </div>
 
-        {error && (
-          <Typography color="error" className="mb-4">
-            Failed to load SOS forms: {(error as Error).message}
-          </Typography>
-        )}
-
         {isMobile ? (
           <Box sx={{ width: "100%", maxWidth: "500px", px: 2 }}>
             {isLoading ? (
-              <Typography>Loading...</Typography>
+              Array.from({ length: 3 }).map((_, index) => (
+                <MobileSkeletonCard key={index} />
+              ))
             ) : sosForms.length === 0 ? (
               <Typography>No SOS forms found</Typography>
             ) : (
